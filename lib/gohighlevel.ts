@@ -1,0 +1,471 @@
+import axios, { AxiosInstance } from 'axios'
+
+// GoHighLevel API interfaces
+export interface GoHighLevelContact {
+  id?: string
+  firstName?: string
+  lastName?: string
+  name?: string
+  email: string
+  phone?: string
+  tags?: string[]
+  customFields?: Record<string, unknown>
+  source?: string
+  locationId: string
+}
+
+export interface GoHighLevelEmail {
+  to: string
+  from?: string
+  subject: string
+  html?: string
+  text?: string
+  templateId?: string
+  templateData?: Record<string, unknown>
+  attachments?: Array<{
+    filename: string
+    content: string
+    contentType: string
+  }>
+}
+
+export interface GoHighLevelCampaign {
+  id?: string
+  name: string
+  status: 'active' | 'paused' | 'draft'
+  type: 'email' | 'sms' | 'voicemail'
+  locationId: string
+}
+
+export interface GoHighLevelTemplate {
+  id?: string
+  name: string
+  subject?: string
+  body: string
+  type: 'email' | 'sms'
+  locationId: string
+}
+
+/**
+ * GoHighLevel API Service (Legacy)
+ * 
+ * ⚠️ DEPRECATED: This class is maintained for backward compatibility only.
+ * 
+ * For new GoHighLevel integrations, use the CRM Sync feature:
+ * - Contact sync: Handled automatically via field mappings (lib/crm-sync-service.ts)
+ * - Payment webhooks: app/api/ghl/* endpoints
+ * - Field mapping: Admin UI at /admin/crm-sync
+ * 
+ * This legacy service only provides:
+ * - Checkout URL generation (still used for payment flows)
+ * - Plan ID mappings (still used for subscription management)
+ */
+export class GoHighLevelService {
+  private client: AxiosInstance
+  private locationId: string
+
+  constructor() {
+    // Legacy stub - direct API methods are deprecated in favor of CRM Sync service
+    this.locationId = ''
+    console.info('-- GoHighLevel service initialized. All contact/webhook operations now use CRM Sync (lib/ghl-sync-service.ts) with field mappings.')
+
+    // Create a dummy client to prevent errors in legacy code
+    const baseURL = process.env.GOHIGHLEVEL_API_BASE_URL || process.env.NEXT_PUBLIC_GOHIGHLEVEL_API_BASE_URL || 'https://services.leadconnectorhq.com'
+    this.client = axios.create({
+      baseURL,
+      timeout: 30000
+    })
+  }
+
+  /**
+   * Create or update a contact in GoHighLevel
+   * @deprecated Use CRM Sync service instead (lib/crm-sync-service.ts)
+   */
+  async createOrUpdateContact(contactData: GoHighLevelContact): Promise<GoHighLevelContact> {
+    console.info('-- Use CRM Sync service for GHL contact management.')
+    return contactData // Return input data for backward compatibility
+  }
+
+  /**
+   * Find contact by email address
+   * @deprecated Use CRM Sync service instead
+   */
+  async findContactByEmail(email: string): Promise<GoHighLevelContact | null> {
+    console.info('-- Use CRM Sync service for contact lookup.')
+    return null
+  }
+
+  /**
+   * Send an email through GoHighLevel
+   * @deprecated Use Resend service for transactional emails (lib/email.ts)
+   */
+  async sendEmail(emailData: GoHighLevelEmail): Promise<{ success: boolean; messageId?: string }> {
+    console.info('-- Use Resend for transactional emails.')
+    return { success: false }
+  }
+
+  /**
+   * Send email using template
+   * @deprecated Use Resend service for transactional emails (lib/email.ts)
+   */
+  async sendTemplateEmail(
+    to: string,
+    templateId: string,
+    templateData: Record<string, unknown> = {}
+  ): Promise<{ success: boolean; messageId?: string }> {
+    console.info('-- Use Resend for transactional emails.')
+    return { success: false }
+  }
+
+  /**
+   * Get contact ID by email
+   * @deprecated Use CRM Sync service instead
+   */
+  private async getContactIdByEmail(email: string): Promise<string> {
+    throw new Error('Deprecated: Use CRM Sync service for contact management')
+  }
+
+  /**
+   * Get email template by ID
+   * @deprecated Email templates are handled by Resend
+   */
+  async getTemplate(templateId: string): Promise<GoHighLevelTemplate | null> {
+    console.info('-- Email templates are managed in Resend.')
+    return null
+  }
+
+  /**
+   * Create email template
+   * @deprecated Email templates are handled by Resend
+   */
+  async createTemplate(templateData: Omit<GoHighLevelTemplate, 'id'>): Promise<GoHighLevelTemplate> {
+    throw new Error('Deprecated: Email templates are managed in Resend')
+  }
+
+  /**
+   * Add tags to contact
+   * @deprecated Use CRM Sync service for tag management
+   */
+  async addTagsToContact(email: string, tags: string[]): Promise<void> {
+    console.info('-- Use CRM Sync service for tag management.')
+  }
+
+  /**
+   * Remove tags from contact
+   * @deprecated Use CRM Sync service for tag management
+   */
+  async removeTagsFromContact(email: string, tags: string[]): Promise<void> {
+    console.info('-- Use CRM Sync service for tag management.')
+  }
+
+  /**
+   * Create automation campaign
+   * @deprecated Campaign management is done in GoHighLevel UI
+   */
+  async createCampaign(campaignData: Omit<GoHighLevelCampaign, 'id'>): Promise<GoHighLevelCampaign> {
+    throw new Error('Deprecated: Campaign management is done in GoHighLevel UI')
+  }
+
+  /**
+   * Add contact to campaign
+   * @deprecated Campaign management is done in GoHighLevel UI
+   */
+  async addContactToCampaign(email: string, campaignId: string): Promise<void> {
+    console.info('-- Campaign management is done in GoHighLevel UI.')
+  }
+
+  /**
+   * Get campaign statistics
+   * @deprecated Campaign statistics are viewed in GoHighLevel UI
+   */
+  async getCampaignStats(campaignId: string): Promise<{
+    sent: number
+    delivered: number
+    opened: number
+    clicked: number
+    bounced: number
+    unsubscribed: number
+  }> {
+    console.info('-- Campaign stats are viewed in GoHighLevel UI.')
+    return {
+      sent: 0,
+      delivered: 0,
+      opened: 0,
+      clicked: 0,
+      bounced: 0,
+      unsubscribed: 0
+    }
+  }
+
+  /**
+   * Bulk import contacts
+   * @deprecated Use CRM Sync service for bulk operations
+   */
+  async bulkImportContacts(contacts: GoHighLevelContact[]): Promise<{
+    success: number
+    failed: number
+    errors: string[]
+  }> {
+    console.info('-- Use CRM Sync service for bulk contact operations.')
+    return {
+      success: 0,
+      failed: contacts.length,
+      errors: ['Deprecated: Use CRM Sync service for bulk operations']
+    }
+  }
+
+  /**
+   * Test API connection
+   * @deprecated Use Admin CRM Sync UI to test connection
+   */
+  async testConnection(): Promise<{ success: boolean; message: string }> {
+    return {
+      success: false,
+      message: 'Deprecated: Use Admin CRM Sync UI at /admin/crm-sync to test connection'
+    }
+  }
+
+  /**
+   * Get location information
+   * @deprecated Location info is configured in CRM Sync settings
+   */
+  async getLocationInfo(): Promise<unknown> {
+    console.info('-- Location info is managed in CRM Sync settings.')
+    return null
+  }
+}
+
+// Export singleton instance (legacy compatibility)
+export const goHighLevelService = new GoHighLevelService()
+
+
+/**
+ * Generate checkout URL for GoHighLevel payment pages
+ * 
+ * ✅ ACTIVE: This function is still used for payment flows
+ * 
+ * Generates a GoHighLevel checkout URL with embedded user information
+ * for seamless payment processing and return URL handling.
+ */
+export function generateCheckoutUrl({
+  planId,
+  pendingSignupId,
+  sessionToken,
+  returnUrl,
+  userInfo
+}: {
+  planId: string
+  pendingSignupId: string
+  sessionToken: string
+  returnUrl: string
+  userInfo?: {
+    firstName?: string
+    lastName?: string
+    email?: string
+    name?: string
+  }
+}): string {
+  console.log('🔍 GHL-URL: Starting URL generation with params:', {
+    planId,
+    pendingSignupId,
+    sessionToken,
+    returnUrl,
+    userInfo
+  })
+
+  // Get the full GoHighLevel page URL from environment variables
+  const fullPageUrl = getGoHighLevelPageUrl(planId)
+  console.log('🔍 GHL-URL: Full page URL for plan:', { planId, fullPageUrl })
+
+  if (!fullPageUrl) {
+    throw new Error(`No GoHighLevel page URL configured for plan: ${planId}`)
+  }
+
+  const secureReturnUrl = `${returnUrl}?pending_signup_id=${pendingSignupId}&session_token=${sessionToken}&status=success`
+  const cancelUrl = `${returnUrl}?pending_signup_id=${pendingSignupId}&session_token=${sessionToken}&status=cancelled`
+
+  const params = new URLSearchParams({
+    pending_signup_id: pendingSignupId,
+    session_token: sessionToken,
+    return_url: secureReturnUrl,
+    cancel_url: cancelUrl,
+    plan_id: planId
+  })
+
+  console.log('🔍 GHL-URL: Base params created:', Object.fromEntries(params.entries()))
+
+  // Add user information for auto-fill if available
+  if (userInfo) {
+    console.log('🔍 GHL-URL: Adding user info to params:', userInfo)
+
+    if (userInfo.email) {
+      params.append('email', userInfo.email)
+      console.log('✅ GHL-URL: Added email parameter')
+    }
+
+    // Add name - prefer full name, then construct from first/last
+    if (userInfo.name) {
+      params.append('name', userInfo.name)
+      console.log('✅ GHL-URL: Added name parameter:', userInfo.name)
+    } else if (userInfo.firstName || userInfo.lastName) {
+      const nameParts = []
+      if (userInfo.firstName) {
+        nameParts.push(userInfo.firstName)
+        params.append('firstName', userInfo.firstName)
+        console.log('✅ GHL-URL: Added firstName parameter:', userInfo.firstName)
+      }
+      if (userInfo.lastName) {
+        nameParts.push(userInfo.lastName)
+        params.append('lastName', userInfo.lastName)
+        console.log('✅ GHL-URL: Added lastName parameter:', userInfo.lastName)
+      }
+      if (nameParts.length > 0) {
+        const fullName = nameParts.join(' ')
+        params.append('name', fullName)
+        console.log('✅ GHL-URL: Added constructed name parameter:', fullName)
+      }
+    }
+  } else {
+    console.log('⚠️ GHL-URL: No userInfo provided')
+  }
+
+  console.log('🔍 GHL-URL: Final params:', Object.fromEntries(params.entries()))
+
+  // Check if the URL already has parameters
+  const separator = fullPageUrl.includes('?') ? '&' : '?'
+  const finalUrl = `${fullPageUrl}${separator}${params.toString()}`
+
+  console.log('✅ GHL-URL: Final generated URL:', finalUrl)
+  return finalUrl
+}
+
+/**
+ * Get GoHighLevel full page URL from environment variables
+ * 
+ * ✅ ACTIVE: This function is still used for payment flows
+ * 
+ * Maps plan IDs to their corresponding GoHighLevel checkout page URLs
+ * configured in environment variables.
+ */
+export function getGoHighLevelPageUrl(planId: string): string | null {
+  console.log('🔍 GHL-PAGE-URL: Looking up URL for planId:', planId)
+
+  const envMapping: Record<string, string> = {
+    // Current seeker subscription plan IDs (matching subscription-plans.ts)
+    'trial': process.env.GOHIGHLEVEL_SEEKER_TRIAL_MONTHLY || '',
+    'gold': process.env.GOHIGHLEVEL_SEEKER_GOLD_BIMONTHLY || '',
+    'vip-platinum': process.env.GOHIGHLEVEL_SEEKER_VIP_QUARTERLY || '',
+    'annual-platinum': process.env.GOHIGHLEVEL_SEEKER_ANNUAL_PLATINUM || '',
+
+    // Employer job posting packages (matching PackageCard.tsx)
+    'standard': process.env.GOHIGHLEVEL_EMPLOYER_STANDARD || '',
+    'featured': process.env.GOHIGHLEVEL_EMPLOYER_FEATURED || '',
+    'email_blast': process.env.GOHIGHLEVEL_EMPLOYER_SOLO || '',
+    'gold_plus': process.env.GOHIGHLEVEL_EMPLOYER_GOLD_PLUS || '',
+
+    // Concierge packages (matching PackageCard.tsx) - Updated Jan 2026
+    'concierge_lite': process.env.GOHIGHLEVEL_EMPLOYER_SM_CONCIERGE_LITE || '',
+    'concierge_level_1': process.env.GOHIGHLEVEL_EMPLOYER_SM_CONCIERGE_LVL_I || '',
+    'concierge_level_2': process.env.GOHIGHLEVEL_EMPLOYER_SM_CONCIERGE_LVL_2 || '',
+    'concierge_level_3': process.env.GOHIGHLEVEL_EMPLOYER_SM_CONCIERGE_LVL_3 || '',
+
+    // Legacy employer packages (for backward compatibility)
+    'employer_basic': process.env.GOHIGHLEVEL_EMPLOYER_STANDARD || '',
+    'employer_standard': process.env.GOHIGHLEVEL_EMPLOYER_FEATURED || '',
+    'employer_premium': process.env.GOHIGHLEVEL_EMPLOYER_SM_CONCIERGE_LITE || '',
+
+    // Alternative naming support (for flexibility)
+    'trial_monthly': process.env.GOHIGHLEVEL_SEEKER_TRIAL_MONTHLY || '',
+    'gold_bimonthly': process.env.GOHIGHLEVEL_SEEKER_GOLD_BIMONTHLY || '',
+    'vip_quarterly': process.env.GOHIGHLEVEL_SEEKER_VIP_QUARTERLY || '',
+    'annual_platinum': process.env.GOHIGHLEVEL_SEEKER_ANNUAL_PLATINUM || ''
+  }
+
+  console.log('🔍 GHL-PAGE-URL: Available environment mappings:', {
+    trial: process.env.GOHIGHLEVEL_SEEKER_TRIAL_MONTHLY,
+    gold: process.env.GOHIGHLEVEL_SEEKER_GOLD_BIMONTHLY,
+    'vip-platinum': process.env.GOHIGHLEVEL_SEEKER_VIP_QUARTERLY,
+    'annual-platinum': process.env.GOHIGHLEVEL_SEEKER_ANNUAL_PLATINUM,
+    standard: process.env.GOHIGHLEVEL_EMPLOYER_STANDARD,
+    featured: process.env.GOHIGHLEVEL_EMPLOYER_FEATURED,
+    email_blast: process.env.GOHIGHLEVEL_EMPLOYER_SOLO,
+    gold_plus: process.env.GOHIGHLEVEL_EMPLOYER_GOLD_PLUS
+  })
+
+  const url = envMapping[planId]
+  console.log('🔍 GHL-PAGE-URL: Found URL for planId', planId, ':', url)
+
+  const isValidUrl = url && url !== 'your-trial-monthly-product-id' && !url.startsWith('your-') && !url.includes('mock-checkout')
+  console.log('🔍 GHL-PAGE-URL: URL is valid:', isValidUrl)
+
+  if (!isValidUrl) {
+    console.error('❌ GHL-PAGE-URL: Invalid or missing GoHighLevel URL for planId:', planId)
+    console.error('❌ GHL-PAGE-URL: Please check your environment variables')
+    throw new Error(`No valid GoHighLevel checkout URL configured for plan: ${planId}. Please check your environment variables.`)
+  }
+
+  return url
+}
+
+/**
+ * Map plan ID to membership plan name
+ * 
+ * ✅ ACTIVE: This function is still used for subscription management
+ */
+export function mapPlanIdToMembershipPlan(planId: string): string {
+  const mapping: Record<string, string> = {
+    // Current plan IDs (matching subscription-plans.ts)
+    'trial': 'trial_monthly',
+    'gold': 'gold_bimonthly',
+    'vip-platinum': 'vip_quarterly',
+    'annual-platinum': 'annual_platinum',
+
+    // Alternative naming support
+    'trial_monthly': 'trial_monthly',
+    'gold_bimonthly': 'gold_bimonthly',
+    'vip_quarterly': 'vip_quarterly',
+    'annual_platinum': 'annual_platinum'
+  }
+  return mapping[planId] || 'none'
+}
+
+/**
+ * Get plan name for display
+ * 
+ * ✅ ACTIVE: This function is still used for UI display
+ */
+export function getPlanName(planId: string): string {
+  const names: Record<string, string> = {
+    // Current seeker plans (matching subscription-plans.ts)
+    'trial': '3 Day Free Trial Subscription',
+    'gold': 'Gold Mom Professional',
+    'vip-platinum': 'VIP Platinum Mom Professional',
+    'annual-platinum': 'Annual Platinum Mom Professional',
+
+    // Employer job posting packages (matching PackageCard.tsx)
+    'standard': 'Standard Job Post',
+    'featured': 'Featured Job Post',
+    'email_blast': 'Solo Email Blast',
+    'gold_plus': 'Gold Plus Small Business',
+
+    // Concierge packages (matching PackageCard.tsx) - Updated Jan 2026
+    'concierge_lite': 'Small Business Concierge LITE (Legacy)',
+    'concierge_level_1': 'Small Business Concierge Level I',
+    'concierge_level_2': 'Small Business Concierge Level II',
+    'concierge_level_3': 'Small Business Concierge Level III',
+
+    // Legacy employer packages (for backward compatibility)
+    'employer_basic': 'Standard Job Post',
+    'employer_standard': 'Featured Job Post',
+    'employer_premium': 'Small Business Concierge LITE (Legacy)',
+
+    // Alternative naming support
+    'trial_monthly': '3 Day Free Trial Subscription',
+    'gold_bimonthly': 'Gold Mom Professional',
+    'vip_quarterly': 'VIP Platinum Mom Professional',
+    'annual_platinum': 'Annual Platinum Mom Professional'
+  }
+  return names[planId] || 'Unknown Plan'
+}
+
+// Types are already exported at the top of the file

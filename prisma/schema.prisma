@@ -1,0 +1,1417 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model UserProfile {
+  id                           String                       @id @default(cuid())
+  stackUserId                  String?                      @unique @map("stack_user_id")
+  role                         UserRole
+  name                         String
+  phone                        String?
+  timezone                     String                       @default("America/Chicago")
+  createdAt                    DateTime                     @default(now()) @map("created_at")
+  updatedAt                    DateTime                     @updatedAt @map("updated_at")
+  email                        String?
+  profilePictureUrl            String?                      @map("profile_picture_url")
+  firstName                    String?                      @map("first_name")
+  lastName                     String?                      @map("last_name")
+  conciergeBio                 String?                      @map("concierge_bio")
+  conciergeTitle               String?                      @map("concierge_title")
+  conciergeSpecialties         String[]                     @map("concierge_specialties")
+  conciergeExperience          Int?                         @map("concierge_experience")
+  isActiveConcierge            Boolean                      @default(false) @map("is_active_concierge")
+  tags                         String[]                     @default([])
+  clerkUserId                  String?                      @unique @map("clerk_user_id")
+  legacyId                     BigInt?                      @unique @map("legacy_id")
+  allowDirectMessages          Boolean                      @default(true) @map("allow_direct_messages")
+  messageNotificationEmail     Boolean                      @default(true) @map("message_notification_email")
+  messageNotificationInApp     Boolean                      @default(true) @map("message_notification_in_app")
+  isActive                     Boolean?                     @default(true) @map("is_active")
+  assignedServicePurchases     AdditionalServicePurchase[]  @relation("additional_service_purchases_assigned_admin_idTouser_profiles")
+  servicePurchases             AdditionalServicePurchase[]  @relation("additional_service_purchases_user_idTouser_profiles")
+  adminActions                 AdminActionLog[]
+  subscriptionCancellationLogs SubscriptionCancellationLog[]
+  conciergeChatMessages        ConciergeChatMessage[]       @relation("ConciergeChatMessageSender")
+  conciergeChats               ConciergeChat[]              @relation("ConciergeChatAdmin")
+  conciergeAssignments         ConciergeRequest[]           @relation("ConciergeAssignments")
+  crmSyncSettingsLastSavedBy   CrmSyncSettings?             @relation("CrmSyncSettingsLastSavedBy")
+  employer                     Employer?
+  externalPayments             ExternalPayment[]
+  jobSeeker                    JobSeeker?
+  messageDrafts                MessageDraft[]
+  messageTemplates             MessageTemplate[]
+  receivedMessages             Message[]                    @relation("MessageRecipient")
+  sentMessages                 Message[]                    @relation("MessageSender")
+  notifications                Notification[]
+  seekerConciergeChatMessages  SeekerConciergeChatMessage[] @relation("SeekerConciergeChatMessageSender")
+  seekerConciergeChats         SeekerConciergeChat[]        @relation("SeekerConciergeChatAdmin")
+  seekerConciergeChatsAsSeeker SeekerConciergeChat[]        @relation("SeekerConciergeChats")
+  serviceRequestAudits         ServiceRequestAudit[]
+  sentTeamInvitations          TeamInvitation[]             @relation("TeamInvitationInviter")
+  teamInvitations              TeamMember[]                 @relation("TeamMemberInviter")
+  teamMemberships              TeamMember[]                 @relation("TeamMemberUser")
+  sentUserInvitations          UserInvitation[]             @relation("UserInvitationInviter")
+
+  @@index([clerkUserId], map: "idx_user_profiles_clerk_user_id")
+  @@index([clerkUserId])
+  @@map("user_profiles")
+}
+
+/// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
+model JobSeeker {
+  userId                 String                      @id @map("user_id")
+  headline               String?
+  aboutMe                String?                     @map("about_me")
+  availability           String?
+  skills                 String[]
+  portfolioUrls          String[]                    @map("portfolio_urls")
+  resumeUrl              String?                     @map("resume_url")
+  resumeLastUploaded     DateTime?                   @map("resume_last_uploaded")
+  membershipPlan         MembershipPlan              @default(none) @map("membership_plan")
+  membershipExpiresAt    DateTime?                   @map("membership_expires_at")
+  isSuspended            Boolean                     @default(false) @map("is_suspended")
+  createdAt              DateTime                    @default(now()) @map("created_at")
+  updatedAt              DateTime                    @updatedAt @map("updated_at")
+  resumeCredits          Int                         @default(0) @map("resume_credits")
+  salaryExpectations     String?                     @map("salary_expectations")
+  allowDirectMessages    Boolean                     @default(true) @map("allow_direct_messages")
+  applicationUpdates     Boolean                     @default(true) @map("application_updates")
+  emailAlerts            Boolean                     @default(true) @map("email_alerts")
+  jobRecommendations     Boolean                     @default(true) @map("job_recommendations")
+  profileVisibility      ProfileVisibility           @default(employers_only) @map("profile_visibility")
+  showSalaryExpectations Boolean                     @default(true) @map("show_salary_expectations")
+  weeklyDigest           Boolean                     @default(false) @map("weekly_digest")
+  allowJobInvitations    Boolean                     @default(true) @map("allow_job_invitations")
+  resumeLimit            Int                         @default(0) @map("resume_limit")
+  resumesUsed            Int                         @default(0) @map("resumes_used")
+  trialEndsAt            DateTime?                   @map("trial_ends_at")
+  isOnTrial              Boolean                     @default(false) @map("is_on_trial")
+  cancelledSeeker        Boolean                     @default(false) @map("cancelled_seeker")
+  cancelledAt            DateTime?                   @map("cancelled_at")
+  hasPreviousSubscription Boolean                    @default(false) @map("has_previous_subscription")
+  education              Json?
+  workExperience         String?                     @map("work_experience")
+  professionalSummary    String?                     @map("professional_summary")
+  resumeCarryoverCount   Int                         @default(0) @map("resume_carryover_count")
+  lastBillingPeriodStart DateTime?                   @map("last_billing_period_start") @db.Timestamp(6)
+  servicePurchases       AdditionalServicePurchase[]
+  applications           Application[]
+  cancellationSurveys    CancellationSurvey[]
+  coverLetterTemplates   CoverLetterTemplate[]
+  user                   UserProfile                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  paymentMethods         PaymentMethod[]
+  resumeCritiques        ResumeCritique[]
+  resumes                Resume[]
+  savedJobs              SavedJob[]
+  subscriptions          Subscription[]
+
+  @@index([membershipPlan, membershipExpiresAt], map: "idx_jobseeker_membership")
+  @@index([skills], map: "idx_jobseeker_skills_gin", type: Gin)
+  @@index([profileVisibility, isSuspended, updatedAt(sort: Desc)], map: "idx_jobseeker_visibility_updated")
+  @@map("job_seekers")
+}
+
+model Employer {
+  userId                   String                      @id @map("user_id")
+  companyName              String                      @map("company_name")
+  companyWebsite           String?                     @map("company_website")
+  companyLogoUrl           String?                     @map("company_logo_url")
+  companyDescription       String?                     @map("company_description")
+  billingAddress           String?                     @map("billing_address")
+  taxId                    String?                     @map("tax_id")
+  currentPackageId         String?                     @map("current_package_id")
+  isSuspended              Boolean                     @default(false) @map("is_suspended")
+  createdAt                DateTime                    @default(now()) @map("created_at")
+  updatedAt                DateTime                    @updatedAt @map("updated_at")
+  isVetted                 Boolean                     @default(false) @map("is_vetted")
+  vettedAt                 DateTime?                   @map("vetted_at")
+  vettedBy                 String?                     @map("vetted_by")
+  teamId                   String?                     @map("team_id")
+  missionStatement         String?                     @map("mission_statement")
+  coreValues               String?                     @map("core_values")
+  exclusivePlanType        String?                     @map("exclusive_plan_type")
+  exclusivePlanName        String?                     @map("exclusive_plan_name")
+  exclusivePlanAmountCents Int?                        @map("exclusive_plan_amount_cents")
+  exclusivePlanCycles      Int?                        @map("exclusive_plan_cycles")
+  exclusivePlanOfferedAt   DateTime?                   @map("exclusive_plan_offered_at") @db.Timestamptz(6)
+  exclusivePlanDismissedAt DateTime?                   @map("exclusive_plan_dismissed_at") @db.Timestamptz(6)
+  exclusivePlanActivatedAt DateTime?                   @map("exclusive_plan_activated_at") @db.Timestamptz(6)
+  exclusivePlanSource      String?                     @map("exclusive_plan_source")
+  servicePurchases         AdditionalServicePurchase[]
+  conciergeChats           ConciergeChat[]
+  conciergeRequests        ConciergeRequest[]
+  emailBlastRequests       EmailBlastRequest[]
+  packages                 EmployerPackage[]
+  currentPackage           EmployerPackage?            @relation("CurrentPackage", fields: [currentPackageId], references: [id])
+  user                     UserProfile                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  featuredJobRequests      FeaturedJobRequest[]
+  jobs                     Job[]
+  paymentMethods           PaymentMethod[]
+  teamInvitations          TeamInvitation[]
+  teamMembers              TeamMember[]
+
+  @@map("employers")
+}
+
+model EmployerPackage {
+  id                        String                      @id @default(cuid())
+  employerId                String                      @map("employer_id")
+  jobIds                    String[]                    @map("job_ids")
+  listingsRemaining         Int                         @map("listings_remaining")
+  purchasedAt               DateTime                    @default(now()) @map("purchased_at")
+  expiresAt                 DateTime?                   @map("expires_at")
+  createdAt                 DateTime                    @default(now()) @map("created_at")
+  updatedAt                 DateTime                    @updatedAt @map("updated_at")
+  packageType               PackageType                 @map("package_type")
+  featuredListingsRemaining Int                         @default(0) @map("featured_listings_remaining")
+  featuredListingsUsed      Int                         @default(0) @map("featured_listings_used")
+  isRecurring               Boolean?                    @default(false) @map("is_recurring")
+  billingFrequency          String?                     @map("billing_frequency")
+  billingCyclesTotal        Int?                        @map("billing_cycles_total")
+  billingCyclesCompleted    Int?                        @default(0) @map("billing_cycles_completed")
+  nextBillingDate           DateTime?                   @map("next_billing_date") @db.Timestamptz(6)
+  recurringAmountCents      Int?                        @map("recurring_amount_cents")
+  arbSubscriptionId         String?                     @map("arb_subscription_id") @db.VarChar(255)
+  recurringStatus           String?                     @default("active") @map("recurring_status")
+  extensionRequestedAt      DateTime?                   @map("extension_requested_at") @db.Timestamptz(6)
+  extensionRequestedMonths  Int?                        @map("extension_requested_months")
+  extensionRequestStatus    String?                     @map("extension_request_status")
+  extensionReviewedAt       DateTime?                   @map("extension_reviewed_at") @db.Timestamptz(6)
+  extensionReviewedBy       String?                     @map("extension_reviewed_by")
+  addOnServiceRequests      AdditionalServicePurchase[]
+  emailBlastRequests        EmailBlastRequest[]
+  employer                  Employer                    @relation(fields: [employerId], references: [userId], onDelete: Cascade)
+  currentForEmployers       Employer[]                  @relation("CurrentPackage")
+  featuredJobRequests       FeaturedJobRequest[]
+  invoices                  Invoice[]
+  purchasedAddOns           PurchasedAddOn[]            @relation("PackageAddOns")
+  jobs                      Job[]                       @relation("PackageJobs")
+
+  @@index([employerId, expiresAt], map: "idx_employer_package_expires")
+  @@map("employer_packages")
+}
+
+model Job {
+  id                           String                @id @default(cuid())
+  employerId                   String                @map("employer_id")
+  title                        String
+  payRangeMin                  Decimal?              @map("pay_range_min")
+  payRangeMax                  Decimal?              @map("pay_range_max")
+  payRangeText                 String?               @map("pay_range_text")
+  type                         JobType
+  description                  String
+  skillsRequired               String[]              @map("skills_required")
+  isFlexibleHours              Boolean               @default(false) @map("is_flexible_hours")
+  hoursPerWeek                 Int?                  @map("hours_per_week")
+  remoteSchedule               String?               @map("remote_schedule")
+  locationText                 String?               @map("location_text")
+  status                       JobStatus             @default(draft)
+  rejectionReason              String?               @map("rejection_reason")
+  conciergeRequested           Boolean               @default(false) @map("concierge_requested")
+  conciergeStatus              ConciergeStatus       @default(not_requested) @map("concierge_status")
+  createdAt                    DateTime              @default(now()) @map("created_at")
+  updatedAt                    DateTime              @updatedAt @map("updated_at")
+  expiresAt                    DateTime?             @map("expires_at")
+  approvedAt                   DateTime?             @map("approved_at")
+  benefits                     String?
+  viewsCount                   Int                   @default(0) @map("views_count")
+  salaryType                   String?               @map("salary_type")
+  experienceLevel              String?               @map("experience_level")
+  applicationDeadline          DateTime?             @map("application_deadline")
+  requirements                 String?
+  contactPhone                 String?               @map("contact_phone")
+  linkedinProfile              String?               @map("linkedin_profile")
+  website                      String?
+  category                     JobCategory
+  emailBlastCompletedAt        DateTime?             @map("email_blast_completed_at")
+  emailBlastExpiresAt          DateTime?             @map("email_blast_expires_at")
+  emailBlastRequestedAt        DateTime?             @map("email_blast_requested_at")
+  emailBlastStatus             EmailBlastStatus      @default(not_requested) @map("email_blast_status")
+  featuredCompletedAt          DateTime?             @map("featured_completed_at")
+  featuredExtensionExpiresAt   DateTime?             @map("featured_extension_expires_at")
+  featuredExtensionGranted     Boolean               @default(false) @map("featured_extension_granted")
+  featuredRequestedAt          DateTime?             @map("featured_requested_at")
+  featuredStatus               FeaturedStatus        @default(not_requested) @map("featured_status")
+  isEmailBlast                 Boolean               @default(false) @map("is_email_blast")
+  isFeatured                   Boolean               @default(false) @map("is_featured")
+  isCompanyPrivate             Boolean               @default(false) @map("is_company_private")
+  applicantsVisibleToEmployer  Boolean               @default(false) @map("applicants_visible_to_employer")
+  applicantsVisibleLastToggled DateTime?             @map("applicants_visible_last_toggled")
+  applicantsVisibleToggledBy   String?               @map("applicants_visible_toggled_by")
+  chatEnabled                  Boolean               @default(false) @map("chat_enabled")
+  chatEnabledAt                DateTime?             @map("chat_enabled_at")
+  archivedAt                   DateTime?             @map("archived_at") @db.Timestamptz(6)
+  archivedBy                   String?               @map("archived_by")
+  isArchived                   Boolean?              @default(false) @map("is_archived")
+  isPaused                     Boolean               @default(false) @map("is_paused")
+  pausedAt                     DateTime?             @map("paused_at")
+  pausedBy                     String?               @map("paused_by") @db.VarChar(255)
+  pausedDaysRemaining          Int?                  @map("paused_days_remaining")
+  resumedAt                    DateTime?             @map("resumed_at")
+  legacyId                     BigInt?               @map("legacy_id")
+  manualApprove                Boolean               @default(false) @map("manual_approve")
+  applications                 Application[]
+  conciergeChats               ConciergeChat[]
+  conciergeRequests            ConciergeRequest[]
+  emailBlastRequests           EmailBlastRequest[]
+  featuredJobRequests          FeaturedJobRequest[]
+  employer                     Employer              @relation(fields: [employerId], references: [userId], onDelete: Cascade)
+  messages                     Message[]
+  savedByUsers                 SavedJob[]
+  seekerConciergeChats         SeekerConciergeChat[]
+  employerPackages             EmployerPackage[]     @relation("PackageJobs")
+
+  @@index([employerId, status], map: "idx_job_employer_status")
+  @@index([createdAt], map: "idx_job_created_at")
+  @@index([employerId, createdAt], map: "idx_job_employer_created")
+  @@index([employerId, isArchived], map: "idx_job_employer_archived")
+  @@index([category, type], map: "idx_job_category_type")
+  @@index([status, expiresAt], map: "idx_job_status_expires")
+  @@index([employerId, status, expiresAt], map: "idx_job_employer_status_expires")
+  @@map("jobs")
+}
+
+model Application {
+  id                   String             @id @default(cuid())
+  jobId                String             @map("job_id")
+  seekerId             String             @map("seeker_id")
+  resumeUrl            String             @map("resume_url")
+  coverLetter          String?            @map("cover_letter")
+  status               ApplicationStatus  @default(pending)
+  appliedAt            DateTime           @default(now()) @map("applied_at")
+  updatedAt            DateTime           @updatedAt @map("updated_at")
+  interviewCompletedAt DateTime?          @map("interview_completed_at") @db.Timestamptz(6)
+  interviewScheduledAt DateTime?          @map("interview_scheduled_at") @db.Timestamptz(6)
+  interviewStage       InterviewStage?    @map("interview_stage")
+  interviewerNotes     String?            @map("interviewer_notes")
+  nextActionDeadline   DateTime?          @map("next_action_deadline") @db.Timestamptz(6)
+  nextActionRequired   String?            @map("next_action_required")
+  resumeId             String?            @map("resume_id") @db.VarChar(255)
+  legacy_id            BigInt?
+  job                  Job                @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  seeker               JobSeeker          @relation(fields: [seekerId], references: [userId], onDelete: Cascade)
+  resume               Resume?            @relation("ApplicationResume", fields: [resumeId], references: [id], onUpdate: NoAction, map: "fk_applications_resume_id")
+  interviewHistory     InterviewHistory[]
+  messages             Message[]
+
+  @@index([resumeId], map: "idx_applications_resume_id")
+  @@map("applications")
+}
+
+model InterviewHistory {
+  id            String         @id @default(dbgenerated("(gen_random_uuid())::text"))
+  applicationId String         @map("application_id")
+  stage         InterviewStage
+  scheduledAt   DateTime?      @map("scheduled_at") @db.Timestamptz(6)
+  completedAt   DateTime?      @map("completed_at") @db.Timestamptz(6)
+  notes         String?
+  interviewerId String?        @map("interviewer_id")
+  feedback      String?
+  createdAt     DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime       @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  application   Application    @relation(fields: [applicationId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([applicationId])
+  @@index([createdAt])
+  @@map("interview_history")
+}
+
+model Subscription {
+  id                    String               @id @default(cuid())
+  seekerId              String               @map("seeker_id")
+  authnetSubscriptionId String?              @map("authnet_subscription_id")
+  authnetCustomerId     String?              @map("authnet_customer_id")
+  plan                  MembershipPlan
+  status                SubscriptionStatus   @default(active)
+  currentPeriodEnd      DateTime?            @map("current_period_end")
+  cancelAtPeriodEnd     Boolean              @default(false) @map("cancel_at_period_end")
+  createdAt             DateTime             @default(now()) @map("created_at")
+  updatedAt             DateTime             @updatedAt @map("updated_at")
+  ghlTransactionId      String?              @map("ghl_transaction_id")
+  externalPaymentId     String?              @map("external_payment_id")
+  tier                  String?              @db.VarChar(50)
+  tier_metadata         Json?                @default("{}")
+  expires_at            DateTime?            @db.Timestamptz(6)
+  is_legacy_beta        Boolean?             @default(false)
+  currentPeriodStart    DateTime?            @map("current_period_start") @db.Timestamp(6)
+  billingFrequency      String?              @map("billing_frequency") @db.VarChar(50)
+  nextBillingDate       DateTime?            @map("next_billing_date") @db.Timestamp(6)
+  legacyId              Float?               @map("legacy_id")
+  cancellationSurveys   CancellationSurvey[]
+  cancellationLogs      SubscriptionCancellationLog[]
+  externalPayment       ExternalPayment?     @relation(fields: [externalPaymentId], references: [id])
+  seeker                JobSeeker            @relation(fields: [seekerId], references: [userId], onDelete: Cascade)
+
+  @@index([tier], map: "idx_subscriptions_tier")
+  @@index([currentPeriodStart, currentPeriodEnd], map: "idx_subscriptions_current_period")
+  @@map("subscriptions")
+}
+
+model CancellationSurvey {
+  id                  String        @id @default(cuid())
+  seekerId            String        @map("seeker_id")
+  subscriptionId      String?       @map("subscription_id")
+  primaryReason       String        @map("primary_reason")
+  reasonOtherText     String?       @map("reason_other_text")
+  jobSatisfaction     String        @map("job_satisfaction")
+  overallExperience   String        @map("overall_experience")
+  improvementFeedback String?       @map("improvement_feedback")
+  recommendToOthers   String        @map("recommend_to_others")
+  createdAt           DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime      @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  seeker              JobSeeker     @relation(fields: [seekerId], references: [userId], onDelete: Cascade, onUpdate: NoAction, map: "fk_cancellation_survey_seeker")
+  subscription        Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_cancellation_survey_subscription")
+
+  @@index([seekerId], map: "idx_cancellation_survey_seeker_id")
+  @@index([subscriptionId], map: "idx_cancellation_survey_subscription_id")
+  @@index([createdAt(sort: Desc)], map: "idx_cancellation_survey_created_at")
+  @@index([primaryReason], map: "idx_cancellation_survey_reason")
+  @@map("cancellation_surveys")
+}
+
+model SubscriptionCancellationLog {
+  id               String       @id @default(dbgenerated("gen_random_uuid()::text"))
+  subscriptionId   String       @map("subscription_id")
+  adminId          String       @map("admin_id")
+  seekerId         String       @map("seeker_id")
+  previousPeriodEnd DateTime?   @map("previous_period_end") @db.Timestamptz(6)
+  newPeriodEnd     DateTime?    @map("new_period_end") @db.Timestamptz(6)
+  createdAt        DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  admin            UserProfile  @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  subscription     Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@index([subscriptionId], map: "idx_sub_cancel_logs_subscription")
+  @@index([adminId], map: "idx_sub_cancel_logs_admin")
+  @@index([createdAt(sort: Desc)], map: "idx_sub_cancel_logs_created")
+  @@map("subscription_cancellation_logs")
+}
+
+model ResumeCritique {
+  id             String            @id @default(dbgenerated("gen_random_uuid()")) @db.VarChar(255)
+  seekerId       String            @map("seeker_id") @db.VarChar(255)
+  requestedAt    DateTime          @default(now()) @map("requested_at") @db.Timestamptz(6)
+  createdAt      DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime          @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  resumeUrl      String            @map("resume_url")
+  analysis       Json?
+  completedAt    DateTime?         @map("completed_at") @db.Timestamptz(6)
+  cost           Float
+  priority       critique_priority @default(standard)
+  reviewerId     String?           @map("reviewer_id") @db.VarChar(255)
+  targetIndustry String?           @map("target_industry") @db.VarChar(255)
+  targetRole     String?           @map("target_role") @db.VarChar(255)
+  status         critique_status   @default(pending)
+  seeker         JobSeeker         @relation(fields: [seekerId], references: [userId], onDelete: Cascade, onUpdate: NoAction, map: "fk_resume_critique_seeker")
+
+  @@index([requestedAt], map: "idx_resume_critiques_requested_at")
+  @@index([seekerId], map: "idx_resume_critiques_seeker_id")
+  @@index([status], map: "idx_resume_critiques_status")
+  @@map("resume_critiques")
+}
+
+model Invoice {
+  id                   String          @id @default(cuid())
+  employerPackageId    String          @map("employer_package_id")
+  authnetTransactionId String?         @map("authnet_transaction_id")
+  amountDue            Int             @map("amount_due")
+  status               InvoiceStatus   @default(draft)
+  createdAt            DateTime        @default(now()) @map("created_at")
+  updatedAt            DateTime        @updatedAt @map("updated_at")
+  description          String?
+  packageName          String?         @map("package_name")
+  dueDate              DateTime?       @map("due_date")
+  paidAt               DateTime?       @map("paid_at")
+  employerPackage      EmployerPackage @relation(fields: [employerPackageId], references: [id], onDelete: Cascade)
+
+  @@map("invoices")
+}
+
+model PaymentMethod {
+  id                      String     @id @default(cuid())
+  employerId              String?    @map("employer_id")
+  seekerId                String?    @map("seeker_id")
+  type                    String     @default("card")
+  last4                   String
+  brand                   String
+  expiryMonth             Int        @map("expiry_month")
+  expiryYear              Int        @map("expiry_year")
+  isDefault               Boolean    @default(false) @map("is_default")
+  authnetPaymentProfileId String?    @map("authnet_payment_profile_id")
+  billingFirstName        String?    @map("billing_first_name")
+  billingLastName         String?    @map("billing_last_name")
+  billingAddress          String?    @map("billing_address")
+  billingCity             String?    @map("billing_city")
+  billingState            String?    @map("billing_state")
+  billingZipCode          String?    @map("billing_zip_code")
+  createdAt               DateTime   @default(now()) @map("created_at")
+  updatedAt               DateTime   @updatedAt @map("updated_at")
+  is_legacy               Boolean?   @default(false)
+  employer                Employer?  @relation(fields: [employerId], references: [userId], onDelete: Cascade)
+  seeker                  JobSeeker? @relation(fields: [seekerId], references: [userId], onDelete: Cascade)
+
+  @@index([seekerId])
+  @@map("payment_methods")
+}
+
+model AdminActionLog {
+  id           String      @id @default(cuid())
+  adminId      String      @map("admin_id")
+  actionType   String      @map("action_type")
+  targetEntity String      @map("target_entity")
+  targetId     String      @map("target_id")
+  details      Json?
+  createdAt    DateTime    @default(now()) @map("created_at")
+  admin        UserProfile @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@map("admin_actions_log")
+}
+
+model ConciergeRequest {
+  id                      String       @id @default(cuid())
+  jobId                   String       @map("job_id")
+  employerId              String       @map("employer_id")
+  status                  String       @default("pending")
+  assignedAdminId         String?      @map("assigned_admin_id")
+  discoveryCallNotes      String?      @map("discovery_call_notes")
+  optimizedJobDescription String?      @map("optimized_job_description")
+  shortlistedCandidates   Json?        @map("shortlisted_candidates")
+  createdAt               DateTime     @default(now()) @map("created_at")
+  updatedAt               DateTime     @updatedAt @map("updated_at")
+  assignedAdmin           UserProfile? @relation("ConciergeAssignments", fields: [assignedAdminId], references: [id])
+  employer                Employer     @relation(fields: [employerId], references: [userId], onDelete: Cascade)
+  job                     Job          @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@map("concierge_requests")
+}
+
+model ConciergeChat {
+  id         String                 @id @default(cuid())
+  jobId      String                 @map("job_id")
+  employerId String                 @map("employer_id")
+  adminId    String?                @map("admin_id")
+  status     String                 @default("active")
+  createdAt  DateTime               @default(now()) @map("created_at")
+  updatedAt  DateTime               @updatedAt @map("updated_at")
+  messages   ConciergeChatMessage[]
+  admin      UserProfile?           @relation("ConciergeChatAdmin", fields: [adminId], references: [id])
+  employer   Employer               @relation(fields: [employerId], references: [userId], onDelete: Cascade)
+  job        Job                    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([jobId])
+  @@index([employerId])
+  @@index([adminId])
+  @@index([status])
+  @@map("concierge_chats")
+}
+
+model ConciergeChatMessage {
+  id          String        @id @default(cuid())
+  chatId      String        @map("chat_id")
+  senderId    String        @map("sender_id")
+  senderType  String        @map("sender_type")
+  message     String
+  messageType String        @default("text") @map("message_type")
+  fileUrl     String?       @map("file_url")
+  fileName    String?       @map("file_name")
+  fileSize    Int?          @map("file_size")
+  readAt      DateTime?     @map("read_at")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  chat        ConciergeChat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  sender      UserProfile   @relation("ConciergeChatMessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([chatId])
+  @@index([senderId])
+  @@index([createdAt])
+  @@map("concierge_chat_messages")
+}
+
+model SeekerConciergeChat {
+  id        String                       @id @default(cuid())
+  jobId     String                       @map("job_id")
+  seekerId  String                       @map("seeker_id")
+  adminId   String?                      @map("admin_id")
+  createdAt DateTime                     @default(now()) @map("created_at")
+  messages  SeekerConciergeChatMessage[]
+  admin     UserProfile?                 @relation("SeekerConciergeChatAdmin", fields: [adminId], references: [id])
+  job       Job                          @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  seeker    UserProfile                  @relation("SeekerConciergeChats", fields: [seekerId], references: [id], onDelete: Cascade)
+
+  @@index([jobId])
+  @@index([seekerId])
+  @@index([adminId])
+  @@map("seeker_concierge_chats")
+}
+
+model SeekerConciergeChatMessage {
+  id          String              @id @default(cuid())
+  chatId      String              @map("chat_id")
+  senderId    String              @map("sender_id")
+  senderType  String              @map("sender_type")
+  message     String
+  messageType String              @default("text") @map("message_type")
+  fileUrl     String?             @map("file_url")
+  fileName    String?             @map("file_name")
+  fileSize    Int?                @map("file_size")
+  readAt      DateTime?           @map("read_at")
+  createdAt   DateTime            @default(now()) @map("created_at")
+  chat        SeekerConciergeChat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  sender      UserProfile         @relation("SeekerConciergeChatMessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([chatId])
+  @@index([senderId])
+  @@index([createdAt])
+  @@map("seeker_concierge_chat_messages")
+}
+
+model SavedJob {
+  id       String    @id @default(cuid())
+  seekerId String    @map("seeker_id")
+  jobId    String    @map("job_id")
+  savedAt  DateTime  @default(now()) @map("saved_at")
+  job      Job       @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  seeker   JobSeeker @relation(fields: [seekerId], references: [userId], onDelete: Cascade)
+
+  @@unique([seekerId, jobId])
+  @@map("saved_jobs")
+}
+
+model CoverLetterTemplate {
+  id        String    @id @default(cuid())
+  seekerId  String    @map("seeker_id")
+  title     String
+  content   String
+  isDefault Boolean   @default(false) @map("is_default")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  seeker    JobSeeker @relation(fields: [seekerId], references: [userId], onDelete: Cascade)
+
+  @@map("cover_letter_templates")
+}
+
+model TeamMember {
+  id         String       @id @default(cuid())
+  employerId String       @map("employer_id")
+  userId     String?      @map("user_id")
+  email      String
+  name       String?
+  role       String       @default("member")
+  status     String       @default("pending")
+  invitedBy  String       @map("invited_by")
+  invitedAt  DateTime     @default(now()) @map("invited_at")
+  joinedAt   DateTime?    @map("joined_at")
+  createdAt  DateTime     @default(now()) @map("created_at")
+  updatedAt  DateTime     @updatedAt @map("updated_at")
+  employer   Employer     @relation(fields: [employerId], references: [userId], onDelete: Cascade)
+  inviter    UserProfile  @relation("TeamMemberInviter", fields: [invitedBy], references: [id], onDelete: Cascade)
+  user       UserProfile? @relation("TeamMemberUser", fields: [userId], references: [id])
+
+  @@index([employerId])
+  @@index([userId])
+  @@index([email])
+  @@map("team_members")
+}
+
+model UserInvitation {
+  id                   String      @id @default(dbgenerated("gen_random_uuid()")) @db.VarChar(255)
+  email                String      @db.VarChar(255)
+  role                 String      @db.VarChar(50)
+  fullName             String?     @map("full_name") @db.VarChar(255)
+  invitedBy            String      @map("invited_by") @db.VarChar(255)
+  invitationToken      String      @unique(map: "idx_user_invitations_token") @map("invitation_token") @db.VarChar(255)
+  expiresAt            DateTime    @map("expires_at") @db.Timestamptz(6)
+  acceptedAt           DateTime?   @map("accepted_at") @db.Timestamptz(6)
+  createdAt            DateTime?   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt            DateTime?   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  message              String?     @map("message")
+  clerkInvitationId    String?     @map("clerk_invitation_id") @db.VarChar(255)
+  pendingPackageType   String?     @map("pending_package_type")
+  pendingBillingCycles Int?        @map("pending_billing_cycles")
+  pendingAmountCents   Int?        @map("pending_amount_cents")
+  inviter              UserProfile @relation("UserInvitationInviter", fields: [invitedBy], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_user_invitation_inviter")
+
+  @@index([email], map: "idx_user_invitations_email")
+  @@map("user_invitations")
+}
+
+model TeamInvitation {
+  id                String      @id @default(cuid())
+  employerId        String      @map("employer_id")
+  email             String
+  role              String      @default("member")
+  invitedBy         String      @map("invited_by")
+  invitationToken   String      @unique @map("invitation_token")
+  expiresAt         DateTime    @map("expires_at")
+  acceptedAt        DateTime?   @map("accepted_at")
+  createdAt         DateTime    @default(now()) @map("created_at")
+  updatedAt         DateTime    @updatedAt @map("updated_at")
+  message           String?     @map("message")
+  clerkInvitationId String?     @map("clerk_invitation_id") @db.VarChar(255)
+  employer          Employer    @relation(fields: [employerId], references: [userId], onDelete: Cascade)
+  inviter           UserProfile @relation("TeamInvitationInviter", fields: [invitedBy], references: [id], onDelete: Cascade)
+
+  @@index([employerId])
+  @@index([email])
+  @@map("team_invitations")
+}
+
+model Notification {
+  id        String               @id @default(cuid())
+  userId    String               @map("user_id")
+  type      NotificationType
+  title     String
+  message   String
+  data      Json?
+  read      Boolean              @default(false)
+  priority  NotificationPriority @default(medium)
+  actionUrl String?              @map("action_url")
+  createdAt DateTime             @default(now()) @map("created_at")
+  readAt    DateTime?            @map("read_at")
+  user      UserProfile          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([type])
+  @@index([read])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+model PendingSignup {
+  id                String   @id @default(cuid())
+  stack_user_id     String?
+  onboardingData    String   @map("onboarding_data")
+  selectedPlan      String   @map("selected_plan")
+  sessionToken      String   @map("session_token")
+  returnUrl         String   @map("return_url")
+  checkoutSessionId String?  @map("checkout_session_id")
+  expiresAt         DateTime @map("expires_at")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+  email             String   @map("email")
+  clerkUserId       String?  @map("clerk_user_id")
+
+  @@index([clerkUserId])
+  @@index([email])
+  @@index([expiresAt])
+  @@index([sessionToken])
+  @@index([clerkUserId], map: "idx_pending_signups_clerk_user_id")
+  @@index([stack_user_id])
+  @@map("pending_signups")
+}
+
+model ExternalPayment {
+  id                   String                      @id @default(cuid())
+  userId               String?                     @map("user_id")
+  ghlTransactionId     String?                     @map("ghl_transaction_id")
+  authnetTransactionId String?                     @map("authnet_transaction_id")
+  authnetCustomerId    String?                     @map("authnet_customer_id")
+  amount               Decimal
+  planId               String                      @map("plan_id")
+  status               ExternalPaymentStatus
+  errorMessage         String?                     @map("error_message")
+  webhookProcessedAt   DateTime?                   @map("webhook_processed_at")
+  createdAt            DateTime                    @default(now()) @map("created_at")
+  updatedAt            DateTime                    @updatedAt @map("updated_at")
+  servicePurchases     AdditionalServicePurchase[]
+  user                 UserProfile?                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subscriptions        Subscription[]
+
+  @@index([userId])
+  @@index([ghlTransactionId])
+  @@index([status])
+  @@map("external_payments")
+}
+
+model PendingJobPost {
+  id                String   @id @default(cuid())
+  stack_user_id     String?
+  email             String   @map("email")
+  jobData           String   @map("job_data")
+  selectedPackage   String?  @map("selected_package")
+  sessionToken      String   @map("session_token")
+  returnUrl         String   @map("return_url")
+  checkoutSessionId String?  @map("checkout_session_id")
+  expiresAt         DateTime @map("expires_at")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+  clerkUserId       String?  @map("clerk_user_id")
+
+  @@index([clerkUserId])
+  @@index([email])
+  @@index([expiresAt])
+  @@index([sessionToken])
+  @@index([clerkUserId], map: "idx_pending_job_posts_clerk_user_id")
+  @@index([stack_user_id])
+  @@map("pending_job_posts")
+}
+
+model FeaturedJobRequest {
+  id                 String          @id @default(cuid())
+  jobId              String          @map("job_id")
+  employerId         String          @map("employer_id")
+  packageId          String          @map("package_id")
+  status             FeaturedStatus  @default(not_started)
+  adminNotes         String?         @map("admin_notes")
+  requestedAt        DateTime        @default(now()) @map("requested_at")
+  startedAt          DateTime?       @map("started_at")
+  completedAt        DateTime?       @map("completed_at")
+  emailSentAt        DateTime?       @map("email_sent_at")
+  extensionGranted   Boolean         @default(false) @map("extension_granted")
+  extensionExpiresAt DateTime?       @map("extension_expires_at")
+  createdAt          DateTime        @default(now()) @map("created_at")
+  updatedAt          DateTime        @updatedAt @map("updated_at")
+  employer           Employer        @relation(fields: [employerId], references: [userId], onDelete: Cascade)
+  job                Job             @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  package            EmployerPackage @relation(fields: [packageId], references: [id], onDelete: Cascade)
+
+  @@index([jobId])
+  @@index([employerId])
+  @@index([status])
+  @@index([requestedAt])
+  @@map("featured_job_requests")
+}
+
+model EmailBlastRequest {
+  id          String           @id @default(cuid())
+  jobId       String           @map("job_id")
+  employerId  String           @map("employer_id")
+  packageId   String           @map("package_id")
+  status      EmailBlastStatus @default(not_started)
+  adminNotes  String?          @map("admin_notes")
+  requestedAt DateTime         @default(now()) @map("requested_at")
+  startedAt   DateTime?        @map("started_at")
+  completedAt DateTime?        @map("completed_at")
+  emailSentAt DateTime?        @map("email_sent_at")
+  expiresAt   DateTime         @map("expires_at")
+  logoUrl     String?          @map("logo_url")
+  content     String?
+  customLink  String?          @map("custom_link")
+  useJobLink  Boolean          @default(true) @map("use_job_link")
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+  employer    Employer         @relation(fields: [employerId], references: [userId], onDelete: Cascade)
+  job         Job              @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  package     EmployerPackage  @relation(fields: [packageId], references: [id], onDelete: Cascade)
+
+  @@index([jobId])
+  @@index([employerId])
+  @@index([status])
+  @@index([requestedAt])
+  @@index([expiresAt])
+  @@map("email_blast_requests")
+}
+
+model Resume {
+  id           String        @id @default(cuid())
+  seekerId     String        @map("seeker_id")
+  filename     String
+  fileUrl      String        @map("file_url")
+  fileSize     Int?          @map("file_size")
+  isPrimary    Boolean       @default(false) @map("is_primary")
+  uploadedAt   DateTime      @default(now()) @map("uploaded_at")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+  status       String?       @default("active") @db.VarChar(50)
+  deletedAt    DateTime?     @map("deleted_at") @db.Timestamp(6)
+  applications Application[] @relation("ApplicationResume")
+  seeker       JobSeeker     @relation(fields: [seekerId], references: [userId], onDelete: Cascade)
+
+  @@index([seekerId])
+  @@index([isPrimary])
+  @@index([seekerId, status], map: "idx_resumes_seeker_id_status")
+  @@map("resumes")
+}
+
+model Message {
+  id             String              @id @default(cuid())
+  senderId       String              @map("sender_id")
+  recipientId    String              @map("recipient_id")
+  content        String
+  isRead         Boolean             @default(false) @map("is_read")
+  deliveryStatus String              @default("sent") @map("delivery_status")
+  applicationId  String?             @map("application_id")
+  jobId          String?             @map("job_id")
+  threadId       String?             @map("thread_id")
+  createdAt      DateTime            @default(now()) @map("created_at")
+  updatedAt      DateTime            @default(now()) @updatedAt @map("updated_at")
+  legacy_id      Float?
+  attachments    MessageAttachment[]
+  application    Application?        @relation(fields: [applicationId], references: [id])
+  job            Job?                @relation(fields: [jobId], references: [id])
+  recipient      UserProfile         @relation("MessageRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  sender         UserProfile         @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  thread         MessageThread?      @relation(fields: [threadId], references: [id])
+
+  @@index([senderId])
+  @@index([recipientId])
+  @@index([applicationId])
+  @@index([jobId])
+  @@index([threadId])
+  @@index([createdAt])
+  @@map("messages")
+}
+
+model MessageAttachment {
+  id        String   @id @default(cuid())
+  messageId String   @map("message_id")
+  fileName  String   @map("file_name")
+  fileUrl   String   @map("file_url")
+  fileType  String   @map("file_type")
+  fileSize  Int      @map("file_size")
+  mimeType  String?  @map("mime_type")
+  createdAt DateTime @default(now()) @map("created_at")
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@index([messageId])
+  @@map("message_attachments")
+}
+
+model MessageThread {
+  id            String    @id @default(cuid())
+  participants  String[]
+  lastMessageAt DateTime  @default(now()) @map("last_message_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @default(now()) @updatedAt @map("updated_at")
+  legacy_id     Float?
+  messages      Message[]
+
+  @@index([participants])
+  @@index([lastMessageAt])
+  @@map("message_threads")
+}
+
+model MessageTemplate {
+  id         String      @id @default(cuid())
+  userId     String      @map("user_id")
+  name       String
+  category   String
+  content    String
+  isDefault  Boolean     @default(false) @map("is_default")
+  usageCount Int         @default(0) @map("usage_count")
+  createdAt  DateTime    @default(now()) @map("created_at")
+  updatedAt  DateTime    @default(now()) @updatedAt @map("updated_at")
+  user       UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([category])
+  @@map("message_templates")
+}
+
+model MessageDraft {
+  id          String      @id @default(cuid())
+  userId      String      @map("user_id")
+  recipientId String?     @map("recipient_id")
+  threadId    String?     @map("thread_id")
+  content     String
+  attachments Json?
+  lastSavedAt DateTime    @default(now()) @map("last_saved_at")
+  user        UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([threadId])
+  @@map("message_drafts")
+}
+
+model AdditionalServicePurchase {
+  id                                                                          String                @id @default(dbgenerated("(gen_random_uuid())::text"))
+  serviceId                                                                   String                @map("service_id")
+  userId                                                                      String                @map("user_id")
+  seekerId                                                                    String?               @map("seeker_id")
+  employerId                                                                  String?               @map("employer_id")
+  paymentId                                                                   String?               @map("payment_id")
+  amountPaid                                                                  Decimal               @map("amount_paid") @db.Decimal(10, 2)
+  status                                                                      String                @default("pending")
+  assignedAdminId                                                             String?               @map("assigned_admin_id")
+  fulfillmentNotes                                                            String?               @map("fulfillment_notes")
+  completedAt                                                                 DateTime?             @map("completed_at")
+  createdAt                                                                   DateTime              @default(now()) @map("created_at")
+  updatedAt                                                                   DateTime              @default(now()) @map("updated_at")
+  employerPackageId                                                           String?               @map("employer_package_id")
+  user_profiles_additional_service_purchases_assigned_admin_idTouser_profiles UserProfile?          @relation("additional_service_purchases_assigned_admin_idTouser_profiles", fields: [assignedAdminId], references: [id], onUpdate: NoAction, map: "fk_assigned_admin")
+  employer                                                                    Employer?             @relation(fields: [employerId], references: [userId], onDelete: Cascade, onUpdate: NoAction, map: "fk_employer")
+  employerPackage                                                             EmployerPackage?      @relation(fields: [employerPackageId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_employer_package")
+  externalPayment                                                             ExternalPayment?      @relation(fields: [paymentId], references: [id], onUpdate: NoAction, map: "fk_payment")
+  seeker                                                                      JobSeeker?            @relation(fields: [seekerId], references: [userId], onDelete: Cascade, onUpdate: NoAction, map: "fk_seeker")
+  service                                                                     AdditionalService     @relation(fields: [serviceId], references: [serviceId], onDelete: Cascade, onUpdate: NoAction, map: "fk_service")
+  user_profiles_additional_service_purchases_user_idTouser_profiles           UserProfile           @relation("additional_service_purchases_user_idTouser_profiles", fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_user")
+  audits                                                                      ServiceRequestAudit[]
+
+  @@index([employerId], map: "idx_additional_service_purchases_employer_id")
+  @@index([seekerId], map: "idx_additional_service_purchases_seeker_id")
+  @@index([serviceId], map: "idx_additional_service_purchases_service_id")
+  @@index([status], map: "idx_additional_service_purchases_status")
+  @@index([userId], map: "idx_additional_service_purchases_user_id")
+  @@index([employerPackageId], map: "idx_additional_service_purchases_employer_package_id")
+  @@map("additional_service_purchases")
+}
+
+model AdditionalService {
+  id          String                      @id @default(dbgenerated("(gen_random_uuid())::text"))
+  serviceId   String                      @unique @map("service_id")
+  name        String
+  description String
+  price       Decimal                     @db.Decimal(10, 2)
+  category    String
+  userType    String                      @map("user_type")
+  isActive    Boolean                     @default(true) @map("is_active")
+  features    String[]                    @default([])
+  createdAt   DateTime                    @default(now()) @map("created_at")
+  updatedAt   DateTime                    @default(now()) @map("updated_at")
+  purchases   AdditionalServicePurchase[]
+
+  @@index([isActive], map: "idx_additional_services_is_active")
+  @@index([userType], map: "idx_additional_services_user_type")
+  @@map("additional_services")
+}
+
+model ServiceRequestAudit {
+  serviceRequestId String                    @map("service_request_id")
+  changedBy        String                    @map("changed_by")
+  changeType       String                    @map("change_type")
+  previousValue    String?                   @map("previous_value")
+  newValue         String?                   @map("new_value")
+  description      String?                   @map("description")
+  createdAt        DateTime                  @default(now()) @map("created_at")
+  id               String                    @id @default(dbgenerated("(gen_random_uuid())::text"))
+  changedByUser    UserProfile               @relation(fields: [changedBy], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_changed_by_user")
+  serviceRequest   AdditionalServicePurchase @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_service_request")
+
+  @@index([serviceRequestId], map: "idx_service_request_audit_service_request_id")
+  @@index([changedBy], map: "idx_service_request_audit_changed_by")
+  @@index([createdAt], map: "idx_service_request_audit_created_at")
+  @@map("service_request_audits")
+}
+
+model PurchasedAddOn {
+  id                String          @id @default(cuid())
+  employerPackageId String
+  addOnId           String
+  quantity          Int             @default(1)
+  price             Float
+  expiresAt         DateTime
+  createdAt         DateTime        @default(now()) @map("created_at")
+  employerPackage   EmployerPackage @relation("PackageAddOns", fields: [employerPackageId], references: [id], onDelete: Cascade)
+
+  @@index([employerPackageId], map: "idx_purchased_add_ons_package_id")
+  @@index([addOnId], map: "idx_purchased_add_ons_add_on_id")
+  @@map("purchased_add_ons")
+}
+
+model migration_state {
+  id               Int       @id @default(autoincrement())
+  migration_name   String    @unique
+  last_migrated_id BigInt    @default(0)
+  last_migrated_at DateTime? @db.Timestamp(6)
+  total_migrated   Int       @default(0)
+  created_at       DateTime  @default(now()) @db.Timestamp(6)
+  updated_at       DateTime  @default(now()) @db.Timestamp(6)
+
+  @@index([migration_name], map: "idx_migration_state_name")
+}
+
+model CrmSyncChangeLog {
+  id             String   @id @default(cuid())
+  superAdminId   String   @map("super_admin_id")
+  superAdminName String   @map("super_admin_name")
+  actionType     String   @map("action_type")
+  actionDetails  Json     @map("action_details")
+  entityType     String?  @map("entity_type")
+  entityId       String?  @map("entity_id")
+  oldValue       Json?    @map("old_value")
+  newValue       Json?    @map("new_value")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@index([superAdminId])
+  @@index([actionType])
+  @@index([createdAt])
+  @@map("crm_sync_change_logs")
+}
+
+model CrmSyncSettings {
+  id                   String       @id @default(cuid())
+  isGlobalSyncEnabled  Boolean      @default(true) @map("is_global_sync_enabled")
+  defaultSyncDirection String       @default("app_to_ghl") @map("default_sync_direction")
+  syncOnCreate         Boolean      @default(true) @map("sync_on_create")
+  syncOnUpdate         Boolean      @default(true) @map("sync_on_update")
+  syncBatchSize        Int          @default(50) @map("sync_batch_size")
+  retryAttempts        Int          @default(3) @map("retry_attempts")
+  retryDelaySeconds    Int          @default(60) @map("retry_delay_seconds")
+  ghlApiKey            String?      @map("ghl_api_key")
+  ghlLocationId        String?      @map("ghl_location_id")
+  ghlConnectionStatus  String       @default("disconnected") @map("ghl_connection_status")
+  ghlLastTested        DateTime?    @map("ghl_last_tested")
+  ghlLastTestedBy      String?      @map("ghl_last_tested_by")
+  lastUpdatedBy        String       @map("last_updated_by")
+  lastSavedBy          String?      @unique @map("last_saved_by")
+  lastSavedAt          DateTime?    @map("last_saved_at")
+  updatedAt            DateTime     @updatedAt @map("updated_at")
+  lastSavedByUser      UserProfile? @relation("CrmSyncSettingsLastSavedBy", fields: [lastSavedBy], references: [id])
+
+  @@map("crm_sync_settings")
+}
+
+model GhlField {
+  id              String         @id @default(cuid())
+  ghlFieldId      String         @unique @map("ghl_field_id")
+  ghlFieldKey     String         @unique @map("ghl_field_key")
+  name            String
+  dataType        String         @map("data_type")
+  picklistOptions Json?          @map("picklist_options")
+  isSystemField   Boolean        @default(false) @map("is_system_field")
+  lastSyncedAt    DateTime?      @map("last_synced_at")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+  mappings        FieldMapping[]
+
+  @@map("ghl_fields")
+}
+
+model AppField {
+  id            String         @id @default(cuid())
+  fieldKey      String         @unique @map("field_key")
+  name          String
+  dataType      String         @map("data_type")
+  modelName     String?        @map("model_name")
+  isSystemField Boolean        @default(false) @map("is_system_field")
+  isRequired    Boolean        @default(false) @map("is_required")
+  description   String?
+  groupId       String?        @map("group_id")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+  group         FieldGroup?    @relation(fields: [groupId], references: [id])
+  mappings      FieldMapping[]
+
+  @@index([groupId])
+  @@map("app_fields")
+}
+
+model FieldGroup {
+  id          String         @id @default(cuid())
+  name        String
+  description String?
+  sortOrder   Int            @default(0) @map("sort_order")
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+  appFields   AppField[]
+  mappings    FieldMapping[]
+
+  @@map("field_groups")
+}
+
+model FieldMapping {
+  id              String      @id @default(cuid())
+  groupId         String?     @map("group_id")
+  ghlFieldId      String      @map("ghl_field_id")
+  appFieldId      String      @map("app_field_id")
+  syncDirection   String      @map("sync_direction")
+  isEnabled       Boolean     @default(true) @map("is_enabled")
+  displayLabel    String?     @map("display_label")
+  transformRules  Json?       @map("transform_rules")
+  createdBy       String      @map("created_by")
+  updatedBy       String?     @map("updated_by")
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @updatedAt @map("updated_at")
+  lastSyncedAt    DateTime?   @map("last_synced_at")
+  lastSyncStatus  String?     @map("last_sync_status")
+  lastSyncError   String?     @map("last_sync_error")
+  isAutoGenerated Boolean     @default(false) @map("is_auto_generated")
+  appField        AppField    @relation(fields: [appFieldId], references: [id], onDelete: Cascade)
+  ghlField        GhlField    @relation(fields: [ghlFieldId], references: [id], onDelete: Cascade)
+  group           FieldGroup? @relation(fields: [groupId], references: [id])
+
+  @@unique([ghlFieldId, appFieldId])
+  @@index([groupId])
+  @@index([isEnabled])
+  @@map("field_mappings")
+}
+
+model CrmSyncLog {
+  id           String   @id @default(cuid())
+  mappingId    String   @map("mapping_id")
+  userId       String?  @map("user_id")
+  direction    String
+  status       String
+  errorMessage String?  @map("error_message")
+  dataSnapshot Json?    @map("data_snapshot")
+  durationMs   Int?     @map("duration_ms")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@index([mappingId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("crm_sync_logs")
+}
+
+model ExecutionLog {
+  id          String      @id @default(dbgenerated("(gen_random_uuid())::text"))
+  taskName    String      @map("task_name")
+  status      String      @default("running")
+  startedAt   DateTime    @default(now()) @map("started_at") @db.Timestamptz(6)
+  completedAt DateTime?   @map("completed_at") @db.Timestamptz(6)
+  durationMs  Int?        @map("duration_ms")
+  summary     String?
+  logOutput   String?     @map("log_output")
+  triggeredBy String?     @default("system") @map("triggered_by")
+  createdAt   DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  actions     ActionLog[]
+
+  @@index([createdAt(sort: Desc)], map: "idx_execution_logs_created_at")
+  @@index([status], map: "idx_execution_logs_status")
+  @@index([taskName], map: "idx_execution_logs_task_name")
+  @@map("execution_logs")
+}
+
+model ActionLog {
+  id           String        @id @default(dbgenerated("(gen_random_uuid())::text"))
+  executionId  String?       @map("execution_id")
+  actionType   String        @map("action_type")
+  entityType   String?       @map("entity_type")
+  entityId     String?       @map("entity_id")
+  status       String
+  message      String?
+  details      String?
+  createdAt    DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  executionLog ExecutionLog? @relation(fields: [executionId], references: [id], onUpdate: NoAction)
+
+  @@index([actionType], map: "idx_action_logs_action_type")
+  @@index([createdAt(sort: Desc)], map: "idx_action_logs_created_at")
+  @@index([entityType, entityId], map: "idx_action_logs_entity")
+  @@index([executionId], map: "idx_action_logs_execution_id")
+  @@index([status], map: "idx_action_logs_status")
+  @@map("action_logs")
+}
+
+enum UserRole {
+  seeker
+  employer
+  admin
+  team_member
+  super_admin
+}
+
+enum MembershipPlan {
+  none
+  trial_monthly
+  gold_bimonthly
+  vip_quarterly
+  annual_platinum
+}
+
+enum PackageType {
+  starter
+  professional
+  enterprise
+  unlimited
+  standard
+  featured
+  email_blast
+  gold_plus
+  standard_job_post
+  featured_job_post
+  solo_email_blast
+  gold_plus_6_month
+  concierge_lite
+  concierge_level_1
+  concierge_level_2
+  rush_service
+  onboarding_service
+  concierge_level_3
+  gold_plus_recurring_6mo
+}
+
+enum JobType {
+  FULL_TIME
+  PART_TIME
+  PERMANENT
+  TEMPORARY
+  NOT_SPECIFIED
+}
+
+enum JobStatus {
+  draft
+  pending_vetting
+  approved
+  paused
+  rejected
+  expired
+}
+
+enum ApplicationStatus {
+  pending
+  reviewed
+  interview
+  rejected
+  hired
+}
+
+enum SubscriptionStatus {
+  active
+  past_due
+  canceled
+  unpaid
+}
+
+enum InvoiceStatus {
+  draft
+  open
+  paid
+  void
+}
+
+enum ConciergeStatus {
+  not_requested
+  pending
+  completed
+}
+
+enum CritiqueStatus {
+  pending
+  completed
+}
+
+enum JobCategory {
+  ACCOUNTING_BOOKKEEPING
+  ADMINISTRATION_VIRTUAL_ASSISTANT
+  ADVERTISING
+  BLOGGER
+  BUSINESS_DEVELOPMENT
+  COMPUTER_IT
+  CONSULTANT
+  CUSTOMER_SERVICE
+  DATABASE_DEVELOPMENT
+  DESIGN
+  FINANCE
+  GRAPHIC_DESIGN_ARTIST
+  HUMAN_RESOURCES
+  INTERNET_MARKETING_SPECIALIST
+  MANAGER
+  MARKETING_PUBLIC_RELATIONS
+  MEDIA_SPECIALIST
+  OTHER
+  PARALEGAL_LEGAL
+  PROGRAMMER
+  RESEARCHER
+  SALES
+  SOCIAL_MEDIA
+  STRATEGIC_PLANNER
+  VIDEO_PRODUCTION_EDITING
+  WEB_DESIGN_DEVELOPMENT
+  WEBSITE_MANAGER
+  WRITING_EDITING
+}
+
+enum NotificationType {
+  job_submitted
+  job_approved
+  job_rejected
+  job_under_review
+  new_application
+  application_status_update
+  low_credits
+  job_expiring
+  system_alert
+  job_invitation
+  seeker_welcome
+  seeker_payment_confirmation
+  seeker_subscription_reminder
+  seeker_pre_signup
+  employer_welcome
+  employer_payment_confirmation
+  employer_invitation_accepted
+  employer_job_filled
+  system_error
+  processing_error
+  bulk_rejection
+  bulk_interview
+  job_archived
+  job_restored
+  interview_scheduled
+  interview_completed
+  interview_stage_changed
+  offer_extended
+  offer_accepted
+  offer_rejected
+  admin_role_promoted
+  admin_role_demoted
+  service_purchase_confirmation
+  service_status_update
+  service_completed
+  service_admin_alert
+  exclusive_plan_offered
+  exclusive_plan_activated
+  exclusive_plan_dismissed
+  exclusive_plan_reminder
+  exclusive_plan_expired
+  exclusive_plan_extended
+  exclusive_plan_cancelled
+  exclusive_plan_admin_alert
+  exclusive_plan_extension_requested
+  exclusive_plan_extension_approved
+  exclusive_plan_extension_rejected
+  follow_up_request
+}
+
+enum NotificationPriority {
+  low
+  medium
+  high
+  critical
+}
+
+enum ProfileVisibility {
+  employers_only
+  private
+}
+
+enum ExternalPaymentStatus {
+  pending
+  completed
+  failed
+  requires_review
+  refunded
+}
+
+enum FeaturedStatus {
+  not_requested
+  not_started
+  pending
+  completed
+}
+
+enum EmailBlastStatus {
+  not_requested
+  not_started
+  pending
+  completed
+}
+
+enum InterviewStage {
+  initial_screening
+  technical_interview
+  behavioral_interview
+  final_interview
+  offer_extended
+  offer_accepted
+  offer_rejected
+}
+
+enum SeekerInterviewStatus {
+  application_review
+  interview_process
+  decision_made
+}
+
+enum critique_priority {
+  standard
+  rush
+}
+
+enum critique_status {
+  pending
+  in_progress
+  completed
+}

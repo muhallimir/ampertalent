@@ -43,6 +43,11 @@ const config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Ampertalent Brand Colors
+        'amper-blue': '#0066FF',
+        'amper-teal': '#00BB88',
+        'amper-cyan': '#00D9FF',
+        'amper-dark': '#1A2D47',
       },
       borderRadius: {
         lg: "var(--radius)",
