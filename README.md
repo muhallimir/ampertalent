@@ -2,7 +2,7 @@
 
 > **Where Flexible Talent Meets Opportunity**
 >
-> A production-grade remote job board SaaS platform showcasing full-stack engineering capabilities. Built as a portfolio clone of HireMyMom using 100% free-tier services.
+> A production-grade remote job board SaaS platform.
 
 ---
 
@@ -17,6 +17,7 @@ Ampertalent is a comprehensive job marketplace platform with sophisticated featu
 ## ✨ Core Features
 
 ### 🔍 **Job Discovery & Search**
+
 - Advanced job search with faceted filtering (location, salary, job type, category, experience level)
 - Job listing with detailed descriptions, requirements, and benefits
 - Saved jobs for later review
@@ -24,6 +25,7 @@ Ampertalent is a comprehensive job marketplace platform with sophisticated featu
 - Featured job promotions for employers
 
 ### 👤 **Seeker Portal** (Job Applicants)
+
 - User profile with resume management
 - Multi-resume support with version control
 - Application history and status tracking (Applied, Under Review, Interview, Offered, Rejected, Withdrawn)
@@ -33,6 +35,7 @@ Ampertalent is a comprehensive job marketplace platform with sophisticated featu
 - Interview history tracking (7-stage pipeline)
 
 ### 🏢 **Employer Portal** (Job Posters)
+
 - Company profile and branding
 - Job posting creation and management
 - Team member management with invite system
@@ -43,6 +46,7 @@ Ampertalent is a comprehensive job marketplace platform with sophisticated featu
 - Billing and subscription management
 
 ### 🛡️ **Admin Portal** (Platform Management)
+
 - User management and profile oversight
 - Job vetting and approval workflow
 - Analytics dashboard with hiring metrics
@@ -51,6 +55,7 @@ Ampertalent is a comprehensive job marketplace platform with sophisticated featu
 - System-wide settings and configuration
 
 ### 💬 **Messaging & Notifications**
+
 - Real-time messaging between seekers and employers
 - Message threads with conversation history
 - Real-time notifications (SSE-based)
@@ -58,6 +63,7 @@ Ampertalent is a comprehensive job marketplace platform with sophisticated featu
 - 50+ notification types (applications, messages, job alerts, billing, etc.)
 
 ### 💳 **Payment & Billing System**
+
 - Stripe payment integration (test mode)
 - Seeker subscription tiers (Trial/Gold/VIP/Annual)
 - Employer packages and pricing
@@ -67,6 +73,7 @@ Ampertalent is a comprehensive job marketplace platform with sophisticated featu
 - Recurring billing automation
 
 ### 📊 **Analytics & Reporting**
+
 - Hiring metrics dashboard (applications, conversion rates, time-to-hire)
 - Revenue analytics for employers
 - PDF report generation
@@ -75,6 +82,7 @@ Ampertalent is a comprehensive job marketplace platform with sophisticated featu
 - Historical trend analysis
 
 ### 🎯 **Concierge Services**
+
 - White-glove hiring assistance
 - Dedicated concierge support
 - Service request management
@@ -82,6 +90,7 @@ Ampertalent is a comprehensive job marketplace platform with sophisticated featu
 - Service level options (Lite/Level I/Level II/Level III/Rush)
 
 ### 🔐 **Authentication & Authorization**
+
 - Clerk-based authentication (email, password, SSO, social login)
 - 5-user role system (Seeker, Employer, Admin, Super Admin, Team Member)
 - Role-based access control (RBAC)
@@ -89,6 +98,7 @@ Ampertalent is a comprehensive job marketplace platform with sophisticated featu
 - Webhook-based user events
 
 ### 📁 **File Management**
+
 - Resume uploads with version tracking
 - Profile picture management
 - Company logo uploads
@@ -97,6 +107,7 @@ Ampertalent is a comprehensive job marketplace platform with sophisticated featu
 - Supabase Storage backend
 
 ### 🔄 **CRM Integration** (Phase 10, Post-Deployment)
+
 - HubSpot CRM sync (alternative to GoHighLevel)
 - Contact creation and updates
 - Custom property mapping
@@ -104,6 +115,7 @@ Ampertalent is a comprehensive job marketplace platform with sophisticated featu
 - Sync logging and audit trails
 
 ### ⏰ **Automation & Cron Jobs**
+
 - Recurring billing automation (daily task processing)
 - Membership renewal reminders (24-hour window)
 - Payment failure notifications
@@ -111,6 +123,7 @@ Ampertalent is a comprehensive job marketplace platform with sophisticated featu
 - Email campaigns and reminders
 
 ### 🎨 **Modern UI/UX**
+
 - Dark mode support with theme persistence
 - Responsive design (mobile, tablet, desktop)
 - Accessible components (WCAG 2.1)
@@ -119,6 +132,7 @@ Ampertalent is a comprehensive job marketplace platform with sophisticated featu
 - Form validation with Zod
 
 ### 📈 **Monitoring & Error Tracking**
+
 - Sentry error monitoring
 - Performance tracking
 - User session tracking
@@ -128,8 +142,8 @@ Ampertalent is a comprehensive job marketplace platform with sophisticated featu
 
 ## � Brand Identity
 
-
 ### Database Models (42+)
+
 **Core:** UserProfile, JobSeeker, Employer, Job, Application, Subscription, EmployerPackage, Invoice, PaymentMethod, Resume, Message, MessageThread, Notification
 
 **Features:** ConciergeRequest, ConciergeChat, SavedJob, CoverLetterTemplate, TeamMember, TeamInvitation, FeaturedJobRequest, EmailBlastRequest, InterviewHistory
@@ -139,6 +153,7 @@ Ampertalent is a comprehensive job marketplace platform with sophisticated featu
 **Enums:** 20+ enums (UserRole, MembershipPlan, PackageType, JobType, ApplicationStatus, NotificationType, JobCategory with 28 variants, InterviewStage with 7 stages, etc.)
 
 ### API Architecture
+
 - RESTful API routes (`/api/*`)
 - Authentication middleware (Clerk)
 - Webhook handlers (Stripe, Clerk, external integrations)
@@ -147,21 +162,22 @@ Ampertalent is a comprehensive job marketplace platform with sophisticated featu
 - Real-time SSE endpoints
 
 ### Free-Tier Tech Stack
-| Service | Usage | Free Tier |
-|---------|-------|-----------|
-| **Framework** | Next.js 16 (App Router) | ✅ Open source |
-| **Language** | TypeScript | ✅ Open source |
-| **Database** | PostgreSQL (Supabase) | ✅ 500MB, unlimited requests |
-| **ORM** | Prisma 6.8 | ✅ Open source |
-| **Auth** | Clerk | ✅ 10K MAU free |
-| **Payments** | Stripe (test mode) | ✅ Unlimited test transactions |
-| **Email** | Resend | ✅ 100 emails/day free |
-| **File Storage** | Supabase Storage | ✅ 1GB included |
-| **Cache** | Upstash Redis | ✅ 10K commands/day free |
-| **Error Monitoring** | Sentry | ✅ 5K errors/month free |
-| **Hosting** | Vercel | ✅ Hobby plan free |
-| **UI Components** | shadcn/ui + Radix UI | ✅ Open source |
-| **Styling** | Tailwind CSS | ✅ Open source |
+
+| Service              | Usage                   | Free Tier                      |
+| -------------------- | ----------------------- | ------------------------------ |
+| **Framework**        | Next.js 16 (App Router) | ✅ Open source                 |
+| **Language**         | TypeScript              | ✅ Open source                 |
+| **Database**         | PostgreSQL (Supabase)   | ✅ 500MB, unlimited requests   |
+| **ORM**              | Prisma 6.8              | ✅ Open source                 |
+| **Auth**             | Clerk                   | ✅ 10K MAU free                |
+| **Payments**         | Stripe (test mode)      | ✅ Unlimited test transactions |
+| **Email**            | Resend                  | ✅ 100 emails/day free         |
+| **File Storage**     | Supabase Storage        | ✅ 1GB included                |
+| **Cache**            | Upstash Redis           | ✅ 10K commands/day free       |
+| **Error Monitoring** | Sentry                  | ✅ 5K errors/month free        |
+| **Hosting**          | Vercel                  | ✅ Hobby plan free             |
+| **UI Components**    | shadcn/ui + Radix UI    | ✅ Open source                 |
+| **Styling**          | Tailwind CSS            | ✅ Open source                 |
 
 ---
 
@@ -174,6 +190,7 @@ Ampertalent is a comprehensive job marketplace platform with sophisticated featu
 **Features Deployed:** All 14 phases
 
 ### Deployment Strategy
+
 - Phase 1-6: Revenue-ready features (auth, jobs, payments, portals)
 - Phase 7-9: Advanced features (messaging, analytics, reporting)
 - Phase 10-12: Integration & monitoring (CRM, testing, Sentry)
@@ -198,6 +215,7 @@ Ampertalent is a comprehensive job marketplace platform with sophisticated featu
 ## 🔧 Development
 
 ### Prerequisites
+
 ```bash
 Node.js 18+
 npm or yarn
@@ -208,6 +226,7 @@ Vercel account (for deployment)
 ```
 
 ### Setup
+
 ```bash
 # Install dependencies
 npm install
@@ -227,6 +246,7 @@ npm run dev
 ```
 
 ### Available Scripts
+
 ```bash
 npm run dev          # Start development server
 npm run build        # Build for production
@@ -304,7 +324,7 @@ Full documentation available in `/docs/`:
 ✅ **Error Monitoring** — Production-grade error tracking (Sentry)  
 ✅ **Testing Strategy** — Comprehensive unit, integration, and E2E tests  
 ✅ **CI/CD Ready** — Vercel deployment with automated builds  
-✅ **Zero-Cost Infrastructure** — 100% free-tier services, no credit card needed  
+✅ **Zero-Cost Infrastructure** — 100% free-tier services, no credit card needed
 
 ---
 
