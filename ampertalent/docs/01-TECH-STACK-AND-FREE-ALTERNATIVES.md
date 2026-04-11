@@ -150,12 +150,13 @@
 
 ### CRM Integration
 
-| Component | Original        | Ampertalent (Free)     | Free Tier Details                                                                                                                                                              |
-| --------- | --------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **CRM**   | GoHighLevel API | **HubSpot CRM (Free)** | ✅ **100% free CRM, no CC required**. Unlimited users, contacts, deals, tasks, API access. REST API + webhooks. [hubspot.com/pricing/crm](https://www.hubspot.com/pricing/crm) |
+| Component | Original        | Ampertalent (Free)                  | Free Tier Details                                                                                                                                                                                      |
+| --------- | --------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **CRM**   | GoHighLevel API | **⏳ HubSpot CRM (Free, Phase 10)** | ✅ **100% free CRM, no CC required** (Post-first deployment). Unlimited users, contacts, deals, tasks, API access. REST API + webhooks. [hubspot.com/pricing/crm](https://www.hubspot.com/pricing/crm) |
 
-> **💡 Why HubSpot Free CRM instead of Mock CRM:**
+> **💡 Why HubSpot Free CRM (Post-Deployment):**
 >
+> - **Integration Strategy**: HubSpot is an alternative to the original GoHighLevel, integrated AFTER first deployment
 > - **HubSpot CRM is genuinely free forever** — not a trial, not freemium-gated for core CRM
 > - **No credit card required** to sign up or use the API
 > - **Full REST API access** on the free plan — contacts, companies, deals, tasks, notes, custom properties
@@ -163,6 +164,7 @@
 > - **API rate limits**: 100 requests/10 seconds (more than enough for portfolio demo)
 > - **Real CRM integration** in your portfolio — hiring managers see actual third-party API code, not a mock
 > - **OAuth2 or Private App tokens** for auth — use Private App token (simplest, no OAuth flow needed)
+> - **When to integrate**: Phase 10 (after revenue is flowing through Stripe payments in Phase 6)
 >
 > **Mapping GoHighLevel → HubSpot:**
 >

@@ -265,3 +265,14 @@ Ampertalent/
 3. **TDD Approach** — tests written before implementation
 4. **Production-Grade** — proper error handling, logging, security
 5. **Portfolio-Ready** — clean code, comprehensive documentation
+
+### ⚠️ Critical Testing Requirement
+
+**All unit tests and integration tests MUST implement automatic test data cleanup** when running `yarn test`. This ensures:
+
+- Database remains clean between test runs
+- No false positives from stale data
+- ~500+ tests can run without bloating database
+- Orphaned record detection prevents data leaks
+
+See **Phase 11 → Section 11.1.1** and **TDD Strategy → Section 4.1** for comprehensive cleanup implementation.

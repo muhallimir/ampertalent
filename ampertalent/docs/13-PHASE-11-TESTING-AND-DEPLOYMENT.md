@@ -44,6 +44,187 @@ module.exports = {
 
 ---
 
+## 11.1.1 🧹 Critical: Test Data Cleanup Strategy
+
+### ⚠️ MANDATORY REQUIREMENT FOR ALL TESTS
+
+**EVERY unit test AND integration test MUST implement test data cleanup** when using `yarn test`. No exceptions.
+
+**Why?**
+
+- Without cleanup, the test database accumulates garbage data
+- Second test run fails with "duplicate key" or stale data errors
+- Database grows unbounded (expensive storage)
+- False positives: tests pass in CI but fail locally
+- Production bugs: stale test data corrupts real operations
+
+### Cleanup Levels
+
+| Level                 | Scope                                     | Implementation                       |
+| --------------------- | ----------------------------------------- | ------------------------------------ |
+| **Per-Test Cleanup**  | Each test cleans up its own data          | `afterEach()` with `TestDataTracker` |
+| **Per-Suite Cleanup** | All tests in a file finish, then cleanup  | `afterAll()` in describe block       |
+| **Global Cleanup**    | All tests done, final database truncation | `__tests__/globalTeardown.ts`        |
+| **E2E Test Cleanup**  | Browser tests clean via API endpoint      | `POST /api/test/cleanup` (dev only)  |
+| **Orphan Detection**  | Verify no leftover data remains           | `npm run test:verify-no-orphans`     |
+
+### Implementation Checklist
+
+✅ **Phase 1 — Per-Test Cleanup**:
+
+- [ ] Create `__tests__/helpers/cleanup.ts` with `TestDataTracker` class
+- [ ] In each test file, import and initialize tracker in `beforeEach()`
+- [ ] Track every created entity with `tracker.track(type, id)`
+- [ ] Call `await tracker.cleanup()` in `afterEach()`
+- [ ] Verify cleanup logs appear in test output
+
+✅ **Phase 2 — Global Cleanup**:
+
+- [ ] Create/update `__tests__/globalTeardown.ts`
+- [ ] Implement final table truncation (after all tests complete)
+- [ ] Log cleanup statistics
+- [ ] Handle foreign key constraints properly
+
+✅ **Phase 3 — Verification**:
+
+- [ ] Add `npm run test:verify-no-orphans` script
+- [ ] Create `scripts/verify-test-db.js` to check for orphaned records
+- [ ] Run verification after test suite in CI/CD
+- [ ] Fail build if orphaned data found
+
+✅ **Phase 4 — Integration**:
+
+- [ ] Update all ~500+ test files to use cleanup
+- [ ] Add cleanup imports to test base files
+- [ ] Update `jest.config.js` to specify `globalTeardown`
+- [ ] Test locally: `yarn test` then verify database is clean
+
+### Example: Proper Test with Cleanup
+
+```typescript
+// __tests__/integration/seeker/applications.test.ts
+import { prisma } from "../../setup";
+import { createTestSeeker, createTestJob } from "../../helpers/factories";
+import { TestDataTracker } from "../../helpers/cleanup";
+
+describe("Seeker Applications", () => {
+	const tracker = new TestDataTracker();
+
+	// Track all IDs created during this test file
+	beforeEach(() => {
+		// Tracker is ready for each test
+	});
+
+	afterEach(async () => {
+		// Clean up ALL created data before next test
+		await tracker.cleanup();
+	});
+
+	it("should create an application", async () => {
+		// Create seeker
+		const { profile: seekerProfile, seeker } = await createTestSeeker();
+		tracker.track("profiles", seekerProfile.id);
+		tracker.track("seekers", seeker.id);
+
+		// Create employer and job
+		const { profile: empProfile, employer } = await createTestEmployer();
+		tracker.track("profiles", empProfile.id);
+		tracker.track("employers", employer.id);
+
+		const job = await createTestJob(employer.id);
+		tracker.track("jobs", job.id);
+
+		// Create application
+		const application = await prisma.application.create({
+			data: {
+				seekerId: seeker.id,
+				jobId: job.id,
+				coverLetter: "I'm interested in this role",
+			},
+		});
+		tracker.track("applications", application.id);
+
+		// Assertions
+		expect(application).toBeDefined();
+		expect(application.seekerId).toBe(seeker.id);
+
+		// ✅ afterEach() automatically cleans up all tracked IDs
+		// without any manual cleanup code needed here
+	});
+
+	it("should update application status", async () => {
+		// Test starts with CLEAN database (previous test cleaned up)
+
+		const { seeker } = await createTestSeekerAuto();
+		const { employer } = await createTestEmployerAuto();
+		const job = await createTestJobAuto(employer.id);
+
+		const application = await prisma.application.create({
+			data: { seekerId: seeker.id, jobId: job.id },
+		});
+		tracker.track("applications", application.id);
+
+		// Update
+		const updated = await prisma.application.update({
+			where: { id: application.id },
+			data: { status: "ACCEPTED" },
+		});
+
+		expect(updated.status).toBe("ACCEPTED");
+		// ✅ Cleanup happens automatically
+	});
+});
+```
+
+### Key Commands
+
+```bash
+# Run tests with automatic cleanup
+yarn test
+
+# Run specific test file with cleanup
+yarn test -- applications.test.ts
+
+# Run tests and verify no orphaned data remains
+yarn test:cleanup-verify
+
+# Check for orphaned data after tests complete
+npm run test:verify-no-orphans
+
+# If cleanup fails, manually reset database
+npx prisma db push --skip-generate
+npx prisma db seed  # if you have seed script
+```
+
+### Package.json Scripts
+
+```json
+{
+	"scripts": {
+		"test": "jest --detectOpenHandles --forceExit --runInBand",
+		"test:watch": "jest --watch --detectOpenHandles",
+		"test:coverage": "jest --coverage --detectOpenHandles --forceExit --runInBand",
+		"test:cleanup-verify": "jest --detectOpenHandles --forceExit --runInBand && npm run test:verify-no-orphans",
+		"test:verify-no-orphans": "node scripts/verify-test-db.js"
+	}
+}
+```
+
+### Detailed Cleanup Documentation
+
+See **TDD Testing Strategy** → **Section 4.1: Test Data Cleanup & Garbage Collection** for:
+
+- ✅ Per-test cleanup implementation (4 strategies)
+- ✅ Cleanup helper functions with `TestDataTracker`
+- ✅ Global teardown configuration
+- ✅ Factory auto-tracking
+- ✅ E2E test cleanup
+- ✅ Orphaned data detection script
+
+**CRITICAL**: Every test added must include cleanup code. PRs without cleanup will be rejected.
+
+---
+
 ## 11.2 Unit Tests Summary
 
 | Module                  | Test File                                           | Tests     |

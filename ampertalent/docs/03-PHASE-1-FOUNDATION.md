@@ -69,12 +69,6 @@ pw: Sg0oVm4xjex0Dkgt
 
 Note: STRIPE webhook to be captured and put to env once initial setup is done and stripe cli is installed
 
-### HubSpot CRM (Free)
-
-- [ ] Sign up at hubspot.com (free CRM, no CC)
-- [ ] Create Private App → get `HUBSPOT_ACCESS_TOKEN`
-- [ ] Set required scopes: `crm.objects.contacts.read`, `crm.objects.contacts.write`, `crm.schemas.contacts.read`
-
 ### Vercel (Hosting)
 
 - [x] Sign up at vercel.com (free, no CC)
@@ -186,44 +180,7 @@ __tests__/unit/stripe-client.test.ts
 
 ---
 
-## 1.6 HubSpot CRM Integration (Free Tier)
-
-### Tasks
-
-- [ ] Sign up at hubspot.com (free CRM, no CC)
-- [ ] Create Private App → get `HUBSPOT_ACCESS_TOKEN`
-- [ ] Install `@hubspot/api-client`
-- [ ] Create `lib/hubspot.ts` — HubSpot CRM service implementing same interface patterns as original `lib/gohighlevel.ts`
-  - `createContact(contactData)` → HubSpot contact ID
-  - `updateContact(contactId, contactData)`
-  - `getContact(contactId)` → contact details
-  - `searchContacts(query)` → search results
-  - `addTag(contactId, tag)` → via custom property or list
-  - `removeTag(contactId, tag)`
-  - `getCustomProperties()` → available properties
-  - `createCustomProperty(name, type)` → create app-specific properties
-  - `syncUserProfile(userId, syncDirection)` → full user → contact sync
-  - `testConnection()` → verify API key
-- [ ] Create `lib/crm.ts` — factory that wraps HubSpot service
-- [ ] Create `lib/hubspot-sync-service.ts` — sync orchestration
-  - `syncUserTocrm(userId, syncDirection)`
-  - `batchSync(userIds)` — batch processing
-  - `testConnection()` — verify API connectivity
-
-### TDD Tests
-
-```
-__tests__/unit/hubspot.test.ts
-- should create HubSpot contact
-- should update HubSpot contact
-- should search contacts by email
-- should get custom properties
-- should test connection
-```
-
----
-
-## 1.7 Core Utilities
+## 1.6 Core Utilities
 
 ### Tasks
 
@@ -251,7 +208,91 @@ __tests__/unit/file-validation.test.ts
 
 ---
 
-## 1.8 UI Foundation
+## 1.6 Ampertalent Branding & Color System
+
+### Logo & Brand Assets
+
+**Logo File:** `public/logo/ampertalent.png`
+- Dimensions: 1408 x 768 px
+- Already present in repository
+- Used in header, hero section, navigation
+
+**Key Brand Colors (extracted from logo):**
+
+| Color | Hex | RGB | Usage |
+|-------|-----|-----|-------|
+| **Primary Blue** | `#0066FF` | (0, 102, 255) | CTA buttons, links, brand primary |
+| **Teal** | `#00BB88` | (0, 187, 136) | Success, secondary accents |
+| **Cyan** | `#00D9FF` | (0, 217, 255) | Highlights, lightning bolt |
+| **Dark Navy** | `#1A2D47` | (26, 45, 71) | Text, headings |
+
+### Tasks
+
+- [ ] Create `docs/AMPERTALENT-BRAND-GUIDELINES.md` — comprehensive brand guide (ALREADY CREATED)
+- [ ] Update `tailwind.config.ts` with Ampertalent color palette:
+  ```typescript
+  theme: {
+    extend: {
+      colors: {
+        'amper-blue': '#0066FF',
+        'amper-teal': '#00BB88',
+        'amper-cyan': '#00D9FF',
+        'amper-dark': '#1A2D47',
+        'amper-gray': '#495057',
+      }
+    }
+  }
+  ```
+- [ ] Add CSS variables to `app/globals.css`:
+  ```css
+  :root {
+    --color-primary: #0066FF;
+    --color-secondary: #00BB88;
+    --color-accent: #00D9FF;
+    --color-dark: #1A2D47;
+  }
+  ```
+- [ ] Copy logo to `public/logo/ampertalent.png` (already in repo root, move if needed)
+- [ ] Create favicon from logo (multiple sizes: 16x16, 32x32, 64x64, 192x192)
+- [ ] Update `next.config.mjs` favicon references
+- [ ] Replace all "HireMyMom" text with "Ampertalent"
+- [ ] Update tagline: "Connect With Flexible Talent" → "Where Flexible Talent Meets Opportunity"
+- [ ] Verify button colors:
+  - Primary buttons: `#0066FF` (Electric Blue)
+  - Secondary buttons: `#00BB88` (Teal)
+  - Success messages: `#00BB88` (Teal)
+  - Error messages: Use appropriate red (e.g., `#FF4444`)
+- [ ] Verify text contrast meets WCAG AA standards
+- [ ] Test dark mode color switching
+
+### Branding Verification
+
+Before moving forward, verify:
+
+```bash
+# Check Tailwind config has all Ampertalent colors
+grep -n "amper-blue\|amper-teal\|amper-cyan" tailwind.config.ts
+
+# Check CSS variables are defined
+grep -n "color-primary\|color-secondary" app/globals.css
+
+# Verify logo is accessible
+ls -l public/logo/ampertalent.png
+```
+
+### Reference Files
+
+- **Brand Guidelines:** `docs/AMPERTALENT-BRAND-GUIDELINES.md` (comprehensive, created today)
+- **Logo:** `public/logo/ampertalent.png` (1.2MB, 1408x768px)
+- **Color Quick Reference:**
+  - `#0066FF` — Primary blue (buttons, links)
+  - `#00BB88` — Secondary teal (success, accents)
+  - `#00D9FF` — Cyan (highlights)
+  - `#1A2D47` — Dark navy (text, headings)
+
+---
+
+## 1.7 UI Foundation
 
 ### Tasks
 

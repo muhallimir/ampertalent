@@ -1,10 +1,12 @@
 # 🔄 Phase 10 — CRM, Cron Jobs & External Integrations
 
-> HubSpot CRM integration, Vercel Cron jobs, and external webhooks.
+> ⏳ **POST-FIRST-DEPLOYMENT**: HubSpot CRM integration, Vercel Cron jobs, and external webhooks.
+>
+> **Note:** This phase focuses on CRM integration as an alternative to the original GoHighLevel. HubSpot can be integrated after the initial deployment is working and generating revenue through Stripe payments (Phase 6).
 
 ---
 
-## 10.1 HubSpot CRM Service (GoHighLevel Replacement)
+## 10.1 ⏳ POST-DEPLOYMENT: HubSpot CRM Service (GoHighLevel Alternative)
 
 ### Tasks
 

@@ -854,6 +854,546 @@ export async function createTestTeamMember(
 
 ---
 
+## 4.1 Test Data Cleanup & Garbage Collection
+
+### ⚠️ CRITICAL REQUIREMENT: All Tests Must Clean Up Generated Data
+
+**Problem**: Without proper cleanup, test data accumulates in the database, causing:
+
+- Database bloat and slowdown
+- False test failures (duplicate key errors, stale data)
+- Cross-test contamination
+- Production-like data pollution
+- Expensive storage costs
+
+**Solution**: Implement automatic cleanup at **multiple levels**:
+
+### Strategy 1: Per-Test Cleanup (afterEach)
+
+Every test file should clean up its own data immediately after execution:
+
+```typescript
+// __tests__/integration/seeker/applications.test.ts
+import { prisma } from "../../setup";
+import { createTestSeeker, createTestJob } from "../../helpers/factories";
+
+describe("Seeker Applications", () => {
+	let seekerId: string;
+	let jobId: string;
+	let employerId: string;
+
+	// Track all IDs created during this test
+	let createdIds = {
+		profiles: [] as string[],
+		seekers: [] as string[],
+		employers: [] as string[],
+		jobs: [] as string[],
+		applications: [] as string[],
+	};
+
+	beforeEach(async () => {
+		// Record IDs for cleanup
+		createdIds = {
+			profiles: [],
+			seekers: [],
+			employers: [],
+			jobs: [],
+			applications: [],
+		};
+	});
+
+	afterEach(async () => {
+		// DELETE IN REVERSE DEPENDENCY ORDER
+		// (clean up children before parents to respect foreign keys)
+
+		// 1. Delete applications first
+		if (createdIds.applications.length > 0) {
+			await prisma.application.deleteMany({
+				where: { id: { in: createdIds.applications } },
+			});
+		}
+
+		// 2. Delete jobs
+		if (createdIds.jobs.length > 0) {
+			await prisma.job.deleteMany({
+				where: { id: { in: createdIds.jobs } },
+			});
+		}
+
+		// 3. Delete seekers
+		if (createdIds.seekers.length > 0) {
+			await prisma.jobSeeker.deleteMany({
+				where: { id: { in: createdIds.seekers } },
+			});
+		}
+
+		// 4. Delete employers
+		if (createdIds.employers.length > 0) {
+			await prisma.employer.deleteMany({
+				where: { id: { in: createdIds.employers } },
+			});
+		}
+
+		// 5. Delete profiles last
+		if (createdIds.profiles.length > 0) {
+			await prisma.userProfile.deleteMany({
+				where: { id: { in: createdIds.profiles } },
+			});
+		}
+
+		console.log(`✅ Test cleanup completed. Deleted:`, createdIds);
+	});
+
+	it("should create an application", async () => {
+		// Create test data
+		const { profile: seekerProfile, seeker } = await createTestSeeker();
+		createdIds.profiles.push(seekerProfile.id);
+		createdIds.seekers.push(seeker.id);
+		seekerId = seeker.id;
+
+		const { profile: employerProfile, employer } = await createTestEmployer();
+		createdIds.profiles.push(employerProfile.id);
+		createdIds.employers.push(employer.id);
+		employerId = employer.id;
+
+		const job = await createTestJob(employer.id);
+		createdIds.jobs.push(job.id);
+		jobId = job.id;
+
+		// Create application
+		const application = await prisma.application.create({
+			data: {
+				seekerId: seeker.id,
+				jobId: job.id,
+				coverLetter: "Test cover letter",
+			},
+		});
+		createdIds.applications.push(application.id);
+
+		// Test assertions
+		expect(application).toBeDefined();
+		expect(application.seekerId).toBe(seeker.id);
+		expect(application.jobId).toBe(job.id);
+
+		// afterEach will automatically clean up all created records
+	});
+});
+```
+
+### Strategy 2: Cleanup Helper Functions
+
+Create reusable cleanup utilities to simplify afterEach blocks:
+
+```typescript
+// __tests__/helpers/cleanup.ts
+import { prisma } from "../setup";
+
+export class TestDataTracker {
+	private ids = {
+		profiles: new Set<string>(),
+		seekers: new Set<string>(),
+		employers: new Set<string>(),
+		jobs: new Set<string>(),
+		applications: new Set<string>(),
+		subscriptions: new Set<string>(),
+		messages: new Set<string>(),
+		conciergeRequests: new Set<string>(),
+		teamMembers: new Set<string>(),
+	};
+
+	track(type: keyof typeof this.ids, id: string) {
+		this.ids[type].add(id);
+	}
+
+	trackMultiple(type: keyof typeof this.ids, ids: string[]) {
+		ids.forEach((id) => this.ids[type].add(id));
+	}
+
+	async cleanup() {
+		console.log("🧹 Starting test data cleanup...");
+
+		// DELETE IN REVERSE DEPENDENCY ORDER
+
+		// 1. Messages
+		if (this.ids.messages.size > 0) {
+			const deleted = await prisma.message.deleteMany({
+				where: { id: { in: Array.from(this.ids.messages) } },
+			});
+			console.log(`  ✅ Deleted ${deleted.count} messages`);
+		}
+
+		// 2. Concierge requests
+		if (this.ids.conciergeRequests.size > 0) {
+			const deleted = await prisma.conciergeRequest.deleteMany({
+				where: { id: { in: Array.from(this.ids.conciergeRequests) } },
+			});
+			console.log(`  ✅ Deleted ${deleted.count} concierge requests`);
+		}
+
+		// 3. Subscriptions
+		if (this.ids.subscriptions.size > 0) {
+			const deleted = await prisma.subscription.deleteMany({
+				where: { id: { in: Array.from(this.ids.subscriptions) } },
+			});
+			console.log(`  ✅ Deleted ${deleted.count} subscriptions`);
+		}
+
+		// 4. Applications
+		if (this.ids.applications.size > 0) {
+			const deleted = await prisma.application.deleteMany({
+				where: { id: { in: Array.from(this.ids.applications) } },
+			});
+			console.log(`  ✅ Deleted ${deleted.count} applications`);
+		}
+
+		// 5. Jobs
+		if (this.ids.jobs.size > 0) {
+			const deleted = await prisma.job.deleteMany({
+				where: { id: { in: Array.from(this.ids.jobs) } },
+			});
+			console.log(`  ✅ Deleted ${deleted.count} jobs`);
+		}
+
+		// 6. Team members
+		if (this.ids.teamMembers.size > 0) {
+			const deleted = await prisma.teamMember.deleteMany({
+				where: { id: { in: Array.from(this.ids.teamMembers) } },
+			});
+			console.log(`  ✅ Deleted ${deleted.count} team members`);
+		}
+
+		// 7. Seekers
+		if (this.ids.seekers.size > 0) {
+			const deleted = await prisma.jobSeeker.deleteMany({
+				where: { id: { in: Array.from(this.ids.seekers) } },
+			});
+			console.log(`  ✅ Deleted ${deleted.count} seekers`);
+		}
+
+		// 8. Employers
+		if (this.ids.employers.size > 0) {
+			const deleted = await prisma.employer.deleteMany({
+				where: { id: { in: Array.from(this.ids.employers) } },
+			});
+			console.log(`  ✅ Deleted ${deleted.count} employers`);
+		}
+
+		// 9. Profiles (last, no dependencies)
+		if (this.ids.profiles.size > 0) {
+			const deleted = await prisma.userProfile.deleteMany({
+				where: { id: { in: Array.from(this.ids.profiles) } },
+			});
+			console.log(`  ✅ Deleted ${deleted.count} user profiles`);
+		}
+
+		console.log("✨ Test cleanup completed");
+	}
+}
+
+export function createTracker() {
+	return new TestDataTracker();
+}
+```
+
+**Usage in test files**:
+
+```typescript
+import { createTracker } from "../../helpers/cleanup";
+
+describe("Employer Jobs", () => {
+	const tracker = createTracker();
+
+	afterEach(async () => {
+		await tracker.cleanup();
+	});
+
+	it("should create a job", async () => {
+		const { profile: empProfile, employer } = await createTestEmployer();
+		tracker.track("profiles", empProfile.id);
+		tracker.track("employers", employer.id);
+
+		const job = await createTestJob(employer.id);
+		tracker.track("jobs", job.id);
+
+		expect(job).toBeDefined();
+		// Cleanup happens automatically
+	});
+});
+```
+
+### Strategy 3: Global Cleanup (afterAll)
+
+After **all tests** in the suite complete, perform a final cleanup pass:
+
+```typescript
+// __tests__/globalTeardown.ts
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
+
+module.exports = async () => {
+	console.log("\n🧹 Running global teardown...");
+
+	try {
+		// Get all table names
+		const tables = await prisma.$queryRaw<Array<{ tablename: string }>>`
+			SELECT tablename FROM pg_tables 
+			WHERE schemaname = 'public' 
+			AND tablename NOT LIKE '_prisma_%'
+		`;
+
+		// Disable all foreign key constraints temporarily
+		await prisma.$executeRaw`SET session_replication_role = replica;`;
+
+		// Truncate all tables
+		for (const { tablename } of tables) {
+			try {
+				await prisma.$executeRawUnsafe(
+					`TRUNCATE TABLE "public"."${tablename}" CASCADE;`,
+				);
+				console.log(`  ✅ Truncated ${tablename}`);
+			} catch (err) {
+				console.warn(`  ⚠️  Could not truncate ${tablename}:`, err);
+			}
+		}
+
+		// Re-enable foreign key constraints
+		await prisma.$executeRaw`SET session_replication_role = DEFAULT;`;
+
+		console.log("✨ Global teardown completed\n");
+	} catch (error) {
+		console.error("❌ Global teardown failed:", error);
+		process.exit(1);
+	} finally {
+		await prisma.$disconnect();
+	}
+};
+```
+
+### Strategy 4: Factories Auto-Track
+
+Enhance factories to automatically register created IDs:
+
+```typescript
+// __tests__/helpers/factories.ts (enhanced)
+import { prisma } from "../setup";
+import { TestDataTracker } from "./cleanup";
+
+let activeTracker: TestDataTracker | null = null;
+
+export function setActiveTracker(tracker: TestDataTracker) {
+	activeTracker = tracker;
+}
+
+export async function createTestSeekerWithTracking(
+	tracker: TestDataTracker,
+	overrides = {},
+) {
+	const { profile, seeker } = await createTestSeeker(overrides);
+	tracker.track("profiles", profile.id);
+	tracker.track("seekers", seeker.id);
+	return { profile, seeker };
+}
+
+export async function createTestJobWithTracking(
+	tracker: TestDataTracker,
+	employerId: string,
+	overrides = {},
+) {
+	const job = await createTestJob(employerId, overrides);
+	tracker.track("jobs", job.id);
+	return job;
+}
+
+// Auto-tracking variant (uses active tracker)
+export async function createTestSeekerAuto(overrides = {}) {
+	const { profile, seeker } = await createTestSeeker(overrides);
+	if (activeTracker) {
+		activeTracker.track("profiles", profile.id);
+		activeTracker.track("seekers", seeker.id);
+	}
+	return { profile, seeker };
+}
+```
+
+**Usage**:
+
+```typescript
+describe("Seeker Subscriptions", () => {
+	const tracker = createTracker();
+
+	beforeEach(() => {
+		setActiveTracker(tracker);
+	});
+
+	afterEach(async () => {
+		await tracker.cleanup();
+	});
+
+	it("should create subscription", async () => {
+		// No need to manually track — factory does it automatically
+		const { profile, seeker } = await createTestSeekerAuto();
+		const subscription = await createTestSubscriptionAuto(seeker.id);
+
+		expect(subscription.status).toBe("ACTIVE");
+		// All created data auto-tracked and cleaned up
+	});
+});
+```
+
+### Strategy 5: E2E Test Cleanup
+
+For end-to-end tests (Playwright), implement API cleanup:
+
+```typescript
+// __tests__/e2e/cleanup.ts
+import { test as base } from "@playwright/test";
+
+type TestContext = {
+	createdIds: {
+		profiles: string[];
+		jobs: string[];
+		applications: string[];
+	};
+	cleanup: () => Promise<void>;
+};
+
+export const test = base.extend<TestContext>({
+	createdIds: {
+		profiles: [],
+		jobs: [],
+		applications: [],
+	},
+	cleanup: async ({ createdIds }, use) => {
+		await use(async () => {
+			// Call cleanup API endpoint
+			const response = await fetch("/api/test/cleanup", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(createdIds),
+			});
+
+			if (!response.ok) {
+				throw new Error("Cleanup failed");
+			}
+
+			console.log("✅ E2E test data cleaned up");
+		});
+	},
+});
+
+// API endpoint for cleanup (development only)
+// app/api/test/cleanup/route.ts
+export async function POST(request: Request) {
+	if (process.env.NODE_ENV !== "development" && !process.env.E2E_TEST) {
+		return new Response("Not available in production", { status: 403 });
+	}
+
+	const { profiles, jobs, applications } = await request.json();
+
+	// Delete in reverse dependency order
+	await prisma.application.deleteMany({
+		where: { id: { in: applications } },
+	});
+	await prisma.job.deleteMany({ where: { id: { in: jobs } } });
+	await prisma.userProfile.deleteMany({ where: { id: { in: profiles } } });
+
+	return Response.json({ success: true });
+}
+```
+
+### Cleanup Verification Checklist
+
+✅ **Every unit test** should have:
+
+- `beforeEach()` to initialize tracker
+- `afterEach()` to clean up tracked IDs
+- Explicit tracking of each created resource
+
+✅ **Every integration test** should have:
+
+- `beforeEach()` to initialize tracker
+- `afterEach()` to clean up tracked IDs
+- Verification that cleanup completed successfully
+
+✅ **Global teardown** should:
+
+- Run `__tests__/globalTeardown.ts` after all tests
+- Perform final truncation of all tables
+- Log successful cleanup
+
+✅ **CI/CD pipeline** should:
+
+- Run `yarn test` with cleanup enabled
+- Verify no orphaned test data in database
+- Report cleanup statistics
+
+### Package.json Scripts
+
+```json
+{
+	"scripts": {
+		"test": "jest --detectOpenHandles --forceExit --runInBand",
+		"test:watch": "jest --watch --detectOpenHandles",
+		"test:coverage": "jest --coverage --detectOpenHandles --forceExit",
+		"test:cleanup-verify": "jest && npm run test:verify-no-orphans",
+		"test:verify-no-orphans": "node scripts/verify-test-db.js"
+	}
+}
+```
+
+### Orphaned Data Detection Script
+
+```javascript
+// scripts/verify-test-db.js
+const { PrismaClient } = require("@prisma/client");
+
+const prisma = new PrismaClient();
+
+async function verifyCleanDatabase() {
+	console.log("\n📊 Verifying test database cleanup...\n");
+
+	const tables = [
+		"UserProfile",
+		"JobSeeker",
+		"Employer",
+		"Job",
+		"Application",
+		"Subscription",
+		"Message",
+		"ConciergeRequest",
+	];
+
+	let totalOrphans = 0;
+
+	for (const table of tables) {
+		const count = await prisma[table].count();
+		if (count > 0) {
+			console.warn(`⚠️  WARNING: Found ${count} orphaned records in ${table}`);
+			totalOrphans += count;
+		}
+	}
+
+	await prisma.$disconnect();
+
+	if (totalOrphans > 0) {
+		console.error(
+			`\n❌ Test database not clean! ${totalOrphans} orphaned records found.`,
+		);
+		console.error(
+			"   Run: npx prisma db push --skip-generate && npx prisma db seed",
+		);
+		process.exit(1);
+	} else {
+		console.log("✅ Test database is clean!\n");
+	}
+}
+
+verifyCleanDatabase().catch(console.error);
+```
+
+---
+
 ## 5. Coverage Targets
 
 ### Global Thresholds
