@@ -191,7 +191,7 @@ export function CancellationSurveyForm({
                             <h3 className="font-semibold text-gray-900">What is the primary reason for canceling your subscription?</h3>
                             <div className="space-y-3">
                                 {[
-                                    { value: 'found_hiremymom', label: 'I found a job through AmperTalent.com' },
+                                    { value: 'found_ampertalent', label: 'I found a job through AmperTalent.com' },
                                     { value: 'found_other', label: 'I found a job through another source' },
                                     { value: 'no_suitable_job', label: 'I could not find a suitable job' },
                                     { value: 'budget_tight', label: 'My budget is too tight right now' },

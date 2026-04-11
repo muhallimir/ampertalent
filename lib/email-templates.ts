@@ -1799,7 +1799,7 @@ The AmperTalent Team
       transactionId
     } = data
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.hiremymom.com'
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.ampertalent.com'
     const adminDashboardUrl = `${appUrl}/admin/${customerType.toLowerCase()}s`
 
     // Format price

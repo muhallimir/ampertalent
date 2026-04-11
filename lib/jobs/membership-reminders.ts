@@ -70,7 +70,7 @@ export class MembershipReminderService {
         return results;
       }
 
-      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://hiremymom.com';
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://ampertalent.com';
       const manageUrl = `${baseUrl}/seeker/subscription`;
 
       const batchPayloads: BatchEmailPayload[] = [];

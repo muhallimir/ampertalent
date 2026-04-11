@@ -53,7 +53,7 @@ Perfect for moms re-entering the workforce, career changers, or anyone ready to 
       'Clarity on your next steps, so you can apply with clarity, purpose and confidence',
     ],
     icon: 'Seeker-career-jumpstart-session.png',
-    wordPressLink: 'https://www.hiremymom.com/product/jobseeker-advisor-service/',
+    wordPressLink: 'https://www.ampertalent.com/product/jobseeker-advisor-service/',
   },
   {
     id: 'interview_success_training',
@@ -73,7 +73,7 @@ They provide guidance on how to answer questions, what to do before, during and 
       'Tips to help you shine and stand out',
     ],
     icon: 'Seeker-interview success-training.png',
-    wordPressLink: 'https://www.hiremymom.com/product/interview-prep-1-session/',
+    wordPressLink: 'https://www.ampertalent.com/product/interview-prep-1-session/',
   },
   {
     id: 'personal_career_strategist',
@@ -98,7 +98,7 @@ If you're re-entering the workforce, pivoting careers, or ready to find flexible
       "Proactive employer outreach—we'll follow up with companies you've applied to",
     ],
     icon: 'Seeker-personal-career-strategist.png',
-    wordPressLink: 'https://www.hiremymom.com/product/elite-career-concierge-service/',
+    wordPressLink: 'https://www.ampertalent.com/product/elite-career-concierge-service/',
   },
   {
     id: 'resume_refresh',
@@ -119,7 +119,7 @@ This service includes a review of your resume with initial questions and edits, 
       'Optimized to increase interview and hiring chances',
     ],
     icon: 'Seeker-Resume-refresh.png',
-    wordPressLink: 'https://www.hiremymom.com/product/resume-review/',
+    wordPressLink: 'https://www.ampertalent.com/product/resume-review/',
   },
   {
     id: 'create_new_resume',
@@ -139,7 +139,7 @@ This service includes initial questions and acquiring a list of skills, talents 
       'Optimized for applicant tracking systems (ATS)',
     ],
     icon: 'Seeker-create-new-resume.png',
-    wordPressLink: 'https://www.hiremymom.com/product/create-new-resume/',
+    wordPressLink: 'https://www.ampertalent.com/product/create-new-resume/',
   },
   {
     id: 'cover_letter_service',
@@ -159,7 +159,7 @@ After you make the first round of revisions, we will review your revised cover l
       'Expert feedback from HR Specialists',
     ],
     icon: 'Seeker-cover-letter-services.png',
-    wordPressLink: 'https://www.hiremymom.com/product/cover-letter-review/',
+    wordPressLink: 'https://www.ampertalent.com/product/cover-letter-review/',
   },
   {
     id: 'the_works',
@@ -179,7 +179,7 @@ Get everything you need to succeed in your job search at a discounted bundle pri
       'All three services bundled at a savings',
     ],
     icon: 'Seeker-the-works.png',
-    wordPressLink: 'https://www.hiremymom.com/product/the-works/',
+    wordPressLink: 'https://www.ampertalent.com/product/the-works/',
   },
 ];
 

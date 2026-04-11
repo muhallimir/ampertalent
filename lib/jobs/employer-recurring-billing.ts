@@ -96,7 +96,7 @@ export class EmployerRecurringBillingService {
                 return results;
             }
 
-            const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://hiremymom.com';
+            const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://ampertalent.com';
 
             // Build one payload per package, then fire a single batch API call
             const batchPayloads: BatchEmailPayload[] = [];

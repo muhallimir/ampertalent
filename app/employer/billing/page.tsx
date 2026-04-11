@@ -1564,7 +1564,7 @@ export default function BillingPage() {
                         const url = window.URL.createObjectURL(blob)
                         const link = document.createElement('a')
                         link.href = url
-                        link.download = `hiremymom-employer-transactions-${new Date().toISOString().split('T')[0]}.csv`
+                        link.download = `ampertalent-employer-transactions-${new Date().toISOString().split('T')[0]}.csv`
                         document.body.appendChild(link)
                         link.click()
                         document.body.removeChild(link)
@@ -1639,7 +1639,7 @@ export default function BillingPage() {
                                 const url = window.URL.createObjectURL(blob)
                                 const link = document.createElement('a')
                                 link.href = url
-                                link.download = `hiremymom-invoice-${transaction.id.slice(-8).toUpperCase()}.pdf`
+                                link.download = `ampertalent-invoice-${transaction.id.slice(-8).toUpperCase()}.pdf`
                                 document.body.appendChild(link)
                                 link.click()
                                 document.body.removeChild(link)

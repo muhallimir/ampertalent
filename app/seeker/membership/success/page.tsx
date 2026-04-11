@@ -177,7 +177,7 @@ export default function MembershipSuccessPage() {
                         Free T-Shirt Coming Your Way!
                       </p>
                       <p className="text-xs text-purple-700">
-                        We'll send your "Get The Job Done! Hire A Mom" t-shirt to your address within 2-3 weeks.
+                        We'll send your "Get The Job Done! AmperTalent" t-shirt to your address within 2-3 weeks.
                       </p>
                     </div>
                   </div>

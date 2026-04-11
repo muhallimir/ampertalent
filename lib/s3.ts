@@ -539,7 +539,7 @@ export const FILE_CONFIGS = {
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     ],
     maxSize: 5 * 1024 * 1024, // 5MB
-    bucket: process.env.AWS_S3_BUCKET || 'hire-my-mom-files'
+    bucket: process.env.AWS_S3_BUCKET || 'amper-talent-files'
   },
   logo: {
     allowedTypes: [
@@ -549,7 +549,7 @@ export const FILE_CONFIGS = {
       'image/webp'
     ],
     maxSize: 2 * 1024 * 1024, // 2MB
-    bucket: process.env.AWS_S3_BUCKET || 'hire-my-mom-files'
+    bucket: process.env.AWS_S3_BUCKET || 'amper-talent-files'
   },
   document: {
     allowedTypes: [
@@ -560,7 +560,7 @@ export const FILE_CONFIGS = {
       'application/rtf'
     ],
     maxSize: 10 * 1024 * 1024, // 10MB
-    bucket: process.env.AWS_S3_BUCKET || 'hire-my-mom-files'
+    bucket: process.env.AWS_S3_BUCKET || 'amper-talent-files'
   },
   image: {
     allowedTypes: [
@@ -571,7 +571,7 @@ export const FILE_CONFIGS = {
       'image/svg+xml'
     ],
     maxSize: 5 * 1024 * 1024, // 5MB
-    bucket: process.env.AWS_S3_BUCKET || 'hire-my-mom-files'
+    bucket: process.env.AWS_S3_BUCKET || 'amper-talent-files'
   },
   avatar: {
     allowedTypes: [
@@ -581,6 +581,6 @@ export const FILE_CONFIGS = {
       'image/webp'
     ],
     maxSize: 5 * 1024 * 1024, // 5MB
-    bucket: process.env.AWS_S3_BUCKET || 'hire-my-mom-files'
+    bucket: process.env.AWS_S3_BUCKET || 'amper-talent-files'
   }
 }

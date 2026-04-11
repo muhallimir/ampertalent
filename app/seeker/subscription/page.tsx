@@ -1104,7 +1104,7 @@ export default function SubscriptionPage() {
                         const url = window.URL.createObjectURL(blob);
                         const link = document.createElement('a');
                         link.href = url;
-                        link.download = `hiremymom-seeker-transactions-${new Date().toISOString().split('T')[0]
+                        link.download = `ampertalent-seeker-transactions-${new Date().toISOString().split('T')[0]
                           }.csv`;
                         document.body.appendChild(link);
                         link.click();
@@ -1203,7 +1203,7 @@ export default function SubscriptionPage() {
                                 const url = window.URL.createObjectURL(blob);
                                 const link = document.createElement('a');
                                 link.href = url;
-                                link.download = `hiremymom-subscription-${transaction.id
+                                link.download = `ampertalent-subscription-${transaction.id
                                   .slice(-8)
                                   .toUpperCase()}.pdf`;
                                 document.body.appendChild(link);

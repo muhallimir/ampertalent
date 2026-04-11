@@ -774,10 +774,10 @@ export default function JobDetailPage() {
                     <p className="text-amber-900">
                       For questions or concerns, please contact our support team at{' '}
                       <a
-                        href="mailto:contact@hiremymom.com"
+                        href="mailto:contact@ampertalent.com"
                         className="font-medium underline hover:text-amber-700"
                       >
-                        contact@hiremymom.com
+                        contact@ampertalent.com
                       </a>
                     </p>
                   </div>

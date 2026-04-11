@@ -150,7 +150,7 @@ export class DataCleanupService {
       console.log(`Cleaning up temporary files older than ${olderThanDays} days (before ${cutoffDate.toISOString()})`);
 
       // List and delete temporary files from S3
-      const bucket = process.env.AWS_S3_BUCKET || 'hire-my-mom-files';
+      const bucket = process.env.AWS_S3_BUCKET || 'amper-talent-files';
       const tempPrefix = 'temp/';
 
       try {
@@ -398,7 +398,7 @@ export class DataCleanupService {
           // Try to delete S3 file
           if (resume.fileUrl) {
             try {
-              const bucket = process.env.AWS_S3_BUCKET || 'hire-my-mom-files';
+              const bucket = process.env.AWS_S3_BUCKET || 'amper-talent-files';
               // Extract S3 key from fileUrl (e.g., https://bucket.s3.region.amazonaws.com/path/to/file.pdf -> path/to/file.pdf)
               const s3Key = resume.fileUrl.includes('amazonaws.com') 
                 ? resume.fileUrl.split('.amazonaws.com/')[1]

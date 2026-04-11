@@ -71,7 +71,7 @@ export function PackageSelectionCard({ plan, selected, onSelect }: PackageSelect
               <div key={index} className="flex items-start space-x-2">
                 <Check className="h-4 w-4 text-purple-500 mt-0.5 flex-shrink-0" />
                 <span className="text-sm text-purple-700 font-medium">
-                  Free "Get The Job Done! Hire A Mom" T-shirt
+                  Free "Get The Job Done! AmperTalent" T-shirt
                 </span>
               </div>
             ))}

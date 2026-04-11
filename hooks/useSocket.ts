@@ -99,7 +99,7 @@ export function useSocket(): UseSocketReturn {
                 }
 
                 // 6. Figure out server URL
-                const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL ?? 'https://hire-my-mom-saas-realtime-server-1.onrender.com'
+                const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL ?? 'https://amper-talent-saas-realtime-server-1.onrender.com'
 
                 // 7. Actually create the socket
                 const socket = io(SOCKET_URL, {

@@ -20,7 +20,7 @@ interface MessageData {
 }
 
 // Realtime server URL (Render in production, localhost in development)
-const REALTIME_SERVER_URL = process.env.NEXT_PUBLIC_SOCKET_URL ?? 'https://hire-my-mom-saas-realtime-server-1.onrender.com'; // Staging Env
+const REALTIME_SERVER_URL = process.env.NEXT_PUBLIC_SOCKET_URL ?? 'https://amper-talent-saas-realtime-server-1.onrender.com'; // Staging Env
 
 export class SocketIOService {
   private static instance: SocketIOService

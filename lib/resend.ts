@@ -6,7 +6,7 @@
  * 
  * Configuration:
  * - RESEND_API_KEY: API key from Resend dashboard
- * - RESEND_FROM_EMAIL: Verified sender email (e.g., team@notifications.hiremymom.com)
+ * - RESEND_FROM_EMAIL: Verified sender email (e.g., team@notifications.ampertalent.com)
  */
 
 import { Resend } from 'resend'
@@ -15,7 +15,7 @@ import { Resend } from 'resend'
 const resend = new Resend(process.env.RESEND_API_KEY)
 
 // Default sender email
-const DEFAULT_FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'team@notifications.hiremymom.com'
+const DEFAULT_FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'team@notifications.ampertalent.com'
 
 export interface SendEmailOptions {
     to: string | string[]
@@ -151,8 +151,8 @@ export function getAdminNotificationRecipients(): string[] {
     if (!envRecipients) {
         // Fallback to hardcoded list for safety
         return [
-            'contact@hiremymom.com',
-            'lesley@hiremymom.com',
+            'contact@ampertalent.com',
+            'lesley@ampertalent.com',
             'melissa@locusdigital.ai'
         ]
     }

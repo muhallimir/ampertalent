@@ -155,7 +155,7 @@ export class NotificationService {
         email: data.email,
         firstName: data.firstName,
         tags: ['job_seeker', 'new_user'],
-        source: 'hire_my_mom_signup',
+        source: 'amper_talent_signup',
         locationId: process.env.GOHIGHLEVEL_LOCATION_ID!
       })
 
@@ -198,7 +198,7 @@ export class NotificationService {
         email: data.email,
         firstName: data.firstName,
         tags: ['employer', 'new_user'],
-        source: 'hire_my_mom_signup',
+        source: 'amper_talent_signup',
         customFields: {
           company_name: data.companyName
         },

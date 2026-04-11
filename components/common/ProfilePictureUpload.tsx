@@ -189,7 +189,7 @@ export function ProfilePictureUpload({
         body: JSON.stringify({
           uploadId: fileKey,
           fileUrl: `https://${
-            process.env.NEXT_PUBLIC_AWS_S3_BUCKET || 'hire-my-mom-files'
+            process.env.NEXT_PUBLIC_AWS_S3_BUCKET || 'amper-talent-files'
           }.s3.${
             process.env.NEXT_PUBLIC_AWS_REGION || 'us-east-2'
           }.amazonaws.com/${fileKey}`,

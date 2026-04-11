@@ -32,7 +32,7 @@ export function ProfilePicture({
 
       if (profilePictureUrl && profilePictureUrl.trim() !== '') {
         // Check if it's an S3 URL that might be expired
-        const isS3Url = profilePictureUrl.includes('hire-my-mom-files.s3.') || profilePictureUrl.includes('.amazonaws.com')
+        const isS3Url = profilePictureUrl.includes('amper-talent-files.s3.') || profilePictureUrl.includes('.amazonaws.com')
 
         // Check if it's already a complete URL (starts with http/https)
         if ((profilePictureUrl.startsWith('http://') || profilePictureUrl.startsWith('https://')) && !isS3Url) {

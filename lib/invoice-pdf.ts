@@ -175,8 +175,8 @@ export function generateInvoicePDF(invoice: InvoiceData): Buffer {
   doc.text(footerMessage, 20, 250)
   
   doc.setTextColor(100, 100, 100) // Gray
-  doc.text('For questions about this invoice, please contact support@hiremymom.com', 20, 257)
-  doc.text('Visit us at www.hiremymom.com', 20, 264)
+  doc.text('For questions about this invoice, please contact support@ampertalent.com', 20, 257)
+  doc.text('Visit us at www.ampertalent.com', 20, 264)
 
   // Add a subtle border around the entire invoice
   doc.setDrawColor(200, 200, 200) // Light gray

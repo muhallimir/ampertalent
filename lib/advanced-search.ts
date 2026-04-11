@@ -1,7 +1,7 @@
 import { db } from './db';
 import { S3Service } from './s3';
 
-const BUCKET_NAME = process.env.AWS_S3_BUCKET || 'hire-my-mom-files';
+const BUCKET_NAME = process.env.AWS_S3_BUCKET || 'amper-talent-files';
 
 // Helper function to generate presigned URL for company logo
 async function generatePresignedLogoUrl(companyLogoUrl: string | null): Promise<string | null> {
