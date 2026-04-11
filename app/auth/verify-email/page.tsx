@@ -181,7 +181,7 @@ export default function VerifyEmailPage() {
             <div className="text-sm text-gray-600 space-y-3">
               <div className="flex items-start space-x-3">
                 <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                <p>Check your inbox for an email from Hire My Mom</p>
+                <p>Check your inbox for an email from AmperTalent</p>
               </div>
               <div className="flex items-start space-x-3">
                 <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />

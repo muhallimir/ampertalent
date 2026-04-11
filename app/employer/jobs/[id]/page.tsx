@@ -464,7 +464,7 @@ export default function JobDetailPage() {
                           <>
                             <ExternalLink className="h-4 w-4 text-blue-600" />
                             <span className="text-sm text-gray-600">
-                              Links to this job posting on HireMyMom
+                              Links to this job posting on AmperTalent
                             </span>
                           </>
                         ) : (

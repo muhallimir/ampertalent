@@ -204,10 +204,10 @@ function PostResumeForm() {
                   </ul>
                 </div>
                 <Button 
-                  onClick={() => window.location.href = 'https://hiremymom.com'}
+                  onClick={() => window.location.href = 'https://ampertalent.com'}
                   className="bg-brand-coral hover:bg-brand-coral/90"
                 >
-                  Return to HireMyMom.com
+                  Return to AmperTalent.com
                 </Button>
               </div>
             </CardContent>

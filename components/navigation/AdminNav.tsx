@@ -76,7 +76,7 @@ export function AdminNav() {
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
               <Link href="/admin" className="text-xl font-bold text-purple-600">
-                Hire My Mom Admin
+                AmperTalent Admin
               </Link>
             </div>
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">

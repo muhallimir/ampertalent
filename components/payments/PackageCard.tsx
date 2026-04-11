@@ -75,7 +75,7 @@ export const JOB_PACKAGES: JobPackage[] = [
     featuredListings: 0,
     duration: 7,
     features: [
-      "Want to Stand Out and get your job noticed FAST!?! Send a Solo Email Blast to Candidates specifically for your job post to our database of job seekers. Also includes a free job listing on HireMyMom",
+      "Want to Stand Out and get your job noticed FAST!?! Send a Solo Email Blast to Candidates specifically for your job post to our database of job seekers. Also includes a free job listing on AmperTalent",
     ],
     recommended: true,
   },
@@ -108,7 +108,7 @@ export const CONCIERGE_PACKAGES: JobPackage[] = [
     features: [
       "Discovery Call – We learn your needs and define your ideal hire",
       "Pro Job Post – We write or refine your job listing for max impact",
-      "Targeted Posting – We post it on HireMyMom.com to our curated candidates",
+      "Targeted Posting – We post it on AmperTalent.com to our curated candidates",
       "Expert Screening – We review every resume and cover letter",
       "Custom Interviews – We prep job-specific questions and conduct interviews",
       "Candidate Presentation – You get our top candidate picks complete with summaries and video interviews (when available)",

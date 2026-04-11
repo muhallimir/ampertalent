@@ -57,7 +57,7 @@ const planDetails: Record<string, PlanDetails> = {
     features: [
       'Apply for unlimited jobs',
       'Unlimited resumes',
-      'Free HireMyMom T-shirt',
+      'Free AmperTalent T-shirt',
       'Email, text & phone support Monday-Friday'
     ]
   },
@@ -70,7 +70,7 @@ const planDetails: Record<string, PlanDetails> = {
     features: [
       'Apply for unlimited jobs',
       'Unlimited resumes',
-      'Free HireMyMom T-shirt',
+      'Free AmperTalent T-shirt',
       'Email, text & phone support Monday-Friday',
       'Best value - Save $120/year!'
     ]
@@ -121,7 +121,7 @@ export default function MembershipSuccessPage() {
             <CheckCircle className="h-12 w-12 text-white" />
           </div>
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            Welcome to HireMyMom!
+            Welcome to AmperTalent!
           </h1>
           <p className="text-xl text-gray-600">
             Your {plan.name} membership is now active

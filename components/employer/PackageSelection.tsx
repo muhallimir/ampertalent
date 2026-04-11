@@ -60,7 +60,7 @@ const JOB_PACKAGES: JobPackage[] = [
     description: "Stand out and get noticed FAST!",
     features: [
       "Solo Email Blast to our database of job seekers",
-      "Free job listing on HireMyMom included",
+      "Free job listing on AmperTalent included",
       "You provide copy (100 words or less)",
       "Optional logo image included",
       "We handle the rest!",

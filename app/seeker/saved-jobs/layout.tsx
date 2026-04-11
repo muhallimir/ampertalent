@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "Saved Jobs - Hire My Mom",
+    title: "Saved Jobs - AmperTalent",
     description: "Keep track of jobs you're interested in applying to. Manage your saved job opportunities from family-friendly employers.",
 };
 

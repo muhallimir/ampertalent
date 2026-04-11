@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "My Profile - Hire My Mom",
+  title: "My Profile - AmperTalent",
   description: "Manage your professional profile, upload your resume, and showcase your skills to potential employers. Build a compelling profile that stands out.",
 }
 

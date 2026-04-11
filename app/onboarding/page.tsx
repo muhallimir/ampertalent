@@ -1239,8 +1239,8 @@ export default function OnboardingPage() {
             <div className="flex justify-between items-center mb-4">
               <div className="flex-1"></div>
               <Image
-                src="/hmm_logo.png"
-                alt="Hire My Mom Logo"
+                src="/logo/ampertalent.png"
+                alt="AmperTalent Logo"
                 width={200}
                 height={0}
                 style={{ height: 'auto' }}

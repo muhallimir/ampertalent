@@ -39,7 +39,7 @@ export const SEEKER_SERVICES: AdditionalServiceConfig[] = [
     id: 'career_jumpstart',
     name: 'Career Jumpstart Session',
     shortDescription: 'A focused boost to get your job search moving in the right direction.',
-    description: `Feeling stuck or unsure about your next step? In this one-on-one session, you'll meet with a trusted HireMyMom HR expert for personalized guidance that brings clarity and confidence to your job search.
+    description: `Feeling stuck or unsure about your next step? In this one-on-one session, you'll meet with a trusted AmperTalent HR expert for personalized guidance that brings clarity and confidence to your job search.
 
 Perfect for moms re-entering the workforce, career changers, or anyone ready to move forward with purpose.`,
     price: 99.0,
@@ -79,7 +79,7 @@ They provide guidance on how to answer questions, what to do before, during and 
     id: 'personal_career_strategist',
     name: 'Personal Career Strategist',
     shortDescription: 'The ultimate 1-on-1 support to help you get hired—faster, smarter, and with confidence.',
-    description: `Our Personal Career Strategist gives you personalized, ongoing access to a dedicated HireMyMom HR Consultant for 30 days of hands-on support tailored to your unique career goals.
+    description: `Our Personal Career Strategist gives you personalized, ongoing access to a dedicated AmperTalent HR Consultant for 30 days of hands-on support tailored to your unique career goals.
 
 If you're re-entering the workforce, pivoting careers, or ready to find flexible, high-quality remote work you'll love—this is the personalized support that gets results.`,
     price: 299.0,
@@ -244,7 +244,7 @@ export const EMPLOYER_SERVICES: AdditionalServiceConfig[] = [
     id: 'weekly_newsletter_ad',
     name: 'Weekly Newsletter Ad',
     shortDescription: 'Feature your job in our weekly newsletter sent to thousands of job seekers.',
-    description: `Get your job in front of thousands of active job seekers! Your job will be featured prominently in our weekly HireMyMom newsletter.
+    description: `Get your job in front of thousands of active job seekers! Your job will be featured prominently in our weekly AmperTalent newsletter.
 
 Increase visibility and attract more qualified candidates for your open position.`,
     price: 79.0,

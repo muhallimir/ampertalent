@@ -45,7 +45,7 @@ export function CompleteStep({
 
       <div>
         <h2 className="text-3xl font-bold text-gray-900 mb-3">
-          Welcome to Hire My Mom{firstName ? `, ${firstName}` : ''}!
+          Welcome to AmperTalent{firstName ? `, ${firstName}` : ''}!
         </h2>
         <p className="text-lg text-gray-600 mb-6">
           Your account is ready. Let&apos;s get started!

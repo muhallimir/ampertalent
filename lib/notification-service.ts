@@ -561,7 +561,7 @@ export class NotificationService {
     try {
       const result = await goHighLevelService.sendEmail({
         to: email,
-        subject: 'Test Email from Hire My Mom',
+        subject: 'Test Email from AmperTalent',
         html: `
           <h1>Test Email</h1>
           <p>This is a test email to verify that the notification system is working correctly.</p>

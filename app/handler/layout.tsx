@@ -7,8 +7,8 @@ export default function Layout(props: { children: React.ReactNode }) {
         {/* Logo */}
         <div className="flex justify-center mb-4">
           <Image
-            src="/hmm_logo.png"
-            alt="Hire My Mom Logo"
+            src="/logo/ampertalent.png"
+            alt="AmperTalent Logo"
             width={160}
             height={0}
             style={{ height: 'auto' }}

@@ -386,7 +386,7 @@ export class InAppNotificationService {
       await this.createNotification({
         userId: seekerUserId,
         type: 'seeker_welcome',
-        title: 'Welcome to HireMyMom! 🎉',
+        title: 'Welcome to AmperTalent! 🎉',
         message: `Your account is ready! Start exploring job opportunities.${membershipPlan ? ` You're on the ${membershipPlan} plan.` : ''}`,
         data: { membershipPlan },
         priority: 'high',
@@ -556,7 +556,7 @@ export class InAppNotificationService {
       await this.createNotification({
         userId: employerUserId,
         type: 'employer_welcome',
-        title: 'Welcome to HireMyMom! 🎉',
+        title: 'Welcome to AmperTalent! 🎉',
         message: `${companyName} is ready to start hiring! Post your first job to find qualified candidates.${packageType ? ` You're on the ${packageType} package.` : ''}`,
         data: { companyName, packageType },
         priority: 'high',

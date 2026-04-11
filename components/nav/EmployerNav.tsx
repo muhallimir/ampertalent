@@ -381,8 +381,8 @@ export function EmployerNav() {
           {/* Logo */}
           <Link href="/employer/dashboard" className="flex items-center">
             <Image
-              src="/hmm_logo.png"
-              alt="Hire My Mom"
+              src="/logo/ampertalent.png"
+              alt="AmperTalent"
               width={180}
               height={60}
               className="rounded-lg"

@@ -629,7 +629,7 @@ export default function UserInviteSignupForm({ invitationToken }: { invitationTo
         {/* Information Panel */}
         <div className="max-lg:w-1/3 max-lg:px-0 max-sm:w-2/3 p-6 w-[27rem] mx-auto flex flex-col justify-center">
           <div className="flex items-center mb-6 w-2/3 mx-auto">
-            <img src="/hmm_logo.png" alt="Hire My Mom Logo" className="h-20" />
+            <img src="/logo/ampertalent.png" alt="AmperTalent Logo" className="h-20" />
           </div>
           <div className="space-y-4 flex flex-col w-2/3 mx-auto gap-1">
             <h2 className="text-md font-semibold text-gray-800">
@@ -845,7 +845,7 @@ export default function UserInviteSignupForm({ invitationToken }: { invitationTo
 
           <div className={footerClasses}>
             <p className="text-xs">
-              By creating an account, you agree to our <a className={tosClass} href="https://www.hiremymom.com/tos/" target="_blank">Terms of Service</a> and <a className={tosClass} href="https://www.hiremymom.com/privacypolicy/" target="_blank">Privacy Policy.</a>
+              By creating an account, you agree to our <a className={tosClass} href="https://www.ampertalent.com/tos/" target="_blank">Terms of Service</a> and <a className={tosClass} href="https://www.ampertalent.com/privacypolicy/" target="_blank">Privacy Policy.</a>
             </p>
           </div>
         </div>

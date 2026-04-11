@@ -954,7 +954,7 @@ export function FieldMappingsTab() {
                     <Alert className="bg-blue-50 border-blue-200">
                         <AlertDescription className="text-sm text-blue-900 space-y-2">
                             <p className="font-semibold">📘 What is Field Mapping?</p>
-                            <p>Field mapping connects data between your HireMyMom database and GoHighLevel CRM:</p>
+                            <p>Field mapping connects data between your AmperTalent database and GoHighLevel CRM:</p>
                             <ul className="list-disc list-inside space-y-1 ml-2">
                                 <li><strong>Purpose:</strong> Automatically sync user data to GHL for marketing campaigns and lead management</li>
                                 <li><strong>Sync Direction:</strong> Choose how data flows - from App to GHL, from GHL to App, or both ways</li>

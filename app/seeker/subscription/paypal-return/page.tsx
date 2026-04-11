@@ -193,7 +193,7 @@ export default function PayPalReturnPage() {
                                 {isServicePurchase
                                     ? 'Service Purchased Successfully!'
                                     : isOnboarding
-                                        ? 'Welcome to HireMyMom!'
+                                        ? 'Welcome to AmperTalent!'
                                         : 'PayPal Connected Successfully!'}
                             </CardTitle>
                         </>

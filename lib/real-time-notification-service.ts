@@ -85,7 +85,7 @@ class RealTimeNotificationService {
     const notification: RealTimeNotification = {
       id: `welcome_${Date.now()}`,
       type: 'welcome',
-      title: `Welcome to HireMyMom! 🎉`,
+      title: `Welcome to AmperTalent! 🎉`,
       message: isSeeker
         ? `Your ${planName} membership is now active. Start applying to jobs!`
         : `Your account is ready. Start posting jobs and finding great talent!`,

@@ -19,7 +19,7 @@ const AppFooter = dynamic(() => import("@/components/common/AppFooter").then(mod
 })
 
 export const metadata: Metadata = {
-  title: "Job Seeker Dashboard - Hire My Mom",
+  title: "Job Seeker Dashboard - AmperTalent",
   description: "Find remote job opportunities, manage your applications, and build your professional profile. Access vetted jobs from family-friendly employers.",
 }
 

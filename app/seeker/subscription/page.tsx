@@ -710,7 +710,7 @@ export default function SubscriptionPage() {
                 </p>
                 <p>
                   <strong>Exclusive Access:</strong> Many of our job postings
-                  are exclusive to HireMyMom members, giving you access to
+                  are exclusive to AmperTalent members, giving you access to
                   opportunities you won&apos;t find anywhere else.
                 </p>
                 <p>
@@ -731,7 +731,7 @@ export default function SubscriptionPage() {
               </CardTitle>
               <CardDescription className="text-white/90">
                 Hear from moms who found their dream remote jobs through
-                HireMyMom
+                AmperTalent
               </CardDescription>
             </CardHeader>
             <CardContent className="p-6">
@@ -740,7 +740,7 @@ export default function SubscriptionPage() {
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <p className="text-gray-700 italic mb-2">
                       &quot;I found my perfect work-from-home job within 2 weeks
-                      of joining HireMyMom. The quality of jobs here is amazing
+                      of joining AmperTalent. The quality of jobs here is amazing
                       - no scams, just real opportunities!&quot;
                     </p>
                     <p className="text-sm font-semibold text-gray-900">
@@ -749,7 +749,7 @@ export default function SubscriptionPage() {
                   </div>
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <p className="text-gray-700 italic mb-2">
-                      &quot;As a single mom, I needed flexibility. HireMyMom
+                      &quot;As a single mom, I needed flexibility. AmperTalent
                       helped me find a remote marketing role that lets me be
                       present for my kids while building my career.&quot;
                     </p>
@@ -761,7 +761,7 @@ export default function SubscriptionPage() {
                 <div className="space-y-4">
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <p className="text-gray-700 italic mb-2">
-                      &quot;The support team at HireMyMom is incredible. They
+                      &quot;The support team at AmperTalent is incredible. They
                       helped me optimize my resume and I landed three interviews
                       in my first month!&quot;
                     </p>
@@ -772,7 +772,7 @@ export default function SubscriptionPage() {
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <p className="text-gray-700 italic mb-2">
                       &quot;I was skeptical about paying for a job site, but
-                      HireMyMom paid for itself within the first week. The jobs
+                      AmperTalent paid for itself within the first week. The jobs
                       here are legitimate and well-paying.&quot;
                     </p>
                     <p className="text-sm font-semibold text-gray-900">

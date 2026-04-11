@@ -27,7 +27,7 @@ export function AppFooter() {
               <div className="w-8 h-8 bg-brand-teal rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">HMM</span>
               </div>
-              <span className="font-semibold text-gray-900">Hire My Mom</span>
+              <span className="font-semibold text-gray-900">AmperTalent</span>
             </div>
             <p className="text-sm text-gray-600">
               The trusted platform connecting talented remote professionals with family-friendly employers.
@@ -140,8 +140,8 @@ export function AppFooter() {
             <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-6 text-sm text-gray-600">
               <div className="flex items-center">
                 <Mail className="h-4 w-4 mr-2" />
-                <a href="mailto:contact@hiremymom.com" className="hover:text-brand-teal transition-colors">
-                  contact@hiremymom.com
+                <a href="mailto:contact@ampertalent.com" className="hover:text-brand-teal transition-colors">
+                  contact@ampertalent.com
                 </a>
               </div>
               <div className="flex items-center">
@@ -162,7 +162,7 @@ export function AppFooter() {
         <div className="border-t border-gray-200 mt-6 pt-6">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-2 md:space-y-0">
             <p className="text-sm text-gray-600">
-              © {currentYear} HireMyMom. All rights reserved.
+              © {currentYear} AmperTalent. All rights reserved.
             </p>
             <div className="flex items-center space-x-4 text-sm text-gray-600">
               <span>Empowering remote work since 2007</span>

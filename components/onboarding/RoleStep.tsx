@@ -10,7 +10,7 @@ export function RoleStep({ selectedRole, onRoleSelect }: RoleStepProps) {
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome to Hire My Mom!</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome to AmperTalent!</h2>
         <p className="text-gray-600">Let's get you set up. First, tell us what brings you here:</p>
       </div>
 

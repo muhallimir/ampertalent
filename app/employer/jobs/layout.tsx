@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Manage Job Postings - Hire My Mom",
+  title: "Manage Job Postings - AmperTalent",
   description: "Manage your job postings, review applications, and find qualified remote professionals. Track hiring progress and candidate interactions.",
 }
 

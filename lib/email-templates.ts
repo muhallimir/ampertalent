@@ -25,14 +25,14 @@ export class EmailTemplates {
     const { firstName, email, loginUrl } = data
 
     return {
-      subject: `Welcome to HireMyMom, ${firstName}! 🎉`,
+      subject: `Welcome to AmperTalent, ${firstName}! 🎉`,
       html: `
         <!DOCTYPE html>
         <html>
         <head>
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Welcome to HireMyMom</title>
+          <title>Welcome to AmperTalent</title>
           <style>
             body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
             .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -46,7 +46,7 @@ export class EmailTemplates {
         <body>
           <div class="container">
             <div class="header">
-              <h1>Welcome to HireMyMom! 👋</h1>
+              <h1>Welcome to AmperTalent! 👋</h1>
               <p>Your journey to finding the perfect remote job starts here</p>
             </div>
             <div class="content">
@@ -79,18 +79,18 @@ export class EmailTemplates {
               <p>If you have any questions, don't hesitate to reach out to our support team. We're here to help you succeed!</p>
               
               <p>Best regards,<br>
-              The HireMyMom Team</p>
+              The AmperTalent Team</p>
             </div>
             <div class="footer">
-              <p>You're receiving this email because you signed up for HireMyMom at ${email}</p>
-              <p>© 2025 HireMyMom. All rights reserved.</p>
+              <p>You're receiving this email because you signed up for AmperTalent at ${email}</p>
+              <p>© 2025 AmperTalent. All rights reserved.</p>
             </div>
           </div>
         </body>
         </html>
       `,
       text: `
-        Welcome to HireMyMom, ${firstName}!
+        Welcome to AmperTalent, ${firstName}!
         
         We're thrilled to have you join our community of talented moms seeking flexible, remote work opportunities!
         
@@ -111,7 +111,7 @@ export class EmailTemplates {
         If you have any questions, don't hesitate to reach out to our support team.
         
         Best regards,
-        The HireMyMom Team
+        The AmperTalent Team
       `
     }
   }
@@ -128,14 +128,14 @@ export class EmailTemplates {
     const { firstName, companyName, email, loginUrl } = data
 
     return {
-      subject: `Welcome to HireMyMom, ${companyName}! 🏢`,
+      subject: `Welcome to AmperTalent, ${companyName}! 🏢`,
       html: `
         <!DOCTYPE html>
         <html>
         <head>
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Welcome to HireMyMom</title>
+          <title>Welcome to AmperTalent</title>
           <style>
             body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
             .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -149,13 +149,13 @@ export class EmailTemplates {
         <body>
           <div class="container">
             <div class="header">
-              <h1>Welcome to HireMyMom! 🏢</h1>
+              <h1>Welcome to AmperTalent! 🏢</h1>
               <p>Connect with talented moms ready for remote work</p>
             </div>
             <div class="content">
               <h2>Hi ${firstName}!</h2>
               
-              <p>Thank you for choosing HireMyMom to find exceptional remote talent for ${companyName}!</p>
+              <p>Thank you for choosing AmperTalent to find exceptional remote talent for ${companyName}!</p>
               
               <div class="highlight">
                 <h3>🚀 Getting Started:</h3>
@@ -184,20 +184,20 @@ export class EmailTemplates {
               <p>Questions? Our team is here to help you succeed!</p>
               
               <p>Best regards,<br>
-              The HireMyMom Team</p>
+              The AmperTalent Team</p>
             </div>
             <div class="footer">
-              <p>You're receiving this email because you signed up for HireMyMom at ${email}</p>
-              <p>© 2025 HireMyMom. All rights reserved.</p>
+              <p>You're receiving this email because you signed up for AmperTalent at ${email}</p>
+              <p>© 2025 AmperTalent. All rights reserved.</p>
             </div>
           </div>
         </body>
         </html>
       `,
       text: `
-        Welcome to HireMyMom, ${companyName}!
+        Welcome to AmperTalent, ${companyName}!
         
-        Thank you for choosing HireMyMom to find exceptional remote talent!
+        Thank you for choosing AmperTalent to find exceptional remote talent!
         
         Getting Started:
         - Complete your company profile - Showcase your culture and values
@@ -216,7 +216,7 @@ export class EmailTemplates {
         Our vetting process ensures you only see qualified, motivated candidates.
         
         Best regards,
-        The HireMyMom Team
+        The AmperTalent Team
       `
     }
   }
@@ -283,13 +283,13 @@ export class EmailTemplates {
                 <li>Our platform helps you identify the most qualified candidates</li>
               </ul>
               
-              <p>Thank you for choosing HireMyMom to find your next great team member!</p>
+              <p>Thank you for choosing AmperTalent to find your next great team member!</p>
               
               <p>Best regards,<br>
-              The HireMyMom Team</p>
+              The AmperTalent Team</p>
             </div>
             <div class="footer">
-              <p>© 2025 HireMyMom. All rights reserved.</p>
+              <p>© 2025 AmperTalent. All rights reserved.</p>
             </div>
           </div>
         </body>
@@ -315,10 +315,10 @@ export class EmailTemplates {
         - You'll receive email notifications for each new application
         - You can review and manage applications in your dashboard
         
-        Thank you for choosing HireMyMom!
+        Thank you for choosing AmperTalent!
         
         Best regards,
-        The HireMyMom Team
+        The AmperTalent Team
       `
     }
   }
@@ -388,10 +388,10 @@ export class EmailTemplates {
               <p>If you have any questions about the feedback or need assistance, please don't hesitate to contact our support team.</p>
               
               <p>Best regards,<br>
-              The HireMyMom Team</p>
+              The AmperTalent Team</p>
             </div>
             <div class="footer">
-              <p>© 2025 HireMyMom. All rights reserved.</p>
+              <p>© 2025 AmperTalent. All rights reserved.</p>
             </div>
           </div>
         </body>
@@ -419,7 +419,7 @@ export class EmailTemplates {
         Resubmit after making updates - we review within 24 hours.
         
         Best regards,
-        The HireMyMom Team
+        The AmperTalent Team
       `
     }
   }
@@ -489,10 +489,10 @@ export class EmailTemplates {
               <p>Remember, the best candidates often get multiple offers, so don't wait too long to reach out if you're interested!</p>
               
               <p>Best regards,<br>
-              The HireMyMom Team</p>
+              The AmperTalent Team</p>
             </div>
             <div class="footer">
-              <p>© 2025 HireMyMom. All rights reserved.</p>
+              <p>© 2025 AmperTalent. All rights reserved.</p>
             </div>
           </div>
         </body>
@@ -522,7 +522,7 @@ export class EmailTemplates {
         The best candidates get multiple offers - don't wait too long!
         
         Best regards,
-        The HireMyMom Team
+        The AmperTalent Team
       `
     }
   }
@@ -627,13 +627,13 @@ export class EmailTemplates {
                 <p>Your application has been reviewed and you're being considered for this position.</p>
               `}
               
-              <p>Thank you for using HireMyMom to find your next opportunity!</p>
+              <p>Thank you for using AmperTalent to find your next opportunity!</p>
               
               <p>Best regards,<br>
-              The HireMyMom Team</p>
+              The AmperTalent Team</p>
             </div>
             <div class="footer">
-              <p>© 2025 HireMyMom. All rights reserved.</p>
+              <p>© 2025 AmperTalent. All rights reserved.</p>
             </div>
           </div>
         </body>
@@ -657,7 +657,7 @@ export class EmailTemplates {
                 'Your application is being considered.'}
         
         Best regards,
-        The HireMyMom Team
+        The AmperTalent Team
       `
     }
   }
@@ -730,7 +730,7 @@ export class EmailTemplates {
           <div class="container">
             <div class="email-wrapper">
               <div class="logo-section">
-                <img src="https://app.hiremymom.com/hmm_logo.png" alt="HireMyMom" style="width:280px;height:auto;" />
+                <img src="https://app.ampertalent.com/logo/ampertalent.png" alt="AmperTalent" style="width:280px;height:auto;" />
               </div>
               <div class="header">
                 <h1>${isTrial ? '🎉 Free Trial Activated!' : '💳 Payment Confirmed'}</h1>
@@ -875,10 +875,10 @@ export class EmailTemplates {
                 ` : ''}
                 
                 <p class="signature"><strong>Best regards,</strong><br>
-                The HireMyMom Team</p>
+                The AmperTalent Team</p>
               </div>
               <div class="footer">
-                <p>© ${new Date().getFullYear()} HireMyMom. All rights reserved.</p>
+                <p>© ${new Date().getFullYear()} AmperTalent. All rights reserved.</p>
               </div>
             </div>
           </div>
@@ -920,10 +920,10 @@ Zip Code: ${zipCode || 'Not provided'}`}
 
 ${!isRecurring ? 'This subscription is set to renew automatically using your payment method on file. You can manage or cancel this subscription from your Account.\n' : ''}
 Best regards,
-The HireMyMom Team
+The AmperTalent Team
 
 ---
-© ${new Date().getFullYear()} HireMyMom. All rights reserved.
+© ${new Date().getFullYear()} AmperTalent. All rights reserved.
       `
     }
   }
@@ -980,7 +980,7 @@ The HireMyMom Team
           <div class="container">
             <div class="email-wrapper">
               <div class="logo-section">
-                <img src="https://app.hiremymom.com/hmm_logo.png" alt="HireMyMom" style="width:280px;height:auto;" />
+                <img src="https://app.ampertalent.com/logo/ampertalent.png" alt="AmperTalent" style="width:280px;height:auto;" />
               </div>
               <div class="header">
                 <h1>🔔 Renewal Reminder</h1>
@@ -989,7 +989,7 @@ The HireMyMom Team
               <div class="content">
                 <p class="greeting">Hi <strong>${firstName}</strong>,</p>
                 
-                <p>This is a friendly reminder that your HireMyMom membership will renew automatically in <strong>${daysLabel}</strong>.</p>
+                <p>This is a friendly reminder that your AmperTalent membership will renew automatically in <strong>${daysLabel}</strong>.</p>
                 
                 <h3 class="section-title">Renewal Details</h3>
                 <table class="info-table">
@@ -1019,10 +1019,10 @@ The HireMyMom Team
                 
                 <p class="signature">Thank you for being a valued member!<br><br>
                 <strong>Best regards,</strong><br>
-                The HireMyMom Team</p>
+                The AmperTalent Team</p>
               </div>
               <div class="footer">
-                <p>© ${new Date().getFullYear()} HireMyMom. All rights reserved.</p>
+                <p>© ${new Date().getFullYear()} AmperTalent. All rights reserved.</p>
               </div>
             </div>
           </div>
@@ -1034,7 +1034,7 @@ RENEWAL REMINDER
 
 Hi ${firstName},
 
-This is a friendly reminder that your HireMyMom membership will renew automatically in ${daysLabel}.
+This is a friendly reminder that your AmperTalent membership will renew automatically in ${daysLabel}.
 
 ========================================
 RENEWAL DETAILS
@@ -1049,10 +1049,10 @@ Payment Method: ${paymentMethod ?? 'Not provided'}
 Thank you for being a valued member!
 
 Best regards,
-The HireMyMom Team
+The AmperTalent Team
 
 ---
-© ${new Date().getFullYear()} HireMyMom. All rights reserved.
+© ${new Date().getFullYear()} AmperTalent. All rights reserved.
       `
     }
   }
@@ -1077,7 +1077,7 @@ The HireMyMom Team
     }
 
     return {
-      subject: `🤝 You're invited to join ${companyName}'s team on HireMyMom`,
+      subject: `🤝 You're invited to join ${companyName}'s team on AmperTalent`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -1100,12 +1100,12 @@ The HireMyMom Team
           <div class="container">
             <div class="header">
               <h1>🤝 Team Invitation</h1>
-              <p>You've been invited to collaborate on HireMyMom</p>
+              <p>You've been invited to collaborate on AmperTalent</p>
             </div>
             <div class="content">
               <h2>Hi ${firstName || 'there'}!</h2>
               
-              <p><strong>${inviterName}</strong> has invited you to join <strong>${companyName}</strong>'s team on HireMyMom.</p>
+              <p><strong>${inviterName}</strong> has invited you to join <strong>${companyName}</strong>'s team on AmperTalent.</p>
               
               <div class="invitation-details">
                 <h3>📋 Invitation Details:</h3>
@@ -1137,16 +1137,16 @@ The HireMyMom Team
               
               <p><strong>This invitation will expire in 7 days</strong>, so be sure to accept it soon!</p>
               
-              <p>If you don't have a HireMyMom account yet, don't worry - accepting this invitation will guide you through creating one.</p>
+              <p>If you don't have a AmperTalent account yet, don't worry - accepting this invitation will guide you through creating one.</p>
               
               <p>Questions about this invitation? Feel free to reach out to ${inviterName} or our support team.</p>
               
               <p>Best regards,<br>
-              The HireMyMom Team</p>
+              The AmperTalent Team</p>
             </div>
             <div class="footer">
               <p>You're receiving this email because ${inviterName} invited you to join ${companyName}'s team</p>
-              <p>© 2025 HireMyMom. All rights reserved.</p>
+              <p>© 2025 AmperTalent. All rights reserved.</p>
             </div>
           </div>
         </body>
@@ -1157,7 +1157,7 @@ The HireMyMom Team
         
         Hi ${firstName || 'there'}!
         
-        ${inviterName} has invited you to join ${companyName}'s team on HireMyMom.
+        ${inviterName} has invited you to join ${companyName}'s team on AmperTalent.
         
         Invitation Details:
         - Company: ${companyName}
@@ -1180,7 +1180,7 @@ The HireMyMom Team
         Questions? Contact ${inviterName} or our support team.
         
         Best regards,
-        The HireMyMom Team
+        The AmperTalent Team
       `
     }
   }
@@ -1242,7 +1242,7 @@ The HireMyMom Team
               
               <div class="footer">
                 <p>Best of luck with your interview!</p>
-                <p>© 2025 HireMyMom. All rights reserved.</p>
+                <p>© 2025 AmperTalent. All rights reserved.</p>
               </div>
             </div>
           </div>
@@ -1265,7 +1265,7 @@ The HireMyMom Team
         Contact employer: ${employerEmail}
         
         Best of luck!
-        The HireMyMom Team
+        The AmperTalent Team
       `
     }
   }
@@ -1328,8 +1328,8 @@ The HireMyMom Team
               <p>If you have any questions, contact the employer at ${employerEmail}.</p>
               
               <div class="footer">
-                <p>Thank you for using HireMyMom!</p>
-                <p>© 2025 HireMyMom. All rights reserved.</p>
+                <p>Thank you for using AmperTalent!</p>
+                <p>© 2025 AmperTalent. All rights reserved.</p>
               </div>
             </div>
           </div>
@@ -1349,7 +1349,7 @@ The HireMyMom Team
         Contact employer: ${employerEmail}
         
         Thank you!
-        The HireMyMom Team
+        The AmperTalent Team
       `
     }
   }
@@ -1415,10 +1415,10 @@ The HireMyMom Team
               <p>If you have any questions about your service purchase, please don't hesitate to contact our support team.</p>
 
               <p>Best regards,<br>
-              The HireMyMom Team</p>
+              The AmperTalent Team</p>
             </div>
             <div class="footer">
-              <p>© 2025 HireMyMom. All rights reserved.</p>
+              <p>© 2025 AmperTalent. All rights reserved.</p>
             </div>
           </div>
         </body>
@@ -1443,7 +1443,7 @@ The HireMyMom Team
         View your purchases: ${servicesUrl}
 
         Best regards,
-        The HireMyMom Team
+        The AmperTalent Team
       `
     }
   }
@@ -1505,13 +1505,13 @@ The HireMyMom Team
 
               <p>We hope you found this service valuable! If you have any questions or feedback, please don't hesitate to reach out to our support team.</p>
 
-              <p>Thank you for choosing HireMyMom!</p>
+              <p>Thank you for choosing AmperTalent!</p>
 
               <p>Best regards,<br>
-              The HireMyMom Team</p>
+              The AmperTalent Team</p>
             </div>
             <div class="footer">
-              <p>© 2025 HireMyMom. All rights reserved.</p>
+              <p>© 2025 AmperTalent. All rights reserved.</p>
             </div>
           </div>
         </body>
@@ -1528,10 +1528,10 @@ The HireMyMom Team
 
         ${notes ? `Notes from Our Team:\n${notes}\n\n` : ''}View service details: ${servicesUrl}
 
-        Thank you for choosing HireMyMom!
+        Thank you for choosing AmperTalent!
 
         Best regards,
-        The HireMyMom Team
+        The AmperTalent Team
       `
     }
   }
@@ -1612,10 +1612,10 @@ The HireMyMom Team
               <p>If you have any questions, please contact our support team.</p>
 
               <p>Best regards,<br>
-              The HireMyMom Team</p>
+              The AmperTalent Team</p>
             </div>
             <div class="footer">
-              <p>© 2025 HireMyMom. All rights reserved.</p>
+              <p>© 2025 AmperTalent. All rights reserved.</p>
             </div>
           </div>
         </body>
@@ -1632,7 +1632,7 @@ The HireMyMom Team
         ${notes ? `Update Notes:\n${notes}\n\n` : ''}View service details: ${servicesUrl}
 
         Best regards,
-        The HireMyMom Team
+        The AmperTalent Team
       `
     }
   }
@@ -1689,10 +1689,10 @@ The HireMyMom Team
 
               <a href="${adminUrl}" class="button">Review Service Request →</a>
 
-              <p><em>This is an automated notification from the HireMyMom admin system.</em></p>
+              <p><em>This is an automated notification from the AmperTalent admin system.</em></p>
             </div>
             <div class="footer">
-              <p>© 2025 HireMyMom Admin System</p>
+              <p>© 2025 AmperTalent Admin System</p>
             </div>
           </div>
         </body>
@@ -1713,7 +1713,7 @@ The HireMyMom Team
 
         Review request: ${adminUrl}
 
-        This is an automated notification from the HireMyMom admin system.
+        This is an automated notification from the AmperTalent admin system.
       `
     }
   }
@@ -1869,7 +1869,7 @@ The HireMyMom Team
           <div class="container">
             <div class="email-wrapper">
               <div style="text-align: center; padding: 20px 30px 0 30px; background: #ffffff;">
-                <img src="https://app.hiremymom.com/hmm_logo.png" alt="HireMyMom" style="width:280px;height:auto;" />
+                <img src="https://app.ampertalent.com/logo/ampertalent.png" alt="AmperTalent" style="width:280px;height:auto;" />
               </div>
               <div class="header">
                 <h1>New Order: ${orderNumber}</h1>
@@ -2023,8 +2023,8 @@ The HireMyMom Team
 
               </div>
               <div class="footer">
-                <p>This is an automated notification from HireMyMom Admin System</p>
-                <p>© ${new Date().getFullYear()} HireMyMom. All rights reserved.</p>
+                <p>This is an automated notification from AmperTalent Admin System</p>
+                <p>© ${new Date().getFullYear()} AmperTalent. All rights reserved.</p>
               </div>
             </div>
           </div>
@@ -2077,8 +2077,8 @@ ${howDidYouHear ? `How did you hear about us?: ${howDidYouHear}` : ''}
 View in Admin Dashboard: ${adminDashboardUrl}
 
 ---
-This is an automated notification from HireMyMom Admin System
-© ${new Date().getFullYear()} HireMyMom. All rights reserved.
+This is an automated notification from AmperTalent Admin System
+© ${new Date().getFullYear()} AmperTalent. All rights reserved.
       `
     }
   }
@@ -2148,7 +2148,7 @@ This is an automated notification from HireMyMom Admin System
               
               <div class="footer">
                 <p>We're here to help with your job search!</p>
-                <p>© 2025 HireMyMom. All rights reserved.</p>
+                <p>© 2025 AmperTalent. All rights reserved.</p>
               </div>
             </div>
           </div>
@@ -2168,7 +2168,7 @@ This is an automated notification from HireMyMom Admin System
         View job details: ${jobUrl}
         Contact employer: ${employerEmail}
         
-        The HireMyMom Team
+        The AmperTalent Team
       `
     }
   }

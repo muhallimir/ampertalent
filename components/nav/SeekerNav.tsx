@@ -149,8 +149,8 @@ export function SeekerNav() {
           {/* Logo */}
           <Link href="/seeker/dashboard" className="flex items-center">
             <Image
-              src="/hmm_logo.png"
-              alt="Hire My Mom"
+              src="/logo/ampertalent.png"
+              alt="AmperTalent"
               width={150}
               height={50}
               className="rounded-lg lg:w-[180px] lg:h-[60px]"

@@ -9,8 +9,8 @@ export default function AuthLayout(props: { children: React.ReactNode }) {
           <div className="w-[180px] h-20 relative">
             <Image
               fill
-              src="/hmm_logo.png"
-              alt="Hire My Mom Logo"
+              src="/logo/ampertalent.png"
+              alt="AmperTalent Logo"
               className="object-cover"
               priority
             />

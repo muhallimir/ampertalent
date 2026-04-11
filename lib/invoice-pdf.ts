@@ -32,9 +32,9 @@ export function generateInvoicePDF(invoice: InvoiceData): Buffer {
   // Create PDF using jsPDF
   const doc = new jsPDF()
 
-  // Add Hire My Mom logo
+  // Add AmperTalent logo
   try {
-    const logoPath = path.join(process.cwd(), 'public', 'hmm_logo.png')
+    const logoPath = path.join(process.cwd(), 'public', 'logo', 'ampertalent.png')
     if (fs.existsSync(logoPath)) {
       const logoData = fs.readFileSync(logoPath)
       const logoBase64 = `data:image/png;base64,${logoData.toString('base64')}`
@@ -51,7 +51,7 @@ export function generateInvoicePDF(invoice: InvoiceData): Buffer {
 
   doc.setFontSize(12)
   doc.setTextColor(0, 102, 102) // Teal color matching brand
-  doc.text('HireMyMom.com', 20, 55)
+  doc.text('AmperTalent.com', 20, 55)
   doc.setTextColor(100, 100, 100) // Gray
   doc.text('The trusted platform for remote work opportunities', 20, 62)
 
@@ -170,8 +170,8 @@ export function generateInvoicePDF(invoice: InvoiceData): Buffer {
   doc.setFontSize(10)
   doc.setTextColor(0, 102, 102) // Teal
   const footerMessage = invoice.company_name 
-    ? 'Thank you for choosing HireMyMom for your hiring needs!' 
-    : 'Thank you for your subscription to HireMyMom!'
+    ? 'Thank you for choosing AmperTalent for your hiring needs!' 
+    : 'Thank you for your subscription to AmperTalent!'
   doc.text(footerMessage, 20, 250)
   
   doc.setTextColor(100, 100, 100) // Gray

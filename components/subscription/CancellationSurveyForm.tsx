@@ -191,7 +191,7 @@ export function CancellationSurveyForm({
                             <h3 className="font-semibold text-gray-900">What is the primary reason for canceling your subscription?</h3>
                             <div className="space-y-3">
                                 {[
-                                    { value: 'found_hiremymom', label: 'I found a job through HireMyMom.com' },
+                                    { value: 'found_hiremymom', label: 'I found a job through AmperTalent.com' },
                                     { value: 'found_other', label: 'I found a job through another source' },
                                     { value: 'no_suitable_job', label: 'I could not find a suitable job' },
                                     { value: 'budget_tight', label: 'My budget is too tight right now' },
@@ -245,7 +245,7 @@ export function CancellationSurveyForm({
                         <div className="space-y-6">
                             {/* Job Satisfaction */}
                             <div className="space-y-3">
-                                <h3 className="font-semibold text-gray-900">How satisfied were you with the jobs posted on HireMyMom.com?</h3>
+                                <h3 className="font-semibold text-gray-900">How satisfied were you with the jobs posted on AmperTalent.com?</h3>
                                 <div className="space-y-2">
                                     {[
                                         { value: 'very_satisfied', label: 'Very satisfied' },
@@ -277,7 +277,7 @@ export function CancellationSurveyForm({
 
                             {/* Overall Experience */}
                             <div className="space-y-3">
-                                <h3 className="font-semibold text-gray-900">How would you rate your overall experience with HireMyMom.com?</h3>
+                                <h3 className="font-semibold text-gray-900">How would you rate your overall experience with AmperTalent.com?</h3>
                                 <div className="space-y-2">
                                     {[
                                         { value: 'excellent', label: 'Excellent' },
@@ -326,7 +326,7 @@ export function CancellationSurveyForm({
 
                             {/* Recommendation */}
                             <div className="space-y-3">
-                                <h3 className="font-semibold text-gray-900">Would you recommend HireMyMom.com to others?</h3>
+                                <h3 className="font-semibold text-gray-900">Would you recommend AmperTalent.com to others?</h3>
                                 <div className="space-y-2">
                                     {[
                                         { value: 'definitely', label: 'Definitely' },

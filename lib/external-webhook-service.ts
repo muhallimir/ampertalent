@@ -324,7 +324,7 @@ export class ExternalWebhookService {
     try {
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
-        'User-Agent': 'HireMyMom-Webhook/1.0'
+        'User-Agent': 'AmperTalent-Webhook/1.0'
       }
 
       // Add authentication header if secret is configured
@@ -1093,7 +1093,7 @@ export class ExternalWebhookService {
     try {
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
-        'User-Agent': 'HireMyMom-Webhook/1.0'
+        'User-Agent': 'AmperTalent-Webhook/1.0'
       }
 
       // Add authentication header if secret is configured

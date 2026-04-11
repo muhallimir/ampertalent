@@ -7,7 +7,7 @@ import { ToastProvider } from "@/components/ui/toast"
 import { RoleGuard } from "@/components/auth/RoleGuard"
 
 export const metadata: Metadata = {
-  title: "Employer Dashboard - Hire My Mom",
+  title: "Employer Dashboard - AmperTalent",
   description: "Post remote job opportunities, manage applications, and find qualified remote professionals. Access pre-screened candidates and concierge services.",
 }
 
