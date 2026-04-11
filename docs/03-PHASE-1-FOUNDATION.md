@@ -4,9 +4,14 @@
 
 ---
 
-## 1.1 Project Initialization
+## 1.1 Project Initiali### Tasks
 
-### Tasks
+- [x] Set up `lib/utils.ts` — utility functions (cn, formatters, etc.) - DONE
+- [x] Set up `lib/auth.ts` — auth utility functions
+- [x] Set up `lib/auth-utils.ts` — middleware auth helpers
+- [x] Set up `lib/error-handler.ts` — error handling utilities - Already exists
+- [ ] Set up `lib/file-validation.ts` — file upload validation
+- [x] Set up `lib/job-constants.ts` — job category/type constants - Already complete### Tasks
 
 - [x] Create Next.js 16 project with TypeScript & App Router
 - [x] Configure Tailwind CSS 3.4 + shadcn/ui + Radix UI primitives
@@ -105,16 +110,18 @@ __tests__/integration/database.test.ts
 
 ### Tasks
 
-- [ ] Create `lib/storage.ts` — Supabase Storage service (replaces S3)
-- [ ] Implement same interface as original `lib/s3.ts`:
-  - `generatePresignedUploadUrl()`
-  - `generatePresignedDownloadUrl()`
-  - `uploadFile()`
-  - `deleteFile()`
-  - `getFileMetadata()`
-  - `listFiles()`
-  - `copyFile()`
-- [ ] Configure storage buckets with RLS policies
+- [x] Create `lib/storage.ts` — Supabase Storage service - DONE
+- [x] Implement same interface as original `lib/s3.ts`:
+  - [x] `generatePresignedUploadUrl()`
+  - [x] `generatePresignedDownloadUrl()`
+  - [x] `uploadFile()`
+  - [x] `deleteFile()`
+  - [x] `getFileMetadata()`
+  - [x] `listFiles()`
+  - [x] `copyFile()`
+  - [x] `moveFile()`
+  - [x] `downloadFile()`
+- [x] Configure storage buckets with RLS policies
 
 ### TDD Tests
 
