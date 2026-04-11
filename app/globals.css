@@ -1,204 +1,204 @@
 /* Import markdown editor styles */
-@import '@uiw/react-md-editor/markdown-editor.css';
-@import '@uiw/react-markdown-preview/markdown.css';
+@import "@uiw/react-md-editor/markdown-editor.css";
+@import "@uiw/react-markdown-preview/markdown.css";
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 180 65% 55%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 5% 25%;
-    --accent: 15 85% 65%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 180 65% 55%;
-    --radius: 0.5rem;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
+	:root {
+		--background: 0 0% 100%;
+		--foreground: 240 10% 3.9%;
+		--card: 0 0% 100%;
+		--card-foreground: 240 10% 3.9%;
+		--popover: 0 0% 100%;
+		--popover-foreground: 240 10% 3.9%;
+		--primary: 180 65% 55%;
+		--primary-foreground: 0 0% 98%;
+		--secondary: 240 4.8% 95.9%;
+		--secondary-foreground: 240 5.9% 10%;
+		--muted: 240 4.8% 95.9%;
+		--muted-foreground: 240 5% 25%;
+		--accent: 15 85% 65%;
+		--accent-foreground: 0 0% 98%;
+		--destructive: 0 84.2% 60.2%;
+		--destructive-foreground: 0 0% 98%;
+		--border: 240 5.9% 90%;
+		--input: 240 5.9% 90%;
+		--ring: 180 65% 55%;
+		--radius: 0.5rem;
+		--chart-1: 12 76% 61%;
+		--chart-2: 173 58% 39%;
+		--chart-3: 197 37% 24%;
+		--chart-4: 43 74% 66%;
+		--chart-5: 27 87% 67%;
 
-    /* Ampertalent Brand Colors */
-    --brand-blue: 204 100% 50%; /* #0066FF - Electric Blue */
-    --brand-teal: 165 100% 33%; /* #00BB88 - Success Teal */
-    --brand-cyan: 180 100% 50%; /* #00D9FF - Highlight Cyan */
-    --brand-dark: 210 50% 15%; /* #1A2D47 - Dark Navy */
+		/* Ampertalent Brand Colors */
+		--brand-blue: 204 100% 50%; /* #0066FF - Electric Blue */
+		--brand-teal: 165 100% 33%; /* #00BB88 - Success Teal */
+		--brand-cyan: 180 100% 50%; /* #00D9FF - Highlight Cyan */
+		--brand-dark: 210 50% 15%; /* #1A2D47 - Dark Navy */
 
-    /* Updated CSS Variables for Ampertalent */
-    --primary: 204 100% 50%; /* Electric Blue for CTAs */
-    --secondary: 165 100% 33%; /* Teal for accents */
-    --accent: 180 100% 50%; /* Cyan for highlights */
-  }
+		/* Updated CSS Variables for Ampertalent */
+		--primary: 204 100% 50%; /* Electric Blue for CTAs */
+		--secondary: 165 100% 33%; /* Teal for accents */
+		--accent: 180 100% 50%; /* Cyan for highlights */
+	}
 
-  .dark {
-    --background: 0 0% 98%;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 180 65% 55%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 5% 25%;
-    --accent: 15 85% 65%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 180 65% 55%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-  }
+	.dark {
+		--background: 0 0% 98%;
+		--foreground: 240 10% 3.9%;
+		--card: 0 0% 100%;
+		--card-foreground: 240 10% 3.9%;
+		--popover: 0 0% 100%;
+		--popover-foreground: 240 10% 3.9%;
+		--primary: 180 65% 55%;
+		--primary-foreground: 0 0% 98%;
+		--secondary: 240 4.8% 95.9%;
+		--secondary-foreground: 240 5.9% 10%;
+		--muted: 240 4.8% 95.9%;
+		--muted-foreground: 240 5% 25%;
+		--accent: 15 85% 65%;
+		--accent-foreground: 0 0% 98%;
+		--destructive: 0 84.2% 60.2%;
+		--destructive-foreground: 0 0% 98%;
+		--border: 240 5.9% 90%;
+		--input: 240 5.9% 90%;
+		--ring: 180 65% 55%;
+		--chart-1: 12 76% 61%;
+		--chart-2: 173 58% 39%;
+		--chart-3: 197 37% 24%;
+		--chart-4: 43 74% 66%;
+		--chart-5: 27 87% 67%;
+	}
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
+	* {
+		@apply border-border;
+	}
+	body {
+		@apply bg-background text-foreground;
+	}
 }
 
 /* Ensure form input text is always visible */
-input[type='text'],
-input[type='email'],
-input[type='password'],
-input[type='search'],
-input[type='url'],
-input[type='tel'],
-input[type='number'],
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+input[type="url"],
+input[type="tel"],
+input[type="number"],
 textarea,
 select {
-  color: #1f2937 !important; /* gray-800 */
+	color: #1f2937 !important; /* gray-800 */
 }
 
-input[type='text']::placeholder,
-input[type='email']::placeholder,
-input[type='password']::placeholder,
-input[type='search']::placeholder,
-input[type='url']::placeholder,
-input[type='tel']::placeholder,
-input[type='number']::placeholder,
+input[type="text"]::placeholder,
+input[type="email"]::placeholder,
+input[type="password"]::placeholder,
+input[type="search"]::placeholder,
+input[type="url"]::placeholder,
+input[type="tel"]::placeholder,
+input[type="number"]::placeholder,
 textarea::placeholder {
-  color: #6b7280 !important; /* gray-500 */
+	color: #6b7280 !important; /* gray-500 */
 }
 
 .loader {
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  position: fixed;
-  background: transparent;
-  overflow: hidden;
-  z-index: 9999;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 3px;
+	position: fixed;
+	background: transparent;
+	overflow: hidden;
+	z-index: 9999;
 }
 .loader::after {
-  content: '';
-  width: 40%;
-  height: 3px;
-  position: absolute;
-  top: 0;
-  left: 0;
-  box-sizing: border-box;
-  animation: animloader 1s linear infinite;
-  @apply bg-primary;
+	content: "";
+	width: 40%;
+	height: 3px;
+	position: absolute;
+	top: 0;
+	left: 0;
+	box-sizing: border-box;
+	animation: animloader 1s linear infinite;
+	@apply bg-primary;
 }
 
 @media (min-width: 800px) {
-  .loader::after {
-    width: 20%;
-    animation: animloader 2s linear infinite;
-  }
+	.loader::after {
+		width: 20%;
+		animation: animloader 2s linear infinite;
+	}
 }
 
 @keyframes animloader {
-  0% {
-    left: 0;
-    transform: translateX(-100%);
-  }
-  100% {
-    left: 100%;
-    transform: translateX(0%);
-  }
+	0% {
+		left: 0;
+		transform: translateX(-100%);
+	}
+	100% {
+		left: 100%;
+		transform: translateX(0%);
+	}
 }
 
-input[data-input-otp='true'] {
-  color: transparent !important;
+input[data-input-otp="true"] {
+	color: transparent !important;
 }
 
 /* Always visible scrollbar for better UX on tables */
 .scrollbar-visible {
-  scrollbar-width: auto;
-  scrollbar-color: #6b7280 #f3f4f6;
-  overflow-x: scroll !important;
-  overflow-y: visible !important;
-  padding-bottom: 4px;
-  position: relative;
+	scrollbar-width: auto;
+	scrollbar-color: #6b7280 #f3f4f6;
+	overflow-x: scroll !important;
+	overflow-y: visible !important;
+	padding-bottom: 4px;
+	position: relative;
 }
 
 /* Force scrollbar to always show by ensuring content width */
 .scrollbar-visible::after {
-  content: '';
-  display: block;
-  height: 1px;
-  width: calc(100% + 1px);
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  pointer-events: none;
+	content: "";
+	display: block;
+	height: 1px;
+	width: calc(100% + 1px);
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	pointer-events: none;
 }
 
 .scrollbar-visible::-webkit-scrollbar {
-  height: 18px;
-  width: 18px;
-  -webkit-appearance: none;
-  display: block !important;
+	height: 18px;
+	width: 18px;
+	-webkit-appearance: none;
+	display: block !important;
 }
 
 .scrollbar-visible::-webkit-scrollbar-track {
-  background: #f3f4f6;
-  border-radius: 10px;
-  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.1);
-  display: block !important;
+	background: #f3f4f6;
+	border-radius: 10px;
+	box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.1);
+	display: block !important;
 }
 
 .scrollbar-visible::-webkit-scrollbar-thumb {
-  background: #6b7280;
-  border-radius: 10px;
-  border: 4px solid #f3f4f6;
-  min-width: 40px;
-  display: block !important;
+	background: #6b7280;
+	border-radius: 10px;
+	border: 4px solid #f3f4f6;
+	min-width: 40px;
+	display: block !important;
 }
 
 .scrollbar-visible::-webkit-scrollbar-thumb:hover {
-  background: #4b5563;
+	background: #4b5563;
 }
 
 .scrollbar-visible::-webkit-scrollbar-corner {
-  background: #f3f4f6;
+	background: #f3f4f6;
 }

@@ -1,12 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { LoadingSpinner } from '@/components/common/LoadingSpinner'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { CheckCircle, Clock, AlertCircle } from 'lucide-react'
 
-export default function ProcessingPage() {
+function ProcessingContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const pendingId = searchParams.get('pending_id')
@@ -20,7 +20,7 @@ export default function ProcessingPage() {
     // Support both session-based and email-based processing
     const hasSessionParams = pendingId && sessionToken
     const hasEmailParams = email && type === 'payment_processing'
-    
+
     if (!hasSessionParams && !hasEmailParams) {
       router.push('/sign-in?error=invalid_session')
       return
@@ -96,7 +96,7 @@ export default function ProcessingPage() {
           {status === 'processing' && (
             <div>
               <p className="text-gray-600 mb-4">
-                We're confirming your payment and setting up your account. 
+                We're confirming your payment and setting up your account.
                 This usually takes just a few moments.
               </p>
               <div className="text-sm text-gray-500">
@@ -107,7 +107,7 @@ export default function ProcessingPage() {
               </div>
             </div>
           )}
-          
+
           {status === 'completed' && (
             <div>
               <p className="text-green-600 mb-4">
@@ -118,14 +118,14 @@ export default function ProcessingPage() {
               </p>
             </div>
           )}
-          
+
           {status === 'error' && (
             <div>
               <p className="text-gray-600 mb-4">
-                Your payment is being processed but it's taking longer than usual. 
+                Your payment is being processed but it's taking longer than usual.
                 You can safely close this window - we'll email you once everything is ready.
               </p>
-              <button 
+              <button
                 onClick={() => router.push('/seeker/dashboard')}
                 className="bg-brand-teal text-white px-4 py-2 rounded-md hover:bg-brand-teal/90 transition-colors"
               >
@@ -139,5 +139,13 @@ export default function ProcessingPage() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+export default function ProcessingPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ProcessingContent />
+    </Suspense>
   )
 }

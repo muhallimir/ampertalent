@@ -1,6 +1,31 @@
-// Payment integration service for Authorize.net
-// This file contains the payment processing logic and API integration
+// Mock payment service for Phase 3
+// This will be replaced with Stripe integration in Phase 6
+// See docs/01-TECH-STACK-AND-FREE-ALTERNATIVES.md for Stripe implementation details
 
+export interface PaymentMethod {
+  id: string
+  type: 'mock'
+  last4: string
+  brand: string
+}
+
+export interface PaymentIntent {
+  id: string
+  amount: number
+  currency: 'usd'
+  status: 'succeeded' | 'pending' | 'failed'
+  clientSecret: string
+}
+
+export interface Subscription {
+  id: string
+  status: 'active' | 'canceled' | 'past_due'
+  currentPeriodStart: Date
+  currentPeriodEnd: Date
+  cancelAtPeriodEnd: boolean
+}
+
+// Legacy interfaces for compatibility (will be removed in Phase 6)
 export interface PaymentData {
   cardNumber: string
   expiryMonth: string
@@ -39,234 +64,81 @@ export interface PackageData {
   paymentMethodId?: string
 }
 
-// Authorize.net configuration
-const AUTHORIZE_NET_CONFIG = {
-  apiLoginId: process.env.AUTHNET_API_LOGIN_ID,
-  transactionKey: process.env.AUTHNET_TRANSACTION_KEY,
-  environment: process.env.AUTHNET_ENVIRONMENT || 'sandbox',
-  acceptJsUrl: process.env.AUTHNET_ENVIRONMENT === 'production'
-    ? 'https://js.authorize.net/v1/Accept.js'
-    : 'https://jstest.authorize.net/v1/Accept.js'
-}
-
-/**
- * Initialize Authorize.net Accept.js for secure payment processing
- * This should be called on the client side to load the Accept.js library
- */
-export const initializeAuthorizeNet = (): Promise<void> => {
-  return new Promise((resolve, reject) => {
-    if (typeof window === 'undefined') {
-      reject(new Error('Accept.js can only be initialized in the browser'))
-      return
-    }
-
-    // Check if Accept.js is already loaded
-    if ((window as unknown as { Accept?: unknown }).Accept) {
-      resolve()
-      return
-    }
-
-    // Load Accept.js script
-    const script = document.createElement('script')
-    script.src = AUTHORIZE_NET_CONFIG.acceptJsUrl!
-    script.onload = () => resolve()
-    script.onerror = () => reject(new Error('Failed to load Accept.js'))
-    document.head.appendChild(script)
-  })
-}
-
-/**
- * Tokenize payment data using Authorize.net Accept.js
- * This creates a secure payment nonce that can be sent to the server
- */
-export const tokenizePaymentData = (paymentData: PaymentData): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    if (typeof window === 'undefined' || !(window as unknown as { Accept?: unknown }).Accept) {
-      reject(new Error('Accept.js not available'))
-      return
-    }
-
-    const authData = {
-      clientKey: process.env.NEXT_PUBLIC_AUTHNET_CLIENT_KEY,
-      apiLoginID: AUTHORIZE_NET_CONFIG.apiLoginId
-    }
-
-    const cardData = {
-      cardNumber: paymentData.cardNumber.replace(/\s/g, ''),
-      month: paymentData.expiryMonth,
-      year: paymentData.expiryYear,
-      cardCode: paymentData.cvv
-    }
-
-    const secureData = {
-      authData,
-      cardData
-    }
-
-    ;(window as unknown as { Accept: { dispatchData: (data: unknown, callback: (response: {
-      messages: { resultCode: string; message: Array<{ text: string }> };
-      opaqueData: { dataValue: string };
-    }) => void) => void } }).Accept.dispatchData(secureData, (response: {
-      messages: { resultCode: string; message: Array<{ text: string }> };
-      opaqueData: { dataValue: string };
-    }) => {
-      if (response.messages.resultCode === 'Error') {
-        reject(new Error(response.messages.message[0].text))
-      } else {
-        resolve(response.opaqueData.dataValue)
-      }
-    })
-  })
-}
-
-/**
- * Process a one-time payment for job posting packages
- */
-export const processPackagePayment = async (
-  packageData: PackageData,
-  paymentData: PaymentData,
-  amount: number
-): Promise<PaymentResult> => {
-  try {
-    // In a real implementation, this would:
-    // 1. Tokenize the payment data using Accept.js
-    // 2. Send the token to your backend API
-    // 3. Process the payment using Authorize.net API
-    // 4. Return the result
-
-    console.log('Processing package payment:', {
-      packageId: packageData.packageId,
-      companyId: packageData.companyId,
-      amount
-    })
-
-    // Simulate payment processing
-    await new Promise(resolve => setTimeout(resolve, 2000))
-
-    // Mock successful payment
-    return {
-      success: true,
-      transactionId: 'txn_' + Math.random().toString(36).substr(2, 9),
-      authCode: 'AUTH' + Math.random().toString(36).substr(2, 6).toUpperCase(),
-      amount,
-      last4: paymentData.cardNumber.slice(-4),
-      cardType: getCardType(paymentData.cardNumber)
-    }
-  } catch (error) {
-    console.error('Package payment processing error:', error)
-    return {
-      success: false,
-      errorMessage: error instanceof Error ? error.message : 'Payment processing failed'
-    }
+// Mock payment functions - replace with Stripe in Phase 6
+export async function createPaymentIntent(amount: number, currency = 'usd'): Promise<PaymentIntent> {
+  // Mock implementation - always succeeds in development
+  console.log(`Mock Payment: Creating payment intent for $${amount}`)
+  return {
+    id: `pi_mock_${Date.now()}`,
+    amount,
+    currency: currency as 'usd',
+    status: 'succeeded',
+    clientSecret: `pi_mock_secret_${Date.now()}`
   }
 }
 
-/**
- * Process a subscription payment for job seekers
- */
-export const processSubscriptionPayment = async (
-  subscriptionData: SubscriptionData,
-  paymentData: PaymentData,
-  amount: number
-): Promise<PaymentResult> => {
-  try {
-    console.log('Processing subscription payment:', {
-      planId: subscriptionData.planId,
-      userId: subscriptionData.userId,
-      amount
-    })
+export async function createSubscription(planId: string, paymentMethodId: string): Promise<Subscription> {
+  // Mock implementation - always succeeds in development
+  console.log(`Mock Payment: Creating subscription for plan ${planId}`)
+  const now = new Date()
+  const endDate = new Date(now)
+  endDate.setMonth(endDate.getMonth() + 1)
 
-    // Simulate payment processing
-    await new Promise(resolve => setTimeout(resolve, 2000))
-
-    // Mock successful payment
-    return {
-      success: true,
-      transactionId: 'sub_' + Math.random().toString(36).substr(2, 9),
-      authCode: 'AUTH' + Math.random().toString(36).substr(2, 6).toUpperCase(),
-      amount,
-      last4: paymentData.cardNumber.slice(-4),
-      cardType: getCardType(paymentData.cardNumber)
-    }
-  } catch (error) {
-    console.error('Subscription payment processing error:', error)
-    return {
-      success: false,
-      errorMessage: error instanceof Error ? error.message : 'Payment processing failed'
-    }
+  return {
+    id: `sub_mock_${Date.now()}`,
+    status: 'active',
+    currentPeriodStart: now,
+    currentPeriodEnd: endDate,
+    cancelAtPeriodEnd: false
   }
 }
 
-/**
- * Create a recurring subscription using Authorize.net ARB (Automatic Recurring Billing)
- */
-export const createRecurringSubscription = async (
-  subscriptionData: SubscriptionData,
-  paymentData: PaymentData,
-  planDetails: {
-    amount: number
-    interval: 'monthly' | 'yearly'
-    name: string
-  }
-): Promise<{ success: boolean; subscriptionId?: string; errorMessage?: string }> => {
-  try {
-    console.log('Creating recurring subscription:', {
-      planId: subscriptionData.planId,
-      userId: subscriptionData.userId,
-      planDetails
-    })
+export async function cancelSubscription(subscriptionId: string): Promise<void> {
+  // Mock implementation - always succeeds
+  console.log(`Mock Payment: Canceled subscription ${subscriptionId}`)
+}
 
-    // In a real implementation, this would:
-    // 1. Create a customer profile in Authorize.net CIM
-    // 2. Create a payment profile for the customer
-    // 3. Create a recurring subscription using ARB
-    // 4. Return the subscription ID
+// Mock checkout URL generation
+export function generateMockCheckoutUrl(planId: string, userId: string): string {
+  // Return a mock URL that redirects back to success page
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  return `${baseUrl}/checkout/success?session_id=mock_${Date.now()}&plan_id=${planId}&user_id=${userId}`
+}
 
-    // Simulate subscription creation
-    await new Promise(resolve => setTimeout(resolve, 2000))
-
-    return {
-      success: true,
-      subscriptionId: 'sub_recurring_' + Math.random().toString(36).substr(2, 9)
-    }
-  } catch (error) {
-    console.error('Recurring subscription creation error:', error)
-    return {
-      success: false,
-      errorMessage: error instanceof Error ? error.message : 'Subscription creation failed'
-    }
+// Legacy Authorize.net functions (deprecated - remove in Phase 6)
+export async function processPayment(data: PaymentData): Promise<PaymentResult> {
+  // Mock implementation
+  console.warn('⚠️ Using deprecated mock payment function - will be replaced with Stripe in Phase 6')
+  return {
+    success: true,
+    transactionId: `txn_mock_${Date.now()}`,
+    amount: 0,
+    last4: '4242',
+    cardType: 'Visa'
   }
 }
 
-/**
- * Cancel a recurring subscription
- */
-export const cancelRecurringSubscription = async (
-  subscriptionId: string
-): Promise<{ success: boolean; errorMessage?: string }> => {
-  try {
-    console.log('Canceling recurring subscription:', subscriptionId)
-
-    // In a real implementation, this would call Authorize.net ARB API
-    // to cancel the subscription
-
-    // Simulate cancellation
-    await new Promise(resolve => setTimeout(resolve, 1000))
-
-    return { success: true }
-  } catch (error) {
-    console.error('Subscription cancellation error:', error)
-    return {
-      success: false,
-      errorMessage: error instanceof Error ? error.message : 'Subscription cancellation failed'
-    }
-  }
+export async function createCustomerProfile(): Promise<string> {
+  console.warn('⚠️ Using deprecated mock payment function - will be replaced with Stripe in Phase 6')
+  return `profile_mock_${Date.now()}`
 }
 
-/**
- * Validate payment data before processing
- */
-export const validatePaymentData = (paymentData: PaymentData): { isValid: boolean; errors: string[] } => {
+export async function createPaymentProfile(): Promise<string> {
+  console.warn('⚠️ Using deprecated mock payment function - will be replaced with Stripe in Phase 6')
+  return `payment_mock_${Date.now()}`
+}
+
+// Utility functions for card validation (keep for Phase 6 Stripe integration)
+export function getCardType(cardNumber: string): string {
+  const number = cardNumber.replace(/\s/g, '')
+  if (/^4/.test(number)) return 'Visa'
+  if (/^5[1-5]/.test(number)) return 'MasterCard'
+  if (/^3[47]/.test(number)) return 'American Express'
+  if (/^6(?:011|5)/.test(number)) return 'Discover'
+  return 'Unknown'
+}
+
+export function validatePaymentData(paymentData: PaymentData): { isValid: boolean; errors: string[] } {
   const errors: string[] = []
 
   // Card number validation
@@ -310,74 +182,12 @@ export const validatePaymentData = (paymentData: PaymentData): { isValid: boolea
   if (!paymentData.billingAddress.zipCode.trim()) {
     errors.push('ZIP code is required')
   }
+  if (!paymentData.billingAddress.country.trim()) {
+    errors.push('Country is required')
+  }
 
   return {
     isValid: errors.length === 0,
     errors
-  }
-}
-
-/**
- * Get card type from card number
- */
-export const getCardType = (cardNumber: string): string => {
-  const number = cardNumber.replace(/\s/g, '')
-  
-  if (number.startsWith('4')) return 'Visa'
-  if (number.startsWith('5') || (number.startsWith('2') && parseInt(number.substring(0, 4)) >= 2221 && parseInt(number.substring(0, 4)) <= 2720)) return 'Mastercard'
-  if (number.startsWith('34') || number.startsWith('37')) return 'American Express'
-  if (number.startsWith('6011') || number.startsWith('65') || (number.startsWith('644') || number.startsWith('645') || number.startsWith('646') || number.startsWith('647') || number.startsWith('648') || number.startsWith('649'))) return 'Discover'
-  
-  return 'Unknown'
-}
-
-/**
- * Format currency amount for display
- */
-export const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD'
-  }).format(amount)
-}
-
-/**
- * Calculate tax amount (if applicable)
- */
-export const calculateTax = (amount: number, taxRate: number = 0): number => {
-  return Math.round(amount * taxRate * 100) / 100
-}
-
-/**
- * Get payment method display name
- */
-export const getPaymentMethodDisplay = (last4: string, cardType: string): string => {
-  return `${cardType} •••• ${last4}`
-}
-
-// Webhook handler for Authorize.net notifications
-export const handleAuthorizeNetWebhook = async (webhookData: Record<string, unknown>) => {
-  try {
-    console.log('Processing Authorize.net webhook:', webhookData)
-
-    // In a real implementation, this would:
-    // 1. Verify the webhook signature
-    // 2. Process the webhook event (payment success, failure, subscription updates, etc.)
-    // 3. Update the database accordingly
-    // 4. Send notifications to users if needed
-
-    // Example webhook events:
-    // - net.authorize.payment.authcapture.created
-    // - net.authorize.payment.capture.created
-    // - net.authorize.payment.fraud.approved
-    // - net.authorize.payment.fraud.declined
-    // - net.authorize.payment.void.created
-    // - net.authorize.customer.subscription.created
-    // - net.authorize.customer.subscription.cancelled
-
-    return { success: true }
-  } catch (error) {
-    console.error('Webhook processing error:', error)
-    return { success: false, error: error instanceof Error ? error.message : 'Webhook processing failed' }
   }
 }

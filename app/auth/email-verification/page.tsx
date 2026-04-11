@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { useClerk } from "@clerk/nextjs";
 
 // Auto-verification handler for links like /auth/email-verification?code=...
 // This intercepts the URL that previously showed a confirmation prompt and verifies immediately.
-export default function EmailVerificationAuto() {
+function EmailVerificationAuto() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { signOut } = useClerk();
@@ -51,7 +51,7 @@ export default function EmailVerificationAuto() {
         // With Clerk, email verification is handled via magic link or verification code
         // This page is reached after the user clicks the verification link
         // Clerk automatically handles the verification, so we just need to check status
-        
+
         if (!user?.id) {
           setErrorMessage("Please sign in to verify your email.");
           return;
@@ -61,11 +61,11 @@ export default function EmailVerificationAuto() {
         await user.reload();
 
         console.log("🔍 EMAIL-VERIFICATION: Checking verification status");
-        
+
         // Check if email is now verified
         if (user.primaryEmailAddress?.verification.status === "verified") {
           console.log("✅ EMAIL-VERIFICATION: Email verified successfully");
-          
+
           // Prefer provided return URL; default to onboarding
           const redirectUrl = afterAuthReturnTo
             ? decodeURIComponent(afterAuthReturnTo)
@@ -115,5 +115,13 @@ export default function EmailVerificationAuto() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function EmailVerificationPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <EmailVerificationAuto />
+    </Suspense>
   );
 }

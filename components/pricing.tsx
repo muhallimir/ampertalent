@@ -23,9 +23,8 @@ type PricingCardProps = {
 export function PricingCard(props: PricingCardProps) {
   return (
     <Card
-      className={`w-full max-w-sm ${
-        props.isPopular ? "border-primary border-2 shadow-lg" : ""
-      }`}
+      className={`w-full max-w-sm ${props.isPopular ? "border-primary border-2 shadow-lg" : ""
+        }`}
     >
       <CardHeader>
         <CardTitle className="text-2xl font-bold">{props.title}</CardTitle>
