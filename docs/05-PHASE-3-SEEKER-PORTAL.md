@@ -45,7 +45,7 @@ __tests__/unit/profile-completion.test.ts
 - [x] Create `lib/advanced-search.ts` — search service with Prisma queries
 - [x] Create `lib/search.ts` — basic search service
 - [ ] Create `app/api/jobs/search/route.ts` — search API endpoint
-- [ ] Create `app/api/jobs/[id]/route.ts` — job detail API
+- [x] Create `app/api/jobs/[id]/route.ts` — job detail API - DONE
 - [x] Create `app/api/jobs/featured/route.ts` — featured jobs API
 - [ ] Create `app/api/jobs/popular-terms/route.ts` — popular search terms
 - [ ] Create `app/api/jobs/recently-filled/route.ts` — recently filled jobs
@@ -84,7 +84,7 @@ __tests__/ui/seeker/job-search.test.tsx
 - [ ] Create `components/seeker/FollowUpModal.tsx` — follow-up request
 - [x] Create `components/application-status-badge.tsx` — status badge component
 - [x] Create `app/api/seeker/applications/route.ts` — list applications
-- [ ] Create `app/api/applicant/route.ts` — submit application
+- [x] Create `app/api/applicant/route.ts` — submit application - DONE
 
 ### TDD Tests
 
@@ -109,7 +109,7 @@ __tests__/ui/seeker/application-form.test.tsx
 ### Tasks
 
 - [x] Create `app/seeker/saved-jobs/page.tsx` — saved jobs list
-- [ ] Create `app/api/seeker/saved-jobs/route.ts` — CRUD for saved jobs
+- [x] Create `app/api/seeker/saved-jobs/route.ts` — CRUD for saved jobs - DONE
 - [x] Create `components/providers/SavedJobsProvider.tsx` — saved jobs context
 
 ### TDD Tests
