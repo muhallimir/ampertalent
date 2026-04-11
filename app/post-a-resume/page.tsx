@@ -86,7 +86,7 @@ function PostResumeForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!resumeFile) {
       addToast({
         title: 'Resume required',
@@ -192,7 +192,7 @@ function PostResumeForm() {
                   Application Submitted Successfully!
                 </h1>
                 <p className="text-gray-600 mb-6">
-                  Thank you for your interest in {jobInfo.title ? `the "${jobInfo.title}" position` : 'this position'}. 
+                  Thank you for your interest in {jobInfo.title ? `the "${jobInfo.title}" position` : 'this position'}.
                   We have received your application and will review it shortly.
                 </p>
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
@@ -203,7 +203,7 @@ function PostResumeForm() {
                     <li>• You'll receive email updates about your application status</li>
                   </ul>
                 </div>
-                <Button 
+                <Button
                   onClick={() => window.location.href = 'https://ampertalent.com'}
                   className="bg-brand-coral hover:bg-brand-coral/90"
                 >

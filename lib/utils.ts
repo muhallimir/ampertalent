@@ -208,3 +208,153 @@ export function htmlToMarkdown(html: string): string {
 
   return markdown;
 }
+
+/**
+ * Format number as currency (USD by default)
+ * @example formatCurrency(99.99) => "$99.99"
+ * @example formatCurrency(1000) => "$1,000.00"
+ */
+export function formatCurrency(amount: number, currency: 'USD' | 'EUR' | 'GBP' = 'USD'): string {
+  const formatter = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+  return formatter.format(amount);
+}
+
+/**
+ * Format date with multiple format options
+ * @param date - Date object or ISO string
+ * @param format - Format template or 'relative' for time ago
+ * @example formatDate(new Date('2024-01-15')) => "Jan 15, 2024"
+ * @example formatDate(new Date(), 'relative') => "2 hours ago"
+ */
+export function formatDate(
+  date: Date | string,
+  format: string = 'MMM DD, YYYY'
+): string {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+
+  if (format === 'relative') {
+    return getRelativeTime(dateObj);
+  }
+
+  const year = dateObj.getFullYear();
+  const month = dateObj.toLocaleString('en-US', { month: 'short' });
+  const monthNum = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const dayNum = String(dateObj.getDate()).padStart(2, '0');
+
+  const replacements: Record<string, string> = {
+    YYYY: String(year),
+    YY: String(year).slice(-2),
+    MM: monthNum,
+    DD: dayNum,
+    MMM: month,
+  };
+
+  let result = format;
+  Object.entries(replacements).forEach(([key, value]) => {
+    result = result.replace(key, value);
+  });
+
+  return result;
+}
+
+/**
+ * Get relative time string (e.g., "2 hours ago")
+ */
+function getRelativeTime(date: Date): string {
+  const now = new Date();
+  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  let interval = Math.floor(seconds / 31536000);
+  if (interval >= 1) return interval === 1 ? 'a year ago' : `${interval} years ago`;
+
+  interval = Math.floor(seconds / 2592000);
+  if (interval >= 1) return interval === 1 ? 'a month ago' : `${interval} months ago`;
+
+  interval = Math.floor(seconds / 86400);
+  if (interval >= 1) return interval === 1 ? 'a day ago' : `${interval} days ago`;
+
+  interval = Math.floor(seconds / 3600);
+  if (interval >= 1) return interval === 1 ? 'an hour ago' : `${interval} hours ago`;
+
+  interval = Math.floor(seconds / 60);
+  if (interval >= 1) return interval === 1 ? 'a minute ago' : `${interval} minutes ago`;
+
+  return 'just now';
+}
+
+/**
+ * Format phone number as (123) 456-7890
+ * @example formatPhoneNumber('1234567890') => "(123) 456-7890"
+ */
+export function formatPhoneNumber(phone: string): string {
+  // Strip all non-numeric characters
+  const digits = phone.replace(/\D/g, '');
+
+  // Check if valid length (10 or 11 digits)
+  if (digits.length === 10) {
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+  }
+
+  if (digits.length === 11) {
+    return `+${digits.slice(0, 1)} (${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7)}`;
+  }
+
+  // Invalid phone number
+  return '';
+}
+
+/**
+ * Truncate text to max length with ellipsis
+ * @example truncateText("Hello World", 5) => "Hello …"
+ */
+export function truncateText(text: string, maxLength: number, ellipsis: string = '…'): string {
+  if (text.length <= maxLength) return text;
+  return text.slice(0, maxLength) + ellipsis;
+}
+
+/**
+ * Validate email format
+ * @example validateEmail('user@example.com') => true
+ */
+export function validateEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
+
+/**
+ * Convert text to URL-friendly slug
+ * @example slugify("Hello World!") => "hello-world"
+ */
+export function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    // Normalize accented characters
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    // Replace spaces, underscores, dots with hyphens
+    .replace(/[\s_\.]+/g, '-')
+    // Remove special characters
+    .replace(/[^\w\-]/g, '')
+    // Remove leading/trailing hyphens
+    .replace(/^-+|-+$/g, '')
+    // Replace multiple consecutive hyphens with single
+    .replace(/-+/g, '-');
+}
+
+/**
+ * Generate random alphanumeric token
+ * @example generateToken(32) => "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6"
+ */
+export function generateToken(length: number = 32): string {
+  const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let token = '';
+  for (let i = 0; i < length; i++) {
+    token += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return token;
+}

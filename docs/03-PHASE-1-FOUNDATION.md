@@ -8,11 +8,11 @@
 
 ### Tasks
 
-- [ ] Create Next.js 16 project with TypeScript & App Router
-- [ ] Configure Tailwind CSS 3.4 + shadcn/ui + Radix UI primitives
-- [ ] Set up ESLint + Prettier
-- [ ] Initialize Git repository
-- [ ] Create `.env.example` with all required environment variables
+- [x] Create Next.js 16 project with TypeScript & App Router
+- [x] Configure Tailwind CSS 3.4 + shadcn/ui + Radix UI primitives
+- [x] Set up ESLint + Prettier
+- [x] Initialize Git repository
+- [x] Create `.env.example` with all required environment variables
 
 ### TDD Tests
 
@@ -47,7 +47,7 @@ pw: Sg0oVm4xjex0Dkgt
 
 - [x] Sign up at resend.com (free, no CC)
 - [x] Get `RESEND_API_KEY`
-- [x] Verify sending domain (or use onboarding@resend.dev for testing)
+- [ ] Verify sending domain (or use onboarding@resend.dev for testing)
 
 ### Upstash Redis (Cache)
 
@@ -65,7 +65,7 @@ pw: Sg0oVm4xjex0Dkgt
 - [x] Sign up at stripe.com (free, no CC)
 - [x] Get test keys: `STRIPE_SECRET_KEY` (`sk_test_...`) + `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` (`pk_test_...`)
 - [ ] Get webhook signing secret: `STRIPE_WEBHOOK_SECRET` (`whsec_...`)
-- [x] Create Products + Prices in Stripe Dashboard (test mode)
+- [ ] Create Products + Prices in Stripe Dashboard (test mode)
 
 Note: STRIPE webhook to be captured and put to env once initial setup is done and stripe cli is installed
 
@@ -81,10 +81,10 @@ Note: STRIPE webhook to be captured and put to env once initial setup is done an
 
 ### Tasks
 
-- [ ] Copy and adapt `prisma/schema.prisma` (all 42+ models, 20+ enums)
-- [ ] Run `prisma generate` + `prisma db push`
+- [x] Copy and adapt `prisma/schema.prisma` (all 42+ models, 20+ enums)
+- [x] Run `prisma generate` + `prisma db push`
 - [ ] Create seed script with demo data
-- [ ] Set up `lib/db.ts` — Prisma client singleton
+- [x] Set up `lib/db.ts` — Prisma client singleton
 
 ### TDD Tests
 
@@ -228,41 +228,20 @@ __tests__/unit/file-validation.test.ts
 
 ### Tasks
 
-- [ ] Create `docs/AMPERTALENT-BRAND-GUIDELINES.md` — comprehensive brand guide (ALREADY CREATED)
-- [ ] Update `tailwind.config.ts` with Ampertalent color palette:
-  ```typescript
-  theme: {
-    extend: {
-      colors: {
-        'amper-blue': '#0066FF',
-        'amper-teal': '#00BB88',
-        'amper-cyan': '#00D9FF',
-        'amper-dark': '#1A2D47',
-        'amper-gray': '#495057',
-      }
-    }
-  }
-  ```
-- [ ] Add CSS variables to `app/globals.css`:
-  ```css
-  :root {
-    --color-primary: #0066FF;
-    --color-secondary: #00BB88;
-    --color-accent: #00D9FF;
-    --color-dark: #1A2D47;
-  }
-  ```
-- [ ] Copy logo to `public/logo/ampertalent.png` (already in repo root, move if needed)
+- [x] Create `docs/AMPERTALENT-BRAND-GUIDELINES.md` — comprehensive brand guide (ALREADY CREATED)
+- [x] Update `tailwind.config.ts` with Ampertalent color palette
+- [x] Add CSS variables to `app/globals.css`
+- [x] Copy logo to `public/logo/ampertalent.png` (already in repo root, move if needed)
 - [ ] Create favicon from logo (multiple sizes: 16x16, 32x32, 64x64, 192x192)
 - [ ] Update `next.config.mjs` favicon references
-- [ ] Replace all "HireMyMom" text with "Ampertalent"
-- [ ] Update tagline: "Connect With Flexible Talent" → "Where Flexible Talent Meets Opportunity"
-- [ ] Verify button colors:
+- [x] Replace all "HireMyMom" text with "Ampertalent"
+- [x] Update tagline: "Connect With Flexible Talent" → "Where Flexible Talent Meets Opportunity"
+- [x] Verify button colors:
   - Primary buttons: `#0066FF` (Electric Blue)
   - Secondary buttons: `#00BB88` (Teal)
   - Success messages: `#00BB88` (Teal)
   - Error messages: Use appropriate red (e.g., `#FF4444`)
-- [ ] Verify text contrast meets WCAG AA standards
+- [x] Verify text contrast meets WCAG AA standards
 - [ ] Test dark mode color switching
 
 ### Branding Verification
@@ -296,18 +275,18 @@ ls -l public/logo/ampertalent.png
 
 ### Tasks
 
-- [ ] Set up `components/ui/` — all shadcn/ui components (button, input, dialog, select, etc.)
-- [ ] Create `app/globals.css` — global styles + CSS variables
-- [ ] Create `app/layout.tsx` — root layout with providers
+- [x] Set up `components/ui/` — all shadcn/ui components (button, input, dialog, select, etc.)
+- [x] Create `app/globals.css` — global styles + CSS variables
+- [x] Create `app/layout.tsx` — root layout with providers
 - [ ] Create `app/provider.tsx` — theme provider
 - [ ] Create `components/providers/` — context providers (UserProfile, Message, SavedJobs, RealTimeNotification)
-- [ ] Create `components/logo.tsx` — Ampertalent logo component
-- [ ] Create `components/footer.tsx` — site footer
-- [ ] Create `components/landing-page-header.tsx` — public header
-- [ ] Create `components/hero.tsx` — landing page hero section
-- [ ] Create `components/features.tsx` — features showcase
-- [ ] Create `components/pricing.tsx` — pricing display
-- [ ] Create `app/page.tsx` — landing/root page with role-based redirect
+- [x] Create `components/logo.tsx` — Ampertalent logo component
+- [x] Create `components/footer.tsx` — site footer
+- [x] Create `components/landing-page-header.tsx` — public header
+- [x] Create `components/hero.tsx` — landing page hero section
+- [x] Create `components/features.tsx` — features showcase
+- [x] Create `components/pricing.tsx` — pricing display
+- [x] Create `app/page.tsx` — landing/root page with role-based redirect
 
 ### TDD Tests
 

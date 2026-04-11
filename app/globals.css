@@ -37,8 +37,11 @@
 		/* Ampertalent Brand Colors */
 		--brand-blue: 204 100% 50%; /* #0066FF - Electric Blue */
 		--brand-teal: 165 100% 33%; /* #00BB88 - Success Teal */
+		--brand-teal-light: 165 100% 85%; /* #CCFFDD - Light teal for backgrounds */
 		--brand-cyan: 180 100% 50%; /* #00D9FF - Highlight Cyan */
 		--brand-dark: 210 50% 15%; /* #1A2D47 - Dark Navy */
+		--brand-coral: 16 100% 50%; /* #FF6633 - Coral for accents/secondary */
+		--brand-coral-light: 16 100% 90%; /* #FFEBDE - Light coral for backgrounds */
 
 		/* Updated CSS Variables for Ampertalent */
 		--primary: 204 100% 50%; /* Electric Blue for CTAs */

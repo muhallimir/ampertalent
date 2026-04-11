@@ -8,12 +8,12 @@
 
 ### Tasks
 
-- [ ] Configure `ClerkProvider` in root layout
-- [ ] Create `app/sign-in/[[...sign-in]]/page.tsx` — Clerk SignIn component
-- [ ] Create `app/sign-up/[[...sign-up]]/page.tsx` — Clerk SignUp component
+- [x] Configure `ClerkProvider` in root layout
+- [x] Create `app/sign-in/[[...sign-in]]/page.tsx` — Clerk SignIn component
+- [x] Create `app/sign-up/[[...sign-up]]/page.tsx` — Clerk SignUp component
 - [ ] Create `app/sso-callback/page.tsx` — SSO callback handler
 - [ ] Create `app/handler/page.tsx` — email verification handler
-- [ ] Style Clerk components to match Ampertalent branding (`@clerk/themes`)
+- [x] Style Clerk components to match Ampertalent branding (`@clerk/themes`)
 
 ### TDD Tests
 
@@ -32,7 +32,7 @@ __tests__/ui/auth/sign-up.test.tsx
 
 ### Tasks
 
-- [ ] Create `middleware.ts` — comprehensive route protection
+- [x] Create `middleware.ts` — comprehensive route protection
   - Public routes: `/`, `/sign-in`, `/sign-up`, `/sso-callback`, `/handler`, `/api/auth`, `/api/webhooks`, `/api/health`, `/checkout/authnet`
   - Protected routes: `/seeker/*` (seeker), `/employer/*` (employer), `/admin/*` (admin)
   - API protection: `/api/seeker/*`, `/api/employer/*`, `/api/admin/*`
@@ -40,8 +40,8 @@ __tests__/ui/auth/sign-up.test.tsx
   - Admin access: admins + super_admins can access all routes
   - Team member access: team_members can access `/employer/*`
   - Onboarding-allowed routes: subscription checkout, Stripe return, payments API during onboarding
-- [ ] Create `lib/middleware-onboarding.ts` — onboarding status check helper
-- [ ] Create `app/api/auth/user-role/route.ts` — role lookup API for middleware
+- [x] Create `lib/middleware-onboarding.ts` — onboarding status check helper
+- [x] Create `app/api/auth/user-role/route.ts` — role lookup API for middleware
 
 ### TDD Tests
 
@@ -66,16 +66,16 @@ __tests__/unit/middleware.test.ts
 
 ### Tasks
 
-- [ ] Create `app/onboarding/page.tsx` — multi-step onboarding
+- [x] Create `app/onboarding/page.tsx` — multi-step onboarding
   - Step 1: Role selection (Seeker or Employer)
   - Step 2a (Seeker): Profile info + skills + subscription plan selection
   - Step 2b (Employer): Company info + profile setup
   - Step 3 (Seeker): Payment method + subscription activation
   - Step 3 (Employer): Package selection (optional)
-- [ ] Create `app/onboarding/layout.tsx` — onboarding layout (no sidebar)
-- [ ] Create `components/onboarding/` — onboarding step components
-- [ ] Create `app/api/onboarding/route.ts` — create user profile, job seeker, or employer record
-- [ ] Create `app/api/onboarding/pending-signup/draft/route.ts` — save draft onboarding data
+- [x] Create `app/onboarding/layout.tsx` — onboarding layout (no sidebar)
+- [x] Create `components/onboarding/` — onboarding step components
+- [x] Create `app/api/onboarding/route.ts` — create user profile, job seeker, or employer record
+- [x] Create `app/api/onboarding/pending-signup/draft/route.ts` — save draft onboarding data
 
 ### TDD Tests
 
@@ -119,7 +119,7 @@ __tests__/integration/webhooks/clerk-webhook.test.ts
 
 ### Tasks
 
-- [ ] Create `app/api/user/invitation/route.ts` — check for pending invitations
+- [x] Create `app/api/user/invitation/route.ts` — check for pending invitations
 - [ ] Create `app/api/user/invitation/validate/admin/route.ts` — process admin invitations
 - [ ] Create `lib/user-invitations.ts` — invitation management logic
 - [ ] Create `lib/clerk-invitation-actions.ts` — Clerk invitation API integration
@@ -172,9 +172,9 @@ __tests__/integration/team-flow.test.ts
 
 ### Tasks
 
-- [ ] Create `lib/auth.ts` — getCurrentUser, getUserRole, isAdmin, etc.
-- [ ] Create `lib/auth-utils.ts` — helper for auth checks in API routes
-- [ ] Create `lib/admin-impersonation.ts` — admin impersonation session management
+- [x] Create `lib/auth.ts` — getCurrentUser, getUserRole, isAdmin, etc.
+- [x] Create `lib/auth-utils.ts` — helper for auth checks in API routes
+- [x] Create `lib/admin-impersonation.ts` — admin impersonation session management
 - [ ] Create `lib/seeker-access-guard.ts` — seeker subscription access checks
 
 ### TDD Tests

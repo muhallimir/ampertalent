@@ -1,0 +1,257 @@
+'use client';
+
+import { useEffect, useState, Suspense } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { useUser } from '@clerk/nextjs';
+import { PayPalButton } from '@/components/payments/PayPalButton';
+import { getServiceById } from '@/lib/additional-services';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { CheckCircle, XCircle, Loader2, Lock } from 'lucide-react';
+
+function PayPalCheckoutContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const { isLoaded, isSignedIn, user } = useUser();
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+  const [planDetails, setPlanDetails] = useState<any>(null);
+  const [userInfo, setUserInfo] = useState<any>(null);
+
+  const planId = searchParams.get('planId');
+  const serviceId = searchParams.get('serviceId');
+  const userType = searchParams.get('userType');
+  const pendingSignupId = searchParams.get('pendingSignupId');
+  const pendingJobPostId = searchParams.get('pendingJobPostId');
+  const sessionToken = searchParams.get('sessionToken');
+  const returnUrl = searchParams.get('returnUrl');
+  const userInfoParam = searchParams.get('userInfo');
+  const totalPriceParam = searchParams.get('totalPrice');
+  const addOnIdsParam = searchParams.get('addOnIds');
+
+  // Parse addOnIds from URL parameter (memoized to prevent dependency array changes)
+  const [addOnIds] = useState(() => {
+    try {
+      return addOnIdsParam ? JSON.parse(addOnIdsParam) : [];
+    } catch (e) {
+      console.error('Failed to parse addOnIds:', e);
+      return [];
+    }
+  });
+
+  // Parse userInfo from URL parameter as fallback (memoized to prevent dependency array changes)
+  const [urlUserInfo] = useState(() => {
+    try {
+      return userInfoParam ? JSON.parse(userInfoParam) : null;
+    } catch (e) {
+      console.error('Failed to parse userInfo:', e);
+      return null;
+    }
+  });
+
+  // Fetch user profile info if authenticated
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      if (!isLoaded || !isSignedIn || !user) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        // If we have urlUserInfo, use that first
+        if (urlUserInfo) {
+          setUserInfo(urlUserInfo);
+          setIsLoading(false);
+          return;
+        }
+
+        // Otherwise fetch from API
+        const response = await fetch('/api/user/profile');
+        if (response.ok) {
+          const profileData = await response.json();
+          setUserInfo({
+            firstName: profileData.firstName || user.firstName || '',
+            lastName: profileData.lastName || user.lastName || '',
+            email: profileData.email || user.emailAddresses[0]?.emailAddress || '',
+            name: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
+          });
+        }
+      } catch (err) {
+        console.error('Failed to fetch user info:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserInfo();
+  }, [isLoaded, isSignedIn, user, urlUserInfo]);
+
+  // Determine plan amount
+  const amount = totalPriceParam ? parseFloat(totalPriceParam) : 0;
+
+  const planName = planId
+    ? planId.charAt(0).toUpperCase() + planId.slice(1).replace(/_/g, ' ')
+    : serviceId
+      ? `Service: ${getServiceById(serviceId)?.name || 'Unknown'}`
+      : 'Purchase';
+
+  const handlePayPalSuccess = (billingAgreementId: string, subscriptionId?: string) => {
+    console.log('✅ PayPal payment successful:', billingAgreementId);
+    setSuccess(true);
+
+    // Redirect after a brief delay to show success message
+    setTimeout(() => {
+      if (returnUrl) {
+        router.push(returnUrl);
+      } else {
+        router.push('/dashboard');
+      }
+    }, 2000);
+  };
+
+  const handlePayPalError = (message: string) => {
+    console.error('❌ PayPal error:', message);
+    setError(message);
+  };
+
+  if (!isLoaded) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+      </div>
+    );
+  }
+
+  if (!isSignedIn) {
+    return (
+      <div className="max-w-2xl mx-auto p-6">
+        <Card className="border-red-200 bg-red-50">
+          <CardHeader>
+            <CardTitle className="text-red-800">Authentication Required</CardTitle>
+            <CardDescription>Please sign in to continue with checkout.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <button
+              onClick={() => router.push('/sign-in')}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              Sign In
+            </button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-2xl mx-auto p-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Lock className="h-5 w-5" />
+            Secure Checkout
+          </CardTitle>
+          <CardDescription>Complete your purchase for {planName}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {success && (
+            <Alert className="mb-6 bg-green-50 border-green-200">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              <AlertDescription className="text-green-800">
+                Payment successful! Redirecting to your dashboard...
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {error && (
+            <Alert className="mb-6" variant="destructive">
+              <XCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
+          <div className="space-y-6">
+            {/* Order Summary */}
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+              <h3 className="text-lg font-semibold mb-4">Order Summary</h3>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span>{planName}</span>
+                  <span className="font-medium">${amount.toFixed(2)}</span>
+                </div>
+                {addOnIds && addOnIds.length > 0 && (
+                  <>
+                    <div className="border-t border-gray-300 pt-2 mt-2">
+                      <p className="text-sm text-gray-600 mb-2">Add-ons:</p>
+                      {addOnIds.map((addOnId: string) => (
+                        <div key={addOnId} className="flex justify-between text-sm text-gray-600">
+                          <span>{addOnId}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+                <div className="border-t border-gray-300 pt-2 mt-2 flex justify-between font-bold">
+                  <span>Total:</span>
+                  <span>${amount.toFixed(2)}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* PayPal Button */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106zm14.146-14.42a3.35 3.35 0 0 0-.607-.541c1.27.287 2.177.902 2.65 1.865.38.773.514 1.743.346 2.88-.036.244-.09.487-.153.73-.963 4.893-4.394 6.97-8.537 6.97H12.73l-1.205 7.63a.563.563 0 0 1-.556.47H7.716a.351.351 0 0 1-.346-.404l.316-2.002c.083-.518.527-.9 1.05-.9h1.58c.524 0 .967.382 1.049.9l.188 1.19c.082.518.526.9 1.049.9h.85c3.883 0 6.896-1.577 7.78-6.138.386-1.978.083-3.577-1.01-4.55z" />
+                </svg>
+                Pay with PayPal
+              </h3>
+              <p className="text-gray-600 mb-4">
+                Secure payment with buyer protection. Click below to proceed to PayPal.
+              </p>
+              <PayPalButton
+                planId={planId || serviceId || `checkout_${Date.now()}`}
+                onSuccess={handlePayPalSuccess}
+                onError={handlePayPalError}
+                disabled={isLoading || success}
+                className="w-full"
+                variant="default"
+                size="lg"
+                userType={(userType as 'seeker' | 'employer') || 'seeker'}
+                pendingSignupId={pendingSignupId || undefined}
+                sessionToken={sessionToken || undefined}
+                addOnIds={addOnIds}
+                customAmount={amount}
+              />
+              <div className="flex items-center justify-center gap-2 text-sm text-gray-600 mt-4">
+                <Lock className="h-4 w-4 text-green-600" />
+                <span className="text-green-700">Secure payment with PayPal buyer protection</span>
+              </div>
+            </div>
+
+            {/* Security Info */}
+            <div className="text-center text-sm text-gray-600">
+              <p>🔒 Your payment information is protected and secure</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+export default function PayPalCheckoutPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-screen">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        </div>
+      }
+    >
+      <PayPalCheckoutContent />
+    </Suspense>
+  );
+}

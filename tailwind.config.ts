@@ -48,6 +48,13 @@ const config = {
         'amper-teal': '#00BB88',
         'amper-cyan': '#00D9FF',
         'amper-dark': '#1A2D47',
+        'brand-blue': 'hsl(204 100% 50%)',
+        'brand-teal': 'hsl(165 100% 33%)',
+        'brand-teal-light': 'hsl(165 100% 85%)',
+        'brand-cyan': 'hsl(180 100% 50%)',
+        'brand-dark': 'hsl(210 50% 15%)',
+        'brand-coral': 'hsl(16 100% 50%)',
+        'brand-coral-light': 'hsl(16 100% 90%)',
       },
       borderRadius: {
         lg: "var(--radius)",

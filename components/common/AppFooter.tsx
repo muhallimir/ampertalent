@@ -1,10 +1,10 @@
 'use client'
 
 import Link from 'next/link'
-import { 
-  Heart, 
-  Mail, 
-  Phone, 
+import {
+  Heart,
+  Mail,
+  Phone,
   MapPin,
   HelpCircle,
   Users,
@@ -21,7 +21,7 @@ export function AppFooter() {
         {/*
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Company Info */}
-          {/*
+        {/*
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-brand-teal rounded-lg flex items-center justify-center">
@@ -40,7 +40,7 @@ export function AppFooter() {
           </div>
 
           {/* For Job Seekers */}
-          {/*
+        {/*
           <div className="space-y-4">
             <h3 className="font-semibold text-gray-900 flex items-center">
               <Users className="h-4 w-4 mr-2 text-brand-teal" />
@@ -71,7 +71,7 @@ export function AppFooter() {
           </div>
 
           {/* For Employers */}
-          {/*
+        {/*
           <div className="space-y-4">
             <h3 className="font-semibold text-gray-900 flex items-center">
               <Briefcase className="h-4 w-4 mr-2 text-brand-teal" />
@@ -102,7 +102,7 @@ export function AppFooter() {
           </div>
 
           {/* Support & Legal */}
-          {/*
+        {/*
           <div className="space-y-4">
             <h3 className="font-semibold text-gray-900 flex items-center">
               <HelpCircle className="h-4 w-4 mr-2 text-brand-teal" />

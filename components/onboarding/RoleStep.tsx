@@ -17,20 +17,18 @@ export function RoleStep({ selectedRole, onRoleSelect }: RoleStepProps) {
       <div className="grid md:grid-cols-2 gap-8">
         {/* Seeker Card */}
         <Card
-          className={`border-2 cursor-pointer transition-all shadow-sm hover:shadow-md ${
-            selectedRole === 'seeker'
+          className={`border-2 cursor-pointer transition-all shadow-sm hover:shadow-md ${selectedRole === 'seeker'
               ? 'border-brand-teal bg-brand-teal-light/30 shadow-md'
               : 'border-gray-200 hover:border-brand-teal/50 bg-white'
-          }`}
+            }`}
           onClick={() => onRoleSelect('seeker')}
         >
           <CardHeader className="text-center">
             <div
-              className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 transition-all ${
-                selectedRole === 'seeker'
+              className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 transition-all ${selectedRole === 'seeker'
                   ? 'bg-brand-teal text-white'
                   : 'bg-brand-teal-light text-brand-teal'
-              }`}
+                }`}
             >
               <Users className="h-8 w-8" />
             </div>
@@ -59,20 +57,18 @@ export function RoleStep({ selectedRole, onRoleSelect }: RoleStepProps) {
 
         {/* Employer Card */}
         <Card
-          className={`border-2 cursor-pointer transition-all shadow-sm hover:shadow-md ${
-            selectedRole === 'employer'
+          className={`border-2 cursor-pointer transition-all shadow-sm hover:shadow-md ${selectedRole === 'employer'
               ? 'border-brand-coral bg-brand-coral-light/30 shadow-md'
               : 'border-gray-200 hover:border-brand-coral/50 bg-white'
-          }`}
+            }`}
           onClick={() => onRoleSelect('employer')}
         >
           <CardHeader className="text-center">
             <div
-              className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 transition-all ${
-                selectedRole === 'employer'
+              className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 transition-all ${selectedRole === 'employer'
                   ? 'bg-brand-coral text-white'
                   : 'bg-brand-coral-light text-brand-coral'
-              }`}
+                }`}
             >
               <Building2 className="h-8 w-8" />
             </div>

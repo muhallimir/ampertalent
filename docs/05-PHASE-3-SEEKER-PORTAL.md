@@ -8,10 +8,10 @@
 
 ### Tasks
 
-- [ ] Create `app/seeker/layout.tsx` — sidebar navigation layout (dashboard, jobs, applications, saved-jobs, resume, messages, services, profile, settings, billing)
-- [ ] Create `app/seeker/dashboard/page.tsx` — overview stats (active applications, saved jobs, subscription status, resume credits, profile completion)
-- [ ] Create `components/nav/` — sidebar navigation components
-- [ ] Create `components/sidebar-layout.tsx` — shared sidebar layout component
+- [x] Create `app/seeker/layout.tsx` — sidebar navigation layout (dashboard, jobs, applications, saved-jobs, resume, messages, services, profile, settings, billing)
+- [x] Create `app/seeker/dashboard/page.tsx` — overview stats (active applications, saved jobs, subscription status, resume credits, profile completion)
+- [x] Create `components/nav/` — sidebar navigation components
+- [x] Create `components/sidebar-layout.tsx` — shared sidebar layout component
 - [ ] Create `lib/profile-completion.ts` — profile completion calculator
 
 ### TDD Tests
@@ -35,18 +35,18 @@ __tests__/unit/profile-completion.test.ts
 
 ### Tasks
 
-- [ ] Create `app/seeker/jobs/page.tsx` — job listing with advanced search
-- [ ] Create `app/seeker/jobs/[id]/page.tsx` — job detail page
-- [ ] Create `components/seeker/AdvancedJobSearch.tsx` — faceted search UI
-- [ ] Create `components/seeker/JobCard.tsx` — job list card
-- [ ] Create `components/seeker/FeaturedJobCard.tsx` — featured job card (premium styling)
-- [ ] Create `components/seeker/JobFilters.tsx` — filter sidebar
-- [ ] Create `components/search/AdvancedJobSearch.tsx` — shared search component
-- [ ] Create `lib/advanced-search.ts` — search service with Prisma queries
-- [ ] Create `lib/search.ts` — basic search service
+- [x] Create `app/seeker/jobs/page.tsx` — job listing with advanced search
+- [x] Create `app/seeker/jobs/[id]/page.tsx` — job detail page
+- [x] Create `components/seeker/AdvancedJobSearch.tsx` — faceted search UI
+- [x] Create `components/seeker/JobCard.tsx` — job list card
+- [x] Create `components/seeker/FeaturedJobCard.tsx` — featured job card (premium styling)
+- [x] Create `components/seeker/JobFilters.tsx` — filter sidebar
+- [x] Create `components/search/AdvancedJobSearch.tsx` — shared search component
+- [x] Create `lib/advanced-search.ts` — search service with Prisma queries
+- [x] Create `lib/search.ts` — basic search service
 - [ ] Create `app/api/jobs/search/route.ts` — search API endpoint
 - [ ] Create `app/api/jobs/[id]/route.ts` — job detail API
-- [ ] Create `app/api/jobs/featured/route.ts` — featured jobs API
+- [x] Create `app/api/jobs/featured/route.ts` — featured jobs API
 - [ ] Create `app/api/jobs/popular-terms/route.ts` — popular search terms
 - [ ] Create `app/api/jobs/recently-filled/route.ts` — recently filled jobs
 
@@ -78,12 +78,12 @@ __tests__/ui/seeker/job-search.test.tsx
 
 ### Tasks
 
-- [ ] Create `app/seeker/applications/page.tsx` — applications list with status tracking
-- [ ] Create `components/seeker/ApplicationForm.tsx` — apply modal (resume select + cover letter)
+- [x] Create `app/seeker/applications/page.tsx` — applications list with status tracking
+- [x] Create `components/seeker/ApplicationForm.tsx` — apply modal (resume select + cover letter)
 - [ ] Create `components/seeker/InterviewProgress.tsx` — interview stage tracker
 - [ ] Create `components/seeker/FollowUpModal.tsx` — follow-up request
-- [ ] Create `components/application-status-badge.tsx` — status badge component
-- [ ] Create `app/api/seeker/applications/route.ts` — list applications
+- [x] Create `components/application-status-badge.tsx` — status badge component
+- [x] Create `app/api/seeker/applications/route.ts` — list applications
 - [ ] Create `app/api/applicant/route.ts` — submit application
 
 ### TDD Tests
@@ -108,9 +108,9 @@ __tests__/ui/seeker/application-form.test.tsx
 
 ### Tasks
 
-- [ ] Create `app/seeker/saved-jobs/page.tsx` — saved jobs list
+- [x] Create `app/seeker/saved-jobs/page.tsx` — saved jobs list
 - [ ] Create `app/api/seeker/saved-jobs/route.ts` — CRUD for saved jobs
-- [ ] Create `components/providers/SavedJobsProvider.tsx` — saved jobs context
+- [x] Create `components/providers/SavedJobsProvider.tsx` — saved jobs context
 
 ### TDD Tests
 
@@ -128,7 +128,7 @@ __tests__/integration/seeker/saved-jobs.test.ts
 
 ### Tasks
 
-- [ ] Create `app/seeker/resume-critique/page.tsx` — resume critique request page
+- [x] Create `app/seeker/resume-critique/page.tsx` — resume critique request page
 - [ ] Create `components/seeker/ResumeUpload.tsx` — resume upload with drag-and-drop
 - [ ] Create `components/seeker/ResumeCritiqueRequest.tsx` — critique request form
 - [ ] Create `components/seeker/ResumeCritiqueResults.tsx` — critique results display
@@ -196,8 +196,8 @@ __tests__/integration/seeker/cover-letters.test.ts
 
 ### Tasks
 
-- [ ] Create `app/seeker/subscription/page.tsx` — plan selection & management
-- [ ] Create `app/seeker/membership/page.tsx` — current membership details
+- [x] Create `app/seeker/subscription/page.tsx` — plan selection & management
+- [x] Create `app/seeker/membership/page.tsx` — current membership details
 - [ ] Create `components/seeker/SubscriptionUpgrade.tsx` — upgrade/downgrade flow
 - [ ] Create `components/subscription/subscription-details.tsx` — current plan display
 - [ ] Create `lib/subscription-plans.ts` — plan configuration (Trial/Gold/VIP/Annual)
@@ -228,8 +228,8 @@ __tests__/integration/seeker/subscription.test.ts
 
 ### Tasks
 
-- [ ] Create `app/seeker/profile/page.tsx` — profile management
-- [ ] Create `app/seeker/settings/page.tsx` — settings page
+- [x] Create `app/seeker/profile/page.tsx` — profile management
+- [x] Create `app/seeker/settings/page.tsx` — settings page
 - [ ] Create `components/seeker/ProfileForm.tsx` — profile edit form
 - [ ] Create `components/seeker/EmailChangeForm.tsx` — email change
 - [ ] Create `components/seeker/PasswordChangeForm.tsx` — password change
@@ -257,7 +257,7 @@ __tests__/integration/seeker/profile.test.ts
 
 ### Tasks
 
-- [ ] Create `app/seeker/billing/page.tsx` — billing history & payment methods
+- [x] Create `app/seeker/billing/page.tsx` — billing history & payment methods
 - [ ] Create `app/api/seeker/billing-history/route.ts` — transaction history
 - [ ] Create `app/api/seeker/transactions/route.ts` — detailed transactions
 
@@ -276,7 +276,7 @@ __tests__/integration/seeker/billing.test.ts
 
 ### Tasks
 
-- [ ] Create `app/seeker/services/page.tsx` — services catalog
+- [x] Create `app/seeker/services/page.tsx` — services catalog
 - [ ] Create `components/services/` — service cards, purchase modals
 - [ ] Create `lib/additional-services.ts` — services configuration (Career Jumpstart, Interview Training, Career Strategist, Resume Revamp, etc.)
 - [ ] Create `app/api/seeker/services/route.ts` — list available services
