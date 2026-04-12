@@ -33,7 +33,7 @@ export const SEEKER_SUBSCRIPTION_PLANS: SeekerSubscriptionPlan[] = [
   {
     id: 'trial',
     membershipPlan: 'trial_monthly',
-    name: '3 Day Free Trial Subscription',
+    name: 'Flex Trial',
     price: 34.99,
     billing: 'month',
     billingMonths: 1,
@@ -56,7 +56,7 @@ export const SEEKER_SUBSCRIPTION_PLANS: SeekerSubscriptionPlan[] = [
   {
     id: 'gold',
     membershipPlan: 'gold_bimonthly',
-    name: 'Gold Mom Professional',
+    name: 'Flex Gold',
     price: 49.99,
     billing: '2 months',
     billingMonths: 2,
@@ -78,7 +78,7 @@ export const SEEKER_SUBSCRIPTION_PLANS: SeekerSubscriptionPlan[] = [
   {
     id: 'vip-platinum',
     membershipPlan: 'vip_quarterly',
-    name: 'VIP Platinum Mom Professional',
+    name: 'Flex VIP',
     price: 79.99,
     billing: '3 months',
     billingMonths: 3,
@@ -100,7 +100,7 @@ export const SEEKER_SUBSCRIPTION_PLANS: SeekerSubscriptionPlan[] = [
   {
     id: 'annual-platinum',
     membershipPlan: 'annual_platinum',
-    name: 'Annual Platinum Mom Professional',
+    name: 'Flex Annual',
     price: 299.00,
     billing: 'year',
     billingMonths: 12,
