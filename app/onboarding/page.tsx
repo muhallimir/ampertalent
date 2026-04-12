@@ -179,6 +179,7 @@ export default function OnboardingPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [isNavigating, setIsNavigating] = useState(false)
   const [isCheckingStatus, setIsCheckingStatus] = useState(true)
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false)
   const [hasClearedCache, setHasClearedCache] = useState(false)
   const [showEmailVerificationModal, setShowEmailVerificationModal] = useState(false)
   const [lastAutoSave, setLastAutoSave] = useState<Date | null>(null)
@@ -240,6 +241,9 @@ export default function OnboardingPage() {
 
     if (paymentStatus === 'success' && sessionId) {
       console.log('💳 ONBOARDING: Payment success detected, completing onboarding and processing subscription')
+      
+      // Show loading overlay immediately
+      setIsProcessingPayment(true)
 
       // Complete payment and onboarding
       const completePaymentFlow = async () => {
@@ -1560,6 +1564,26 @@ export default function OnboardingPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Payment Processing Overlay */}
+      {isProcessingPayment && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-2xl p-8 flex flex-col items-center space-y-4 max-w-sm">
+            <LoadingSpinner size="lg" className="text-brand-teal" />
+            <div className="space-y-2 text-center">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Completing Your Onboarding
+              </h3>
+              <p className="text-sm text-gray-600">
+                We're setting up your profile and activating your subscription...
+              </p>
+              <p className="text-xs text-gray-500 mt-3">
+                This may take a moment. Please don't close this window.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
