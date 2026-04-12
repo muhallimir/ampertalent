@@ -30,6 +30,7 @@ function PayPalCheckoutContent() {
   const userInfoParam = searchParams.get('userInfo');
   const totalPriceParam = searchParams.get('totalPrice');
   const addOnIdsParam = searchParams.get('addOnIds');
+  const isTrialParam = searchParams.get('isTrial');
 
   // Parse addOnIds from URL parameter (memoized to prevent dependency array changes)
   const [addOnIds] = useState(() => {
@@ -173,6 +174,18 @@ function PayPalCheckoutContent() {
           )}
 
           <div className="space-y-6">
+            {/* Trial Notice */}
+            {isTrialParam === 'true' && (
+              <Alert className="bg-blue-50 border-blue-300">
+                <svg className="h-4 w-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <AlertDescription className="text-blue-800">
+                  <strong>3-Day Free Trial</strong> - We won't charge you yet. We just need your payment information. Charges will begin on day 4 at $34.99/month.
+                </AlertDescription>
+              </Alert>
+            )}
+
             {/* Order Summary */}
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
               <h3 className="text-lg font-semibold mb-4">Order Summary</h3>

@@ -116,6 +116,10 @@ export async function POST(request: NextRequest) {
     paypalCheckoutUrl.searchParams.set('returnUrl', `${baseUrl}/seeker/dashboard`)
     paypalCheckoutUrl.searchParams.set('userType', 'seeker')
     paypalCheckoutUrl.searchParams.set('totalPrice', plan.price.toString())
+    // Pass flag for trial plans to show special messaging
+    if (selectedPackage === 'trial') {
+      paypalCheckoutUrl.searchParams.set('isTrial', 'true')
+    }
 
     const userName = currentUser.clerkUser.firstName && currentUser.clerkUser.lastName
       ? `${currentUser.clerkUser.firstName} ${currentUser.clerkUser.lastName}`
