@@ -36,6 +36,8 @@
     "@radix-ui/react-switch": "^1.2.6",
     "@radix-ui/react-tabs": "^1.1.13",
     "@sentry/nextjs": "^7.96.0",
+    "@stripe/react-stripe-js": "^6.1.0",
+    "@stripe/stripe-js": "^9.1.0",
     "@supabase/supabase-js": "^2.40.0",
     "@uiw/react-markdown-preview": "^5.2.0",
     "@uiw/react-md-editor": "^4.1.0",
@@ -56,6 +58,7 @@
     "resend": "^3.0.0",
     "socket.io-client": "^4.7.0",
     "stripe": "^14.10.0",
+    "svix": "^1.90.0",
     "tailwind-merge": "^2.2.0",
     "tailwindcss-animate": "^1.0.6",
     "zod": "^4.3.6"
