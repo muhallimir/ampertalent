@@ -330,7 +330,7 @@ export default function OnboardingPage() {
           // NOTE: firstName and lastName are now REQUIRED in Clerk, so we always have them from user object
           // If pending signup data doesn't have them, use Clerk data as fallback
           const needsDefaults = !parsedData?.firstName || !parsedData?.lastName || !parsedData?.location
-          
+
           if (needsDefaults) {
             console.warn('⚠️ ONBOARDING: Pending signup data incomplete, using Clerk data for profile creation', {
               parsedData,
@@ -735,13 +735,13 @@ export default function OnboardingPage() {
   // ONLY runs if there's NO draft data (first time user)
   // NOTE: firstName and lastName are REQUIRED in Clerk, so they will always be available
   useEffect(() => {
-    // Wait for auto-restore to complete first
-    if (!hasAutoRestored || !invitationChecked) {
+    // Wait for initialization to complete (user needs to be loaded from Clerk)
+    if (!user || !invitationChecked || isCheckingStatus) {
       return
     }
 
     // Only pre-fill if we don't have firstName already (meaning no draft was loaded)
-    if (user && !onboardingData.firstName) {
+    if (!onboardingData.firstName) {
       // These are now REQUIRED in Clerk, so we can safely assume they exist
       const firstName = user.firstName || ''
       const lastName = user.lastName || ''
@@ -754,7 +754,7 @@ export default function OnboardingPage() {
         }))
       }
     }
-  }, [user, hasAutoRestored, invitationChecked])
+  }, [user, invitationChecked, isCheckingStatus, onboardingData.firstName])
 
   const loadPreservedOnboardingData = async (resumeId: string, sessionToken: string) => {
     // Don't auto-restore if we've already done it once
