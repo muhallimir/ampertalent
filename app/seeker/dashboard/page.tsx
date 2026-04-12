@@ -146,6 +146,57 @@ export default function SeekerDashboard() {
   useEffect(() => {
     setMounted(true)
 
+    // Check for Stripe payment success (from checkout redirect)
+    const checkoutSuccess = searchParams.get('checkout')
+    const sessionId = searchParams.get('sessionId')
+    const paymentStatus = searchParams.get('payment_status')
+    const transactionId = searchParams.get('transaction_id')
+
+    if (checkoutSuccess === 'success' || paymentStatus === 'success') {
+      console.log('💳 DASHBOARD: Payment success detected', {
+        checkoutSuccess,
+        sessionId,
+        paymentStatus,
+        transactionId
+      })
+
+      // Process the successful payment
+      const processPaymentSuccess = async () => {
+        try {
+          // Call API to process the payment and create subscription
+          const response = await fetch('/api/seeker/subscription/process-payment', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              sessionId: sessionId || transactionId,
+              paymentMethod: sessionId ? 'stripe' : 'paypal',
+              paymentStatus
+            })
+          })
+
+          if (!response.ok) {
+            const error = await response.json()
+            console.error('❌ DASHBOARD: Payment processing failed:', error)
+            // Don't block dashboard load on error - user can retry
+            return
+          }
+
+          const result = await response.json()
+          console.log('✅ DASHBOARD: Payment processed successfully:', result)
+          
+          // Clean up URL params after successful processing
+          // This prevents the payment from being processed again if user refreshes
+          window.history.replaceState({}, document.title, '/seeker/dashboard')
+        } catch (error) {
+          console.error('❌ DASHBOARD: Error processing payment:', error)
+        }
+      }
+
+      processPaymentSuccess()
+    }
+
     // Check for post-onboarding service redirect (from service SKU flow)
     // This happens when user signed up with a premium service SKU
     // Using localStorage because PayPal redirects externally and sessionStorage doesn't persist
