@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
         }
       ],
       mode: 'payment',
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/seeker/dashboard?checkout=success&sessionId={CHECKOUT_SESSION_ID}`,
+      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/onboarding?payment_status=success&sessionId={CHECKOUT_SESSION_ID}&pendingSignupId=${pendingSignupId}`,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/paypal?planId=${planId}&pendingSignupId=${pendingSignupId}`,
       customer_email: email,
       metadata: {

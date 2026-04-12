@@ -226,6 +226,64 @@ export default function OnboardingPage() {
     })
   }
 
+  // Handle Stripe payment success redirect from checkout
+  // This useEffect runs BEFORE the main onboarding initialization
+  // to detect and process payment_status=success from Stripe redirect
+  useEffect(() => {
+    if (!isLoaded || !user) return
+
+    // Check for payment success from Stripe redirect
+    const searchParams = new URLSearchParams(window.location.search)
+    const paymentStatus = searchParams.get('payment_status')
+    const sessionId = searchParams.get('sessionId')
+    const pendingSignupId = searchParams.get('pendingSignupId')
+
+    if (paymentStatus === 'success' && sessionId) {
+      console.log('💳 ONBOARDING: Payment success detected, processing subscription')
+
+      // Call the payment processor endpoint to create subscription
+      const processPayment = async () => {
+        try {
+          const response = await fetch('/api/seeker/subscription/process-payment', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              sessionId,
+              paymentMethod: 'stripe',
+              paymentStatus
+            })
+          })
+
+          if (!response.ok) {
+            const error = await response.json()
+            console.error('❌ ONBOARDING: Payment processing failed:', error)
+            // Don't redirect on error, let user stay on onboarding
+            return
+          }
+
+          const result = await response.json()
+          console.log('✅ ONBOARDING: Subscription created successfully:', result)
+
+          // Clean up URL params to prevent duplicate processing
+          window.history.replaceState({}, document.title, window.location.pathname)
+
+          // Redirect to dashboard with welcome message
+          setTimeout(() => {
+            console.log('🎉 ONBOARDING: Payment complete, redirecting to dashboard')
+            router.push('/seeker/dashboard?welcome=true')
+          }, 1500)
+        } catch (error) {
+          console.error('❌ ONBOARDING: Error processing payment:', error)
+        }
+      }
+
+      processPayment()
+      return
+    }
+  }, [isLoaded, user, router])
+
   useEffect(() => {
     if (!user) {
       router.push('/sign-in')
