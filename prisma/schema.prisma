@@ -417,7 +417,7 @@ model ResumeCritique {
 
 model Invoice {
   id                   String          @id @default(cuid())
-  employerPackageId    String          @map("employer_package_id")
+  employerPackageId    String?         @map("employer_package_id")
   authnetTransactionId String?         @map("authnet_transaction_id")
   amountDue            Int             @map("amount_due")
   status               InvoiceStatus   @default(draft)
@@ -427,7 +427,7 @@ model Invoice {
   packageName          String?         @map("package_name")
   dueDate              DateTime?       @map("due_date")
   paidAt               DateTime?       @map("paid_at")
-  employerPackage      EmployerPackage @relation(fields: [employerPackageId], references: [id], onDelete: Cascade)
+  employerPackage      EmployerPackage? @relation(fields: [employerPackageId], references: [id], onDelete: Cascade)
 
   @@map("invoices")
 }
