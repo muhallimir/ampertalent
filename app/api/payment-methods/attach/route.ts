@@ -59,11 +59,11 @@ export async function POST(request: NextRequest) {
     const card = paymentMethod.card
     const cardInfo = card
       ? {
-          last4: card.last4,
-          brand: card.brand,
-          exp_month: card.exp_month,
-          exp_year: card.exp_year,
-        }
+        last4: card.last4,
+        brand: card.brand,
+        exp_month: card.exp_month,
+        exp_year: card.exp_year,
+      }
       : null
 
     // Log success

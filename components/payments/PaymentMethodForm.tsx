@@ -173,5 +173,5 @@ export function PaymentMethodForm({
 }
 
 export default PaymentMethodForm
-	const [isSubmitting, setIsSubmitting] = useState(false);
-	const [isAcceptJsLoaded, setIsAcceptJsLoaded] = useState(false);
+const [isSubmitting, setIsSubmitting] = useState(false);
+const [isAcceptJsLoaded, setIsAcceptJsLoaded] = useState(false);

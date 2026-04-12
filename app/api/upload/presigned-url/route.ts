@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: NextRequest) {
   try {
     const { generatePresignedUploadUrl, generateStorageKey } = await import('@/lib/storage')
-    
+
     const currentUser = await getCurrentUser(request)
 
     if (!currentUser || !currentUser.profile?.jobSeeker) {

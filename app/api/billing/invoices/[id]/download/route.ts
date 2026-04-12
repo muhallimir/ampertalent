@@ -51,7 +51,7 @@ export async function GET(
       const userProfile = await db.userProfile.findUnique({
         where: { clerkUserId: userId },
       })
-      
+
       if (userProfile?.role !== 'admin') {
         return NextResponse.json(
           { error: 'Forbidden' },

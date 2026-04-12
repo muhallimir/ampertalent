@@ -69,13 +69,13 @@ export async function POST(request: NextRequest) {
 
     // Get or create Stripe customer
     let stripeCustomerId: string
-    
+
     // Check if we have an existing payment method with a customer ID
     if (paymentMethodId) {
       const existingPayment = await db.paymentMethod.findUnique({
         where: { id: paymentMethodId },
       })
-      
+
       if (!existingPayment?.authnetPaymentProfileId) {
         // Create new customer
         const customer = await stripe.customers.create({

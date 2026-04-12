@@ -32,7 +32,7 @@ async function handleUserCreated(clerkUser: any) {
   console.log(`[Clerk Webhook] user.created: ${clerkUser.id}`)
   console.log(`  Email: ${clerkUser.email_addresses?.[0]?.email_address}`)
   console.log(`  Name: ${clerkUser.first_name} ${clerkUser.last_name}`)
-  
+
   // Note: User profile creation happens in the onboarding flow
   // This webhook just logs the event for debugging/audit purposes
 }
@@ -43,7 +43,7 @@ async function handleUserCreated(clerkUser: any) {
 async function handleUserUpdated(clerkUser: any) {
   console.log(`[Clerk Webhook] user.updated: ${clerkUser.id}`)
   console.log(`  Updated at: ${clerkUser.updated_at}`)
-  
+
   // Sync email/name updates if needed
   // For now, just log
 }
@@ -54,7 +54,7 @@ async function handleUserUpdated(clerkUser: any) {
 async function handleUserDeleted(clerkUser: any) {
   console.log(`[Clerk Webhook] user.deleted: ${clerkUser.id}`)
   console.log(`  Deleted at: ${clerkUser.deleted_at}`)
-  
+
   // Note: Data retention policy should handle soft-deletes
   // For now, just log
 }

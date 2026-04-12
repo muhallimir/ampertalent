@@ -28,8 +28,8 @@ export async function handleInvoicePaid(invoice: Stripe.Invoice) {
     return
   }
 
-  const subscriptionId = typeof invoice.subscription === 'string' 
-    ? invoice.subscription 
+  const subscriptionId = typeof invoice.subscription === 'string'
+    ? invoice.subscription
     : invoice.subscription.id
 
   // Find subscription by Stripe ID
