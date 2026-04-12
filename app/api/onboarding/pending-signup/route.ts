@@ -24,25 +24,32 @@ export async function POST(request: NextRequest) {
     // Find existing pending signup for this user
     const existing = await db.pendingSignup.findFirst({
       where: { clerkUserId: userId },
+      orderBy: { createdAt: 'desc' },
     })
 
-    // Create or update pending signup
-    const pendingSignup = await db.pendingSignup.upsert({
-      where: { id: existing?.id || 'new-' + Date.now() },
-      update: {
-        onboardingData: JSON.stringify(onboardingData),
-        updatedAt: new Date(),
-      },
-      create: {
-        clerkUserId: userId,
-        email: email || '',
-        onboardingData: JSON.stringify(onboardingData),
-        selectedPlan: onboardingData.selectedPackage || '',
-        sessionToken: 'temp-' + Date.now(),
-        returnUrl: '',
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      },
-    })
+    // If exists, update it; otherwise create new
+    let pendingSignup
+    if (existing) {
+      pendingSignup = await db.pendingSignup.update({
+        where: { id: existing.id },
+        data: {
+          onboardingData: JSON.stringify(onboardingData),
+          updatedAt: new Date(),
+        },
+      })
+    } else {
+      pendingSignup = await db.pendingSignup.create({
+        data: {
+          clerkUserId: userId,
+          email: email || '',
+          onboardingData: JSON.stringify(onboardingData),
+          selectedPlan: onboardingData.selectedPackage || 'trial_monthly',
+          sessionToken: `session_${userId}_${Date.now()}`,
+          returnUrl: '/onboarding',
+          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        },
+      })
+    }
 
     return NextResponse.json(
       { pendingSignup, success: true },
