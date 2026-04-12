@@ -5,10 +5,13 @@
 
 import { NextRequest } from 'next/server'
 import { getCurrentUser } from '@/lib/auth'
-import { generatePresignedUploadUrl, generateStorageKey, validateFile } from '@/lib/storage'
+
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
+    const { generatePresignedUploadUrl, generateStorageKey } = await import('@/lib/storage')
+    
     const currentUser = await getCurrentUser(request)
 
     if (!currentUser || !currentUser.profile?.jobSeeker) {
