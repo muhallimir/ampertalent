@@ -231,36 +231,54 @@ export default function OnboardingPage() {
   // This useEffect runs BEFORE the main onboarding initialization
   // to detect and process payment_status=success from payment handlers
   useEffect(() => {
-    if (!isLoaded || !user) return
-
     // Check for payment success from Stripe or PayPal redirect
+    // Do this check FIRST, even before isLoaded/user checks
+    // because it's URL-based and should work immediately
     const searchParams = new URLSearchParams(window.location.search)
     const paymentStatus = searchParams.get('payment_status')
     const sessionId = searchParams.get('session_id') // Stripe session ID (note: underscore, not camelCase)
     const transactionId = searchParams.get('transaction_id') // PayPal transaction ID
     const pendingSignupId = searchParams.get('pendingSignupId')
-    
-    // Determine payment method and ID
-    const paymentId = sessionId || transactionId
-    const paymentMethod = sessionId ? 'stripe' : (transactionId ? 'paypal' : null)
 
-    console.log('🔍 PAYMENT DETECTION: Checking URL parameters:', {
-      fullUrl: window.location.href,
+    console.log('🔍 PAYMENT DETECTION USEEFFECT: Triggered! Checking for payment params:', {
       paymentStatus,
-      sessionId,
-      transactionId,
-      pendingSignupId,
-      paymentMethod,
-      paymentId
+      sessionId: !!sessionId,
+      transactionId: !!transactionId,
+      pendingSignupId: !!pendingSignupId,
+      isLoaded,
+      user: !!user
     })
 
-    if (paymentStatus === 'success' && paymentId) {
+    // If we have payment params, process them even if user isn't fully loaded yet
+    if (paymentStatus === 'success' && (sessionId || transactionId)) {
+      console.log('🔍 PAYMENT DETECTION USEEFFECT: Found payment parameters!')
+      
+      // Now we need user to be loaded
+      if (!isLoaded || !user) {
+        console.log('🔍 PAYMENT DETECTION USEEFFECT: Waiting for isLoaded/user. isLoaded:', isLoaded, 'user:', !!user)
+        return
+      }
+
+      // Determine payment method and ID
+      const paymentId = sessionId || transactionId
+      const paymentMethod = sessionId ? 'stripe' : (transactionId ? 'paypal' : null)
+
+      console.log('🔍 PAYMENT DETECTION: Payment params found and ready to process:', {
+        fullUrl: window.location.href,
+        paymentStatus,
+        sessionId,
+        transactionId,
+        pendingSignupId,
+        paymentMethod,
+        paymentId
+      })
+
       console.log('💳 ONBOARDING: Payment success detected', {
         paymentMethod,
         paymentId,
         pendingSignupId
       })
-      
+
       // Show loading overlay immediately
       setIsProcessingPayment(true)
 
