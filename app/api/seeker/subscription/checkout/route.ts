@@ -108,17 +108,18 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Use PayPal checkout - return checkout page URL with parameters
-    const paypalCheckoutUrl = new URL('/checkout/paypal', baseUrl)
-    paypalCheckoutUrl.searchParams.set('planId', selectedPackage)
-    paypalCheckoutUrl.searchParams.set('pendingSignupId', sessionId)
-    paypalCheckoutUrl.searchParams.set('sessionToken', sessionToken)
-    paypalCheckoutUrl.searchParams.set('returnUrl', `${baseUrl}/seeker/dashboard`)
-    paypalCheckoutUrl.searchParams.set('userType', 'seeker')
-    paypalCheckoutUrl.searchParams.set('totalPrice', plan.price.toString())
+    // Use master checkout page - return checkout page URL with parameters
+    // This page supports both Stripe and PayPal payment methods with tabs
+    const checkoutPageUrl = new URL('/checkout', baseUrl)
+    checkoutPageUrl.searchParams.set('planId', selectedPackage)
+    checkoutPageUrl.searchParams.set('pendingSignupId', sessionId)
+    checkoutPageUrl.searchParams.set('sessionToken', sessionToken)
+    checkoutPageUrl.searchParams.set('returnUrl', `${baseUrl}/seeker/dashboard`)
+    checkoutPageUrl.searchParams.set('userType', 'seeker')
+    checkoutPageUrl.searchParams.set('totalPrice', plan.price.toString())
     // Pass flag for trial plans to show special messaging
     if (selectedPackage === 'trial') {
-      paypalCheckoutUrl.searchParams.set('isTrial', 'true')
+      checkoutPageUrl.searchParams.set('isTrial', 'true')
     }
 
     const userName = currentUser.clerkUser.firstName && currentUser.clerkUser.lastName
@@ -131,9 +132,9 @@ export async function POST(request: NextRequest) {
       firstName: userProfile?.name?.split(' ')[0] || currentUser.clerkUser.firstName || '',
       lastName: userProfile?.name?.split(' ').slice(1).join(' ') || currentUser.clerkUser.lastName || ''
     }
-    paypalCheckoutUrl.searchParams.set('userInfo', JSON.stringify(userInfo))
+    checkoutPageUrl.searchParams.set('userInfo', JSON.stringify(userInfo))
 
-    const checkoutUrl = paypalCheckoutUrl.toString()
+    const checkoutUrl = checkoutPageUrl.toString()
     const paymentMethod = 'paypal'
 
     console.log('✅ SEEKER-CHECKOUT: Created PayPal subscription checkout session:', {
