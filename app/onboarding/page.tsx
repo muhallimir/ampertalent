@@ -175,7 +175,7 @@ export default function OnboardingPage() {
   const { user, isLoaded } = useUser()
   const { signOut } = useClerk()
   const router = useRouter()
-  
+
   // Log immediately on mount
   if (typeof window !== 'undefined') {
     const url = new URL(window.location.href)
@@ -188,7 +188,7 @@ export default function OnboardingPage() {
       timestamp: new Date().toISOString()
     })
   }
-  
+
   const [currentStep, setCurrentStep] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
   const [isNavigating, setIsNavigating] = useState(false)
@@ -266,7 +266,7 @@ export default function OnboardingPage() {
     // If we have payment params, process them even if user isn't fully loaded yet
     if (paymentStatus === 'success' && (sessionId || transactionId)) {
       console.log('🔍 PAYMENT DETECTION USEEFFECT: Found payment parameters!')
-      
+
       // Now we need user to be loaded
       if (!isLoaded || !user) {
         console.log('🔍 PAYMENT DETECTION USEEFFECT: Waiting for isLoaded/user. isLoaded:', isLoaded, 'user:', !!user)
@@ -327,35 +327,24 @@ export default function OnboardingPage() {
 
           console.log('📋 ONBOARDING: Parsed pending signup data:', parsedData)
 
-          // CRITICAL FIX: If pending signup has incomplete data (from payment flow),
-          // use placeholder values so profile creation doesn't fail
+          // NOTE: firstName and lastName are now REQUIRED in Clerk, so we always have them from user object
+          // If pending signup data doesn't have them, use Clerk data as fallback
           const needsDefaults = !parsedData?.firstName || !parsedData?.lastName || !parsedData?.location
-          console.log('🔍 ONBOARDING: Checking if data needs defaults:', {
-            needsDefaults,
-            hasFirstName: !!parsedData?.firstName,
-            hasLastName: !!parsedData?.lastName,
-            hasLocation: !!parsedData?.location,
-            userFirstName: user?.firstName,
-            userLastName: user?.lastName
-          })
           
           if (needsDefaults) {
-            console.warn('⚠️ ONBOARDING: Pending signup data incomplete, using defaults for profile creation', {
+            console.warn('⚠️ ONBOARDING: Pending signup data incomplete, using Clerk data for profile creation', {
               parsedData,
-              user: {
+              clerkUser: {
                 firstName: user?.firstName,
                 lastName: user?.lastName,
-                email: user?.emailAddresses?.[0]?.emailAddress,
-                emailAddresses: user?.emailAddresses?.map(e => e.emailAddress)
+                email: user?.emailAddresses?.[0]?.emailAddress
               }
             })
-            
-            // Use email prefix as firstName if no name available
-            const emailPrefix = user?.emailAddresses?.[0]?.emailAddress?.split('@')[0] || 'User'
-            
+
             parsedData = {
               role: parsedData.role || 'seeker',
-              firstName: parsedData.firstName || user?.firstName || emailPrefix,
+              // Clerk firstName/lastName are now REQUIRED, so they will always be available
+              firstName: parsedData.firstName || user?.firstName || '',
               lastName: parsedData.lastName || user?.lastName || '',
               location: parsedData.location || 'Not specified',
               experience: parsedData.experience,
@@ -744,6 +733,7 @@ export default function OnboardingPage() {
 
   // Separate useEffect for pre-filling user data from Clerk
   // ONLY runs if there's NO draft data (first time user)
+  // NOTE: firstName and lastName are REQUIRED in Clerk, so they will always be available
   useEffect(() => {
     // Wait for auto-restore to complete first
     if (!hasAutoRestored || !invitationChecked) {
@@ -752,9 +742,10 @@ export default function OnboardingPage() {
 
     // Only pre-fill if we don't have firstName already (meaning no draft was loaded)
     if (user && !onboardingData.firstName) {
+      // These are now REQUIRED in Clerk, so we can safely assume they exist
       const firstName = user.firstName || ''
       const lastName = user.lastName || ''
-      if (firstName || lastName) {
+      if (firstName) {
         console.log('📝 ONBOARDING: Pre-filling user data from Clerk (first time, no draft):', { firstName, lastName })
         setOnboardingData(prev => ({
           ...prev,

@@ -16,17 +16,17 @@ export async function POST(request: NextRequest) {
 
         console.log("🎯 ONBOARDING COMPLETE: Starting for user:", user.id);
         console.log("👤 ONBOARDING COMPLETE: User has existing profile:", !!currentUser.profile);
-        
+
         // Log who called this endpoint
         const requestUrl = request.url;
         const referer = request.headers.get('referer');
         const userAgent = request.headers.get('user-agent');
         console.log("📍 ONBOARDING COMPLETE: Request details:", {
-          url: requestUrl,
-          referer: referer,
-          userAgent: userAgent?.substring(0, 100)
+            url: requestUrl,
+            referer: referer,
+            userAgent: userAgent?.substring(0, 100)
         });
-        
+
         // Try to log a stack trace to identify the caller
         console.log("📍 ONBOARDING COMPLETE: Stack trace:", new Error().stack?.split('\n').slice(0, 5).join('\n'));
 
