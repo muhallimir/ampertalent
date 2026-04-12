@@ -272,6 +272,23 @@ export default function OnboardingPage() {
 
           console.log('📋 ONBOARDING: Parsed pending signup data:', parsedData)
 
+          // CRITICAL FIX: If pending signup has incomplete data (from payment flow),
+          // use placeholder values so profile creation doesn't fail
+          if (!parsedData.firstName || !parsedData.lastName || !parsedData.location) {
+            console.warn('⚠️ ONBOARDING: Pending signup data incomplete, using defaults for profile creation')
+            parsedData = {
+              role: parsedData.role || 'seeker',
+              firstName: parsedData.firstName || user?.firstName || 'User',
+              lastName: parsedData.lastName || user?.lastName || '',
+              location: parsedData.location || 'Not specified',
+              experience: parsedData.experience,
+              skills: parsedData.skills,
+              companyName: parsedData.companyName,
+              companySize: parsedData.companySize,
+              professionalSummary: parsedData.professionalSummary || ''
+            }
+          }
+
           // Step 1: Complete the onboarding (create user profile)
           console.log('💾 ONBOARDING: Completing onboarding profile...')
           const completeResponse = await fetch('/api/onboarding/complete', {

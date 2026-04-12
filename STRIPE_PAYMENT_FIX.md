@@ -38,64 +38,70 @@ The KEY difference: **onboarding/complete is ALWAYS called before redirecting to
 ### Two Commits Made
 
 #### Commit 1: `fix: redirect Stripe checkout success back to onboarding page`
+
 - Changed Stripe `success_url` to redirect to `/onboarding?payment_status=success&sessionId=...&pendingSignupId=...` instead of `/seeker/dashboard`
 - This ensures the flow goes through the onboarding page (like hire_my_mom_saas)
 
 **File:** `app/api/payments/stripe-checkout/route.ts`
+
 ```typescript
 // BEFORE:
-success_url: `${baseUrl}/seeker/dashboard?checkout=success&sessionId={CHECKOUT_SESSION_ID}`
+success_url: `${baseUrl}/seeker/dashboard?checkout=success&sessionId={CHECKOUT_SESSION_ID}`;
 
 // AFTER:
-success_url: `${baseUrl}/onboarding?payment_status=success&sessionId={CHECKOUT_SESSION_ID}&pendingSignupId=${pendingSignupId}`
+success_url: `${baseUrl}/onboarding?payment_status=success&sessionId={CHECKOUT_SESSION_ID}&pendingSignupId=${pendingSignupId}`;
 ```
 
 #### Commit 2: `fix: complete onboarding BEFORE processing payment on Stripe success`
+
 - Added payment success handler to onboarding page
 - **Crucially:** Now calls `/api/onboarding/complete` BEFORE payment processing
 - This creates the user profile, job seeker profile, then processes payment
 
 **File:** `app/onboarding/page.tsx`
+
 ```typescript
 useEffect(() => {
-  if (!isLoaded || !user) return
+	if (!isLoaded || !user) return;
 
-  const searchParams = new URLSearchParams(window.location.search)
-  const paymentStatus = searchParams.get('payment_status')
-  const sessionId = searchParams.get('sessionId')
+	const searchParams = new URLSearchParams(window.location.search);
+	const paymentStatus = searchParams.get("payment_status");
+	const sessionId = searchParams.get("sessionId");
 
-  if (paymentStatus === 'success' && sessionId) {
-    const completePaymentFlow = async () => {
-      // Step 1: Fetch pending signup data
-      const { pendingSignup } = await fetch('/api/onboarding/pending-signup/latest')
-      
-      // Step 2: COMPLETE ONBOARDING (creates user profile)
-      await fetch('/api/onboarding/complete', {
-        method: 'POST',
-        body: JSON.stringify({
-          role: parsedData.role,
-          firstName: parsedData.firstName,
-          // ... all other fields
-        })
-      })
-      
-      // Step 3: Process payment (creates subscription)
-      await fetch('/api/seeker/subscription/process-payment', {
-        method: 'POST',
-        body: JSON.stringify({
-          sessionId,
-          paymentMethod: 'stripe',
-          paymentStatus
-        })
-      })
-      
-      // Step 4: Redirect to dashboard
-      router.push('/seeker/dashboard?welcome=true')
-    }
+	if (paymentStatus === "success" && sessionId) {
+		const completePaymentFlow = async () => {
+			// Step 1: Fetch pending signup data
+			const { pendingSignup } = await fetch(
+				"/api/onboarding/pending-signup/latest",
+			);
 
-    completePaymentFlow()
-  }
-}, [isLoaded, user, router])
+			// Step 2: COMPLETE ONBOARDING (creates user profile)
+			await fetch("/api/onboarding/complete", {
+				method: "POST",
+				body: JSON.stringify({
+					role: parsedData.role,
+					firstName: parsedData.firstName,
+					// ... all other fields
+				}),
+			});
+
+			// Step 3: Process payment (creates subscription)
+			await fetch("/api/seeker/subscription/process-payment", {
+				method: "POST",
+				body: JSON.stringify({
+					sessionId,
+					paymentMethod: "stripe",
+					paymentStatus,
+				}),
+			});
+
+			// Step 4: Redirect to dashboard
+			router.push("/seeker/dashboard?welcome=true");
+		};
+
+		completePaymentFlow();
+	}
+}, [isLoaded, user, router]);
 ```
 
 ---
@@ -168,6 +174,7 @@ useEffect(() => {
 After successful Stripe payment:
 
 ### UserProfile
+
 ```
 {
   id: "...",
@@ -181,6 +188,7 @@ After successful Stripe payment:
 ```
 
 ### JobSeeker
+
 ```
 {
   id: "...",
@@ -194,6 +202,7 @@ After successful Stripe payment:
 ```
 
 ### Subscription
+
 ```
 {
   id: "...",
@@ -213,6 +222,7 @@ After successful Stripe payment:
 ## What Happens with Each Payment Method
 
 ### Stripe (NOW FIXED ✅)
+
 ```
 1. User fills onboarding
 2. Clicks checkout
@@ -228,6 +238,7 @@ After successful Stripe payment:
 ```
 
 ### PayPal (Already Working)
+
 ```
 1. User fills onboarding
 2. Clicks checkout
@@ -246,6 +257,7 @@ After successful Stripe payment:
 ## Testing the Fix
 
 ### Prerequisites
+
 - Dev server running: `npm run dev`
 - Stripe test account configured
 - Database populated with schema
@@ -253,6 +265,7 @@ After successful Stripe payment:
 ### Step-by-Step Test
 
 #### 1. Complete Onboarding
+
 ```
 Go to: http://localhost:3000/onboarding
 - Select: "I'm Looking for Work" (seeker)
@@ -266,6 +279,7 @@ Go to: http://localhost:3000/onboarding
 ```
 
 #### 2. Make Stripe Payment
+
 ```
 On /checkout page:
 - Click "Stripe" tab
@@ -278,6 +292,7 @@ On /checkout page:
 ```
 
 #### 3. Verify Success
+
 ```
 Browser should:
 - Show loading state on onboarding page (briefly)
@@ -287,6 +302,7 @@ Browser should:
 ```
 
 #### 4. Verify Database
+
 ```
 Check database records:
 
@@ -301,6 +317,7 @@ SELECT * FROM "Subscription" WHERE "seekerId" = 'user_xxx';
 ```
 
 #### 5. Check Console Logs
+
 ```
 Browser DevTools Console should show:
 ✅ "Payment success detected, completing onboarding..."
@@ -313,17 +330,17 @@ Browser DevTools Console should show:
 
 ## Comparison: hire_my_mom_saas vs ampertalent
 
-| Aspect | hire_my_mom_saas | ampertalent |
-|--------|------------------|------------|
-| **Checkout Provider** | Authorize.net | Stripe |
-| **Payment Type** | Billing Agreement | One-time | 
-| **Success URL** | `/seeker/onboarding?payment_status=success` | ✅ Same |
-| **Onboarding Handler** | Detects `payment_status=success` | ✅ Same |
-| **Calls onboarding/complete** | ✅ YES | ✅ YES |
-| **Completes profile first** | ✅ YES | ✅ YES |
-| **Then processes payment** | ✅ YES | ✅ YES |
-| **Creates subscription** | ✅ YES | ✅ YES |
-| **Redirects to dashboard** | ✅ YES | ✅ YES |
+| Aspect                        | hire_my_mom_saas                            | ampertalent |
+| ----------------------------- | ------------------------------------------- | ----------- |
+| **Checkout Provider**         | Authorize.net                               | Stripe      |
+| **Payment Type**              | Billing Agreement                           | One-time    |
+| **Success URL**               | `/seeker/onboarding?payment_status=success` | ✅ Same     |
+| **Onboarding Handler**        | Detects `payment_status=success`            | ✅ Same     |
+| **Calls onboarding/complete** | ✅ YES                                      | ✅ YES      |
+| **Completes profile first**   | ✅ YES                                      | ✅ YES      |
+| **Then processes payment**    | ✅ YES                                      | ✅ YES      |
+| **Creates subscription**      | ✅ YES                                      | ✅ YES      |
+| **Redirects to dashboard**    | ✅ YES                                      | ✅ YES      |
 
 **Result:** ampertalent now has identical payment flow architecture to hire_my_mom_saas
 
@@ -345,6 +362,7 @@ Browser DevTools Console should show:
 The order of operations is critical:
 
 **❌ WRONG ORDER (what we had):**
+
 ```
 Payment succeeds
 → Create subscription ← But which user?
@@ -352,6 +370,7 @@ Payment succeeds
 ```
 
 **✅ CORRECT ORDER (what we have now):**
+
 ```
 Payment succeeds
 → Complete onboarding (create user profile) ← Profile exists now
@@ -362,7 +381,7 @@ Payment succeeds
 ### Key Implementation Details
 
 1. **Pending Signup Data:** Saved before checkout, used to restore onboarding state after payment
-2. **Two-Step Completion:** 
+2. **Two-Step Completion:**
    - `/api/onboarding/complete` saves user profile
    - `/api/seeker/subscription/process-payment` creates subscription
 3. **Error Handling:** If payment processing fails after profile creation, user still has a complete profile
@@ -373,11 +392,13 @@ Payment succeeds
 ## Files Modified
 
 ### 1. `app/api/payments/stripe-checkout/route.ts`
+
 - Line: success_url parameter
 - Change: Redirect to onboarding instead of dashboard
 - Reason: Go through onboarding completion flow
 
 ### 2. `app/onboarding/page.tsx`
+
 - Lines: 229-334 (new useEffect)
 - Change: Added payment success handler
 - Reason: Complete onboarding + process payment before redirecting
@@ -398,7 +419,7 @@ After deploying this fix:
 - [ ] Browser redirects to dashboard with welcome message
 - [ ] Dashboard shows active subscription
 - [ ] Database has UserProfile record
-- [ ] Database has JobSeeker record  
+- [ ] Database has JobSeeker record
 - [ ] Database has Subscription record
 - [ ] All three records have correct relationships
 - [ ] Membership info matches selected package
@@ -409,7 +430,7 @@ After deploying this fix:
 
 1. **Test in development:** Follow the testing section above
 2. **Verify database records:** Check all three tables are populated correctly
-3. **Test error scenarios:** 
+3. **Test error scenarios:**
    - Invalid card
    - Expired card
    - Card declined
