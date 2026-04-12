@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth'
 import { db } from '@/lib/db'
-import { createCheckoutSession } from '@/lib/checkout-session-management'
 
 export async function POST(request: NextRequest) {
   try {
@@ -46,6 +45,9 @@ export async function POST(request: NextRequest) {
     let sessionToken: string
     let expiresAt: Date
 
+    // Calculate base URL early for use in checkout URL construction
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || `http${request.headers.get('x-forwarded-proto') === 'https' ? 's' : ''}://${request.headers.get('host')}`
+
     if (isOnboardingUser) {
       // For onboarding users, find existing pending signup instead of creating new session
       console.log('🔍 SEEKER-CHECKOUT: Looking for existing pending signup for onboarding user')
@@ -89,44 +91,20 @@ export async function POST(request: NextRequest) {
       sessionToken = existingPendingSignup.sessionToken
       expiresAt = existingPendingSignup.expiresAt
     } else {
-      // For existing users, create a temporary checkout session
-      console.log('🔍 SEEKER-CHECKOUT: Creating checkout session for existing user')
-
-      const userName = currentUser.clerkUser.firstName && currentUser.clerkUser.lastName
-        ? `${currentUser.clerkUser.firstName} ${currentUser.clerkUser.lastName}`
-        : currentUser.clerkUser.firstName || ''
-
-      const checkoutData = {
-        userId: userProfile?.id || 'pending',
-        clerkUserId: currentUser.clerkUser.id,
-        selectedPlan: selectedPackage,
-        upgradeType,
-        currentPlan: userProfile?.jobSeeker?.membershipPlan || 'none',
-        userEmail: userProfile?.email || currentUser.clerkUser.emailAddresses[0]?.emailAddress,
-        userName: userProfile?.name || userName,
-        isExistingUser: true
-      }
-
-      const session = await createCheckoutSession({
-        userId: userProfile?.id || 'pending',
-        checkoutData: checkoutData,
-        selectedPlan: selectedPackage,
-        returnUrl: `${process.env.NEXT_PUBLIC_APP_URL}/seeker/membership?checkout=success`,
-        email: userProfile?.email || currentUser.clerkUser.emailAddresses[0]?.emailAddress || '',
-        userType: 'seeker'
-      })
-
-      sessionId = session.id
-      sessionToken = session.sessionToken
-      expiresAt = session.expiresAt
+      // For existing users, use their user profile ID and a temporary expiration
+      console.log('🔍 SEEKER-CHECKOUT: Using existing user profile for checkout session')
+      sessionId = userProfile!.id
+      sessionToken = 'existing-user-token'
+      expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000)
     }
 
-    // Use Authorize.net checkout - return checkout page URL with parameters
-    const authorizeNetCheckoutUrl = new URL('/checkout/authnet', `${process.env.NEXT_PUBLIC_APP_URL}`)
-    authorizeNetCheckoutUrl.searchParams.set('planId', selectedPackage)
-    authorizeNetCheckoutUrl.searchParams.set('pendingSignupId', sessionId)
-    authorizeNetCheckoutUrl.searchParams.set('sessionToken', sessionToken)
-    authorizeNetCheckoutUrl.searchParams.set('returnUrl', `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/external-return`)
+    // Use PayPal checkout - return checkout page URL with parameters
+    const paypalCheckoutUrl = new URL('/checkout/paypal', baseUrl)
+    paypalCheckoutUrl.searchParams.set('planId', selectedPackage)
+    paypalCheckoutUrl.searchParams.set('pendingSignupId', sessionId)
+    paypalCheckoutUrl.searchParams.set('sessionToken', sessionToken)
+    paypalCheckoutUrl.searchParams.set('returnUrl', `${baseUrl}/seeker/dashboard`)
+    paypalCheckoutUrl.searchParams.set('userType', 'seeker')
 
     const userName = currentUser.clerkUser.firstName && currentUser.clerkUser.lastName
       ? `${currentUser.clerkUser.firstName} ${currentUser.clerkUser.lastName}`
@@ -138,12 +116,12 @@ export async function POST(request: NextRequest) {
       firstName: userProfile?.name?.split(' ')[0] || currentUser.clerkUser.firstName || '',
       lastName: userProfile?.name?.split(' ').slice(1).join(' ') || currentUser.clerkUser.lastName || ''
     }
-    authorizeNetCheckoutUrl.searchParams.set('userInfo', JSON.stringify(userInfo))
+    paypalCheckoutUrl.searchParams.set('userInfo', JSON.stringify(userInfo))
 
-    const checkoutUrl = authorizeNetCheckoutUrl.toString()
-    const paymentMethod = 'authorize-net'
+    const checkoutUrl = paypalCheckoutUrl.toString()
+    const paymentMethod = 'paypal'
 
-    console.log('✅ SEEKER-CHECKOUT: Created Authorize.net subscription checkout session:', {
+    console.log('✅ SEEKER-CHECKOUT: Created PayPal subscription checkout session:', {
       sessionId,
       userId: currentUser.clerkUser.id,
       selectedPlan: selectedPackage,
