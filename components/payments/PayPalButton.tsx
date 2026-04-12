@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Loader2 } from 'lucide-react'
 
 // Extend window to include paypal
@@ -109,4 +109,44 @@ export function PayPalButton({
   }
 
   return <div ref={containerRef} className={className} />
+}
+
+// Hook for PayPal return page handling
+export function usePayPalReturn() {
+  const [isProcessing, setIsProcessing] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const executePayPalAgreement = async (token: string): Promise<boolean> => {
+    setIsProcessing(true)
+    setError(null)
+
+    try {
+      // Call backend to execute the agreement
+      const response = await fetch('/api/payments/paypal-execute', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token })
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Payment execution failed')
+      }
+
+      const result = await response.json()
+      return result.success
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error'
+      setError(errorMessage)
+      return false
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  return {
+    executePayPalAgreement,
+    isProcessing,
+    error
+  }
 }
