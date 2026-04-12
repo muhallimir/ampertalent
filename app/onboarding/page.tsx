@@ -372,11 +372,10 @@ export default function OnboardingPage() {
       }
 
       completePaymentFlow()
-      return
     }
   }, [isLoaded, user, router])
 
-  useEffect(() {
+  useEffect(() => {
     if (!user) {
       router.push('/sign-in')
       return
