@@ -68,8 +68,10 @@ export async function GET(request: NextRequest) {
             console.log('⏳ PAYPAL-SUCCESS: Profile not found, redirecting to onboarding for completion')
             const onboardingUrl = new URL('/onboarding', request.url)
             onboardingUrl.searchParams.set('payment_status', 'success')
-            onboardingUrl.searchParams.set('sessionId', transactionId) // Use transaction ID as session identifier
+            onboardingUrl.searchParams.set('transaction_id', transactionId) // Use PayPal transaction ID for payment processing
             onboardingUrl.searchParams.set('pendingSignupId', pendingSignupId)
+            
+            console.log('🔗 PAYPAL-SUCCESS: Redirect URL:', onboardingUrl.toString())
 
             return NextResponse.redirect(onboardingUrl)
         }

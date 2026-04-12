@@ -236,13 +236,23 @@ export default function OnboardingPage() {
     // Check for payment success from Stripe or PayPal redirect
     const searchParams = new URLSearchParams(window.location.search)
     const paymentStatus = searchParams.get('payment_status')
-    const sessionId = searchParams.get('sessionId') // Stripe session ID
+    const sessionId = searchParams.get('session_id') // Stripe session ID (note: underscore, not camelCase)
     const transactionId = searchParams.get('transaction_id') // PayPal transaction ID
     const pendingSignupId = searchParams.get('pendingSignupId')
     
     // Determine payment method and ID
     const paymentId = sessionId || transactionId
     const paymentMethod = sessionId ? 'stripe' : (transactionId ? 'paypal' : null)
+
+    console.log('🔍 PAYMENT DETECTION: Checking URL parameters:', {
+      fullUrl: window.location.href,
+      paymentStatus,
+      sessionId,
+      transactionId,
+      pendingSignupId,
+      paymentMethod,
+      paymentId
+    })
 
     if (paymentStatus === 'success' && paymentId) {
       console.log('💳 ONBOARDING: Payment success detected', {
