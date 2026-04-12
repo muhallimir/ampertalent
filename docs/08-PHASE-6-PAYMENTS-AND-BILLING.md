@@ -196,48 +196,82 @@ __tests__/integration/payments/payment-methods.test.ts
 
 ---
 
-## 6.7 Recurring Billing (Cron-driven)
+## 6.7 Recurring Billing
+
+### Architecture Note: Stripe vs Cron Handling
+
+**⚠️ CRITICAL DISTINCTION for ampertalent:**
+
+1. **Seeker Subscriptions (Stripe-Managed)** ✅ AUTOMATIC
+   - Stripe handles ALL recurring billing automatically
+   - Stripe Subscriptions API manages renewals
+   - Webhook `invoice.paid` confirms each renewal
+   - NO cron job needed - Stripe charges customer automatically
+   - DB sync: Listen to Stripe webhooks to update Subscription records
+
+2. **Employer Gold Plus Recurring (Cron-Driven)** ⏰ MANUAL CRON
+   - Stripe only handles ONE-TIME Payment Intents
+   - Cron job must charge manually on `nextBillingDate`
+   - Use saved Stripe PaymentMethod to charge
+   - Update billing cycle after successful charge
+   - Advance `nextBillingDate` for next cycle
 
 ### Tasks
 
-- [ ] Create `lib/jobs/recurring-billing.ts` — seeker subscription renewal
-  - Find expiring subscriptions (Stripe handles auto-renewal, but sync DB state)
-  - Check Stripe subscription status
-  - Extend membership period in DB
-  - Grant new resume credits
+- [ ] Create `lib/jobs/sync-stripe-subscriptions.ts` — sync Stripe subscription state to DB
+  - Listen to Stripe webhook events
+  - Sync `invoice.paid` → update Subscription.currentPeriodEnd
+  - Grant new resume credits on renewal
   - Handle trial → paid transition
+  - Send notifications to user
+  - **Note:** Actual charging is done by Stripe, not by this job
+
+- [ ] Create `lib/jobs/recurring-employer-billing.ts` — cron job for employer Gold Plus
+  - Find EmployerPackages with `nextBillingDate <= now()`
+  - Validate saved payment method exists
+  - Create Stripe Payment Intent with saved PaymentMethod
+  - Charge employer Gold Plus recurring fees
+  - Advance `nextBillingDate` to next cycle
+  - Decrement `remainingBillingCycles`
+  - On final cycle complete: set status to "expired"
+  - Handle payment failure: create retry schedule or notify admin
   - Send notifications
-- [ ] Create `lib/jobs/employer-recurring-billing.ts` — employer Gold Plus recurring
-  - Find packages with past-due nextBillingDate
-  - Charge via Stripe Payment Intent (using saved payment method)
-  - Advance billing cycle
-  - Handle cycle completion
-  - Send notifications
-- [ ] Create `lib/jobs/membership-reminders.ts` — renewal reminder emails
-  - 24h window before renewal
+
+- [ ] Create `lib/jobs/membership-reminders.ts` — renewal reminder emails (cron)
+  - 24h window before Stripe subscription renewal
+  - Query Subscriptions with `currentPeriodEnd - 24h ≤ now()`
   - Skip trial/suspended accounts
   - Send via Resend
+  - Log notification sent timestamp
 
 ### TDD Tests
 
 ```
-__tests__/unit/recurring-billing.test.ts
-- should find expiring subscriptions within window
-- should charge subscription renewal
-- should extend membership period by plan duration
-- should grant new resume credits
-- should handle trial to paid transition
-- should handle payment failure
-- should send admin notification on renewal
-- should send customer confirmation on renewal
-- should skip suspended seekers
+__tests__/unit/sync-stripe-subscriptions.test.ts
+- should handle invoice.paid webhook event
+- should update Subscription.currentPeriodEnd from Stripe
+- should grant new resume credits on renewal
+- should detect trial → paid transition
+- should send notification email on renewal
+- should skip already-synced renewals (idempotent)
 
-__tests__/unit/employer-recurring-billing.test.ts
-- should find packages with due billing
-- should charge recurring payment
-- should advance billing cycle
-- should complete after final cycle
-- should handle payment failure
+__tests__/unit/recurring-employer-billing.test.ts
+- should find packages with nextBillingDate due
+- should validate saved payment method exists
+- should create Stripe Payment Intent with saved method
+- should advance nextBillingDate for next cycle
+- should decrement remainingBillingCycles
+- should set status to "expired" after final cycle
+- should handle payment failure and create retry
+- should handle missing payment method (notify admin)
+- should send notification email on charge success
+
+__tests__/unit/membership-reminders.test.ts
+- should find subscriptions renewing in 24h window
+- should send reminder email before renewal
+- should skip trial subscriptions
+- should skip suspended seekers
+- should not duplicate reminders (check log)
 ```
 
 ---
