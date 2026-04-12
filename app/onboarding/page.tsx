@@ -329,11 +329,33 @@ export default function OnboardingPage() {
 
           // CRITICAL FIX: If pending signup has incomplete data (from payment flow),
           // use placeholder values so profile creation doesn't fail
-          if (!parsedData.firstName || !parsedData.lastName || !parsedData.location) {
-            console.warn('⚠️ ONBOARDING: Pending signup data incomplete, using defaults for profile creation')
+          const needsDefaults = !parsedData?.firstName || !parsedData?.lastName || !parsedData?.location
+          console.log('🔍 ONBOARDING: Checking if data needs defaults:', {
+            needsDefaults,
+            hasFirstName: !!parsedData?.firstName,
+            hasLastName: !!parsedData?.lastName,
+            hasLocation: !!parsedData?.location,
+            userFirstName: user?.firstName,
+            userLastName: user?.lastName
+          })
+          
+          if (needsDefaults) {
+            console.warn('⚠️ ONBOARDING: Pending signup data incomplete, using defaults for profile creation', {
+              parsedData,
+              user: {
+                firstName: user?.firstName,
+                lastName: user?.lastName,
+                email: user?.emailAddresses?.[0]?.emailAddress,
+                emailAddresses: user?.emailAddresses?.map(e => e.emailAddress)
+              }
+            })
+            
+            // Use email prefix as firstName if no name available
+            const emailPrefix = user?.emailAddresses?.[0]?.emailAddress?.split('@')[0] || 'User'
+            
             parsedData = {
               role: parsedData.role || 'seeker',
-              firstName: parsedData.firstName || user?.firstName || 'User',
+              firstName: parsedData.firstName || user?.firstName || emailPrefix,
               lastName: parsedData.lastName || user?.lastName || '',
               location: parsedData.location || 'Not specified',
               experience: parsedData.experience,
