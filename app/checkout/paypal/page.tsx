@@ -91,6 +91,8 @@ function PayPalCheckoutContent() {
 
   // Determine plan amount
   const amount = totalPriceParam ? parseFloat(totalPriceParam) : 0;
+  // For trial, show $0 at checkout (no immediate charge)
+  const checkoutAmount = isTrialParam === 'true' ? 0 : amount;
 
   const planName = planId
     ? planId.charAt(0).toUpperCase() + planId.slice(1).replace(/_/g, ' ')
@@ -176,12 +178,13 @@ function PayPalCheckoutContent() {
           <div className="space-y-6">
             {/* Trial Notice */}
             {isTrialParam === 'true' && (
-              <Alert className="bg-blue-50 border-blue-300">
-                <svg className="h-4 w-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <Alert className="bg-blue-50 border-blue-300 border-2">
+                <svg className="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <AlertDescription className="text-blue-800">
-                  <strong>3-Day Free Trial</strong> - We won't charge you yet. We just need your payment information. Charges will begin on day 4 at $34.99/month.
+                <AlertDescription className="text-blue-900 font-medium">
+                  <strong className="block mb-1">3-Day Free Trial</strong>
+                  We won't charge you today. We just need your payment information. Regular charges of <strong>${amount.toFixed(2)}</strong> will begin on day 4.
                 </AlertDescription>
               </Alert>
             )}
@@ -192,7 +195,16 @@ function PayPalCheckoutContent() {
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span>{planName}</span>
-                  <span className="font-medium">${amount.toFixed(2)}</span>
+                  <span className="font-medium">
+                    {isTrialParam === 'true' ? (
+                      <>
+                        <span className="line-through text-gray-500">${amount.toFixed(2)}</span>
+                        <span className="ml-2">${checkoutAmount.toFixed(2)}</span>
+                      </>
+                    ) : (
+                      `$${amount.toFixed(2)}`
+                    )}
+                  </span>
                 </div>
                 {addOnIds && addOnIds.length > 0 && (
                   <>
@@ -208,7 +220,7 @@ function PayPalCheckoutContent() {
                 )}
                 <div className="border-t border-gray-300 pt-2 mt-2 flex justify-between font-bold">
                   <span>Total:</span>
-                  <span>${amount.toFixed(2)}</span>
+                  <span>${checkoutAmount.toFixed(2)}</span>
                 </div>
               </div>
             </div>
@@ -236,7 +248,7 @@ function PayPalCheckoutContent() {
                 pendingSignupId={pendingSignupId || undefined}
                 sessionToken={sessionToken || undefined}
                 addOnIds={addOnIds}
-                customAmount={amount}
+                customAmount={checkoutAmount}
               />
               <div className="flex items-center justify-center gap-2 text-sm text-gray-600 mt-4">
                 <Lock className="h-4 w-4 text-green-600" />

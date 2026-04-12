@@ -34,7 +34,7 @@ export const SEEKER_SUBSCRIPTION_PLANS: SeekerSubscriptionPlan[] = [
     id: 'trial',
     membershipPlan: 'trial_monthly',
     name: 'Flex Trial',
-    price: 0,
+    price: 34.99,
     billing: 'month',
     billingMonths: 1,
     duration: 33,
