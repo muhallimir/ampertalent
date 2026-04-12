@@ -7,6 +7,7 @@
 **Root Cause**: The pending signup created during checkout had incomplete `onboardingData` (missing firstName, lastName, location), causing the profile creation endpoint to fail with "Missing required fields".
 
 **Solution**: When Stripe redirects back after payment:
+
 1. Verify the payment was actually made via Stripe API
 2. If user profile doesn't exist yet, redirect to onboarding with payment success indicators
 3. On onboarding page, fetch the pending signup data and use placeholder values (from Clerk user or defaults) if data is missing
@@ -19,6 +20,7 @@
 ## Testing Steps
 
 ### Prerequisites
+
 - Stripe credentials configured in `.env` (already done: `sk_test_51THO9s...`, `pk_test_51THO9s...`)
 - Dev server running: `npm run dev` on port 3000
 - Signed in to Clerk in your app
@@ -26,6 +28,7 @@
 ### Manual End-to-End Test
 
 #### Step 1: Start Onboarding
+
 ```
 1. Clear browser localStorage: Open DevTools → Application → Clear All
 2. Navigate to: http://localhost:3000/onboarding
@@ -34,6 +37,7 @@
 ```
 
 #### Step 2: Fill Onboarding Form
+
 ```
 5. Fill in Basic Info:
    - First Name: "Test"
@@ -43,12 +47,14 @@
 ```
 
 #### Step 3: Skip Optional Steps
+
 ```
 7. Click "Skip" for Experience, Skills, Goals (can skip these for testing)
 8. Reach "Select Package" step
 ```
 
 #### Step 4: Select Package and Proceed to Checkout
+
 ```
 9. Select "Flex Gold" ($49.99)
 10. Click "Continue to Checkout"
@@ -59,6 +65,7 @@
 ```
 
 #### Step 5: Choose Stripe as Payment Method
+
 ```
 12. On /checkout page, click "Stripe" tab
 13. Click "Pay with Stripe" or "Pay $49.99"
@@ -66,6 +73,7 @@
 ```
 
 #### Step 6: Complete Stripe Payment
+
 ```
 15. On Stripe checkout, fill in:
     - Card Number: 4242 4242 4242 4242
@@ -78,6 +86,7 @@
 ```
 
 #### Step 7: Verify Redirect & Profile Creation
+
 ```
 Expected flow:
 1. Stripe processes payment
@@ -97,6 +106,7 @@ Expected flow:
 ## Verification Checklist
 
 ### In Browser Console
+
 After payment completes, check the console logs for:
 
 ```
@@ -113,6 +123,7 @@ After payment completes, check the console logs for:
 ```
 
 ### In Database (Supabase)
+
 Verify the following records were created:
 
 1. **UserProfile**:
@@ -132,7 +143,9 @@ Verify the following records were created:
    - stripeSessionId: Matches the Stripe session ID from payment
 
 ### On Dashboard
+
 After redirect to dashboard:
+
 ```
 ✓ Page shows "Welcome!" message
 ✓ User info section shows correct name
@@ -163,21 +176,25 @@ The PayPal flow follows the same pattern:
 ## Troubleshooting
 
 ### "Profile not found" loops
+
 - Check browser console for error messages
 - Ensure pending signup has onboardingData saved
 - Check database that pendingSignup exists before payment
 
 ### "Missing required fields" error
+
 - This is now handled with placeholder values
 - Check console for: "Pending signup data incomplete, using defaults"
 - Profile should still be created with "User" as default first name
 
 ### Profile created but subscription not created
+
 - Check the `process-payment` endpoint logs
 - Verify Stripe session ID is correct
 - Verify plan mapping in `planIdToMembershipPlan`
 
 ### Stuck on onboarding after payment
+
 - Check that `payment_status=success` is in the URL
 - Verify `sessionId` and `pendingSignupId` params are present
 - Check console logs for where the flow stops

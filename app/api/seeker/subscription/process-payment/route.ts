@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth'
 import { db } from '@/lib/db'
 import Stripe from 'stripe'
+import { Decimal } from '@prisma/client/runtime/library'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
     apiVersion: '2023-10-16' as any
@@ -124,14 +125,34 @@ export async function POST(request: NextRequest) {
                     })
                 }
 
-                // Create subscription record
+                // CRITICAL FIX: Create ExternalPayment record FIRST
+                // The Subscription table has a foreign key constraint on externalPaymentId
+                console.log('💳 PROCESS-PAYMENT: Creating external payment record for Stripe session')
+                const amountInDollars = ((session.amount_total || 0) / 100).toFixed(2)
+                const externalPayment = await db.externalPayment.create({
+                    data: {
+                        userId: userProfile.id,
+                        amount: new Decimal(amountInDollars),
+                        planId: planId,
+                        status: 'completed',
+                        webhookProcessedAt: new Date()
+                    }
+                })
+
+                console.log('✅ PROCESS-PAYMENT: External payment created:', {
+                    id: externalPayment.id,
+                    amount: externalPayment.amount,
+                    planId: externalPayment.planId
+                })
+
+                // Create subscription record with the external payment ID
                 const trialEndsAt = planId === 'trial' ? new Date(Date.now() + 3 * 24 * 60 * 60 * 1000) : null
                 const subscription = await db.subscription.create({
                     data: {
                         seekerId: jobSeeker.userId,
                         plan: membershipPlan,
                         status: 'active',
-                        externalPaymentId: session.id,
+                        externalPaymentId: externalPayment.id,  // Link to the external payment we just created
                         currentPeriodStart: new Date(),
                         currentPeriodEnd: new Date(Date.now() + (planId === 'trial' ? 3 : 30) * 24 * 60 * 60 * 1000),
                         nextBillingDate: new Date(Date.now() + (planId === 'trial' ? 3 : 30) * 24 * 60 * 60 * 1000)

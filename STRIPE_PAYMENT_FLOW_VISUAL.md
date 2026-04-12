@@ -150,6 +150,7 @@
 ## Comparison: hire_my_mom_saas vs ampertalent
 
 ### hire_my_mom_saas (Using Authorize.net)
+
 ```
 Payment (Authorize.net)
     ↓
@@ -168,6 +169,7 @@ Dashboard (Success)
 ```
 
 ### ampertalent (Using Stripe)
+
 ```
 Payment (Stripe)
     ↓
@@ -381,6 +383,7 @@ Onboarding page loads with payment_status=success
 When the flow works correctly, you should see:
 
 ✅ **In Console Logs**:
+
 ```
 💳 ONBOARDING: Payment success detected
 🔍 ONBOARDING: Fetching pending signup by ID
@@ -393,16 +396,19 @@ When the flow works correctly, you should see:
 ```
 
 ✅ **In Browser**:
+
 - Redirected to `/seeker/dashboard`
 - See welcome message
 - See subscription details
 
 ✅ **In Database**:
+
 - UserProfile created
-- JobSeeker created  
+- JobSeeker created
 - Subscription created with correct stripe session ID
 
 ✅ **No Errors**:
+
 - No validation failures
 - No 400/500 errors
 - No console errors
@@ -414,6 +420,7 @@ When the flow works correctly, you should see:
 See detailed testing guide in `STRIPE_E2E_TESTING_COMPLETE.md`
 
 Quick test:
+
 ```bash
 1. npm run dev
 2. http://localhost:3000/onboarding

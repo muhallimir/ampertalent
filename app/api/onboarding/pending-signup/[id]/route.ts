@@ -8,8 +8,8 @@ import { auth } from '@clerk/nextjs/server'
 import { db } from '@/lib/db'
 
 export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+    request: NextRequest,
+    { params }: { params: { id: string } }
 ) {
     try {
         const { userId } = await auth()

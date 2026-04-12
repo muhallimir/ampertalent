@@ -11,7 +11,7 @@ The issue where users couldn't create profiles after Stripe payment is now **com
 ```
 After successful Stripe payment:
 ❌ Profile was NOT being created
-❌ Subscription was NOT being created  
+❌ Subscription was NOT being created
 ❌ User was stuck or saw errors
 ```
 
@@ -24,6 +24,7 @@ After successful Stripe payment:
 ### 3 New/Modified Components
 
 #### 1. **New: `/api/payments/stripe-success` Handler**
+
 - Receives Stripe redirect with `session_id` and `pendingSignupId`
 - Verifies the payment actually succeeded with Stripe API
 - Checks if user profile exists
@@ -40,6 +41,7 @@ After successful Stripe payment:
 ```
 
 #### 2. **New: `/api/onboarding/pending-signup/[id]` Route**
+
 - Fetch pending signup by specific ID (not just "latest")
 - Needed during payment flow to get the exact pending signup that was used for checkout
 - Fallback to latest if ID method doesn't work
@@ -50,6 +52,7 @@ After successful Stripe payment:
 ```
 
 #### 3. **Enhanced: `/app/onboarding/page.tsx` Payment Flow**
+
 - **NEW**: Detects `payment_status=success` in URL params
 - **NEW**: Attempts to fetch pending signup by ID from URL
 - **NEW**: Falls back to fetching latest pending signup
@@ -63,26 +66,27 @@ After successful Stripe payment:
 ```typescript
 // When payment_status=success detected:
 if (!parsedData.firstName || !parsedData.lastName || !parsedData.location) {
-  parsedData = {
-    role: parsedData.role || 'seeker',
-    firstName: parsedData.firstName || user?.firstName || 'User',
-    lastName: parsedData.lastName || user?.lastName || '',
-    location: parsedData.location || 'Not specified',
-    professionalSummary: parsedData.professionalSummary || ''
-  }
+	parsedData = {
+		role: parsedData.role || "seeker",
+		firstName: parsedData.firstName || user?.firstName || "User",
+		lastName: parsedData.lastName || user?.lastName || "",
+		location: parsedData.location || "Not specified",
+		professionalSummary: parsedData.professionalSummary || "",
+	};
 }
 // Profile creation now succeeds with valid data ✅
 ```
 
 #### 4. **Updated: `/api/payments/stripe-checkout` Success URL**
+
 Changed the Stripe session `success_url` to route through the verification handler:
 
 ```typescript
 // BEFORE (was calling onboarding directly):
-success_url: `${process.env.NEXT_PUBLIC_APP_URL}/onboarding?payment_status=success&...`
+success_url: `${process.env.NEXT_PUBLIC_APP_URL}/onboarding?payment_status=success&...`;
 
 // AFTER (routes through verification handler):
-success_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/payments/stripe-success?session_id={CHECKOUT_SESSION_ID}&pendingSignupId=...`
+success_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/payments/stripe-success?session_id={CHECKOUT_SESSION_ID}&pendingSignupId=...`;
 ```
 
 ---
@@ -111,10 +115,10 @@ success_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/payments/stripe-success?ses
    └─ Handler verifies payment with Stripe API ✅
    └─ Handler fetches pending signup
    └─ Handler checks if profile exists
-   
+
 6. If Profile NOT Created Yet:
    └─ Redirects to: /onboarding?payment_status=success&sessionId=...&pendingSignupId=...
-   
+
 7. Onboarding Page Detects Payment Success ✅
    └─ Extracts payment params from URL
    └─ Fetches pending signup by ID
@@ -122,12 +126,12 @@ success_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/payments/stripe-success?ses
    └─ Uses Clerk user info or defaults if incomplete
    └─ Calls /api/onboarding/complete ✅ (profile creation)
    └─ Calls /api/seeker/subscription/process-payment ✅ (subscription creation)
-   
+
 8. Profile & Subscription Created ✅
    └─ UserProfile record created
    └─ JobSeeker record created
    └─ Subscription record created with Stripe session ID
-   
+
 9. Redirects to Dashboard ✅
    └─ URL: /seeker/dashboard?welcome=true
    └─ User sees: "Welcome!" + subscription info
@@ -137,25 +141,27 @@ success_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/payments/stripe-success?ses
 
 ## What's Different from Before
 
-| Before | After |
-|--------|-------|
-| Stripe redirects to /onboarding directly | Stripe redirects to /api/payments/stripe-success |
-| No verification of payment status | Verifies payment is "paid" with Stripe API |
-| Profile creation with incomplete data | Uses Clerk user info or defaults if incomplete |
-| No fallback mechanism | Falls back to latest pending signup if ID lookup fails |
-| Profile creation often failed | Profile creation now always succeeds |
-| Subscription not created reliably | Subscription created after profile verified |
+| Before                                   | After                                                  |
+| ---------------------------------------- | ------------------------------------------------------ |
+| Stripe redirects to /onboarding directly | Stripe redirects to /api/payments/stripe-success       |
+| No verification of payment status        | Verifies payment is "paid" with Stripe API             |
+| Profile creation with incomplete data    | Uses Clerk user info or defaults if incomplete         |
+| No fallback mechanism                    | Falls back to latest pending signup if ID lookup fails |
+| Profile creation often failed            | Profile creation now always succeeds                   |
+| Subscription not created reliably        | Subscription created after profile verified            |
 
 ---
 
 ## Now Matches hire_my_mom_saas
 
 Your parent app (`hire_my_mom_saas`) uses this pattern:
+
 ```
 Payment (Authorize.net) → /api/auth/external-return → Verify → Create profile
 ```
 
 This implementation follows the SAME pattern:
+
 ```
 Payment (Stripe) → /api/payments/stripe-success → Verify → Create profile
 ```
@@ -177,6 +183,7 @@ Both apps now have consistent payment flow architecture! ✅
 ```
 
 Latest commits:
+
 ```
 57de3eb Fix Stripe payment flow: handle incomplete onboarding data
 fd4ee3b docs: add comprehensive Stripe payment flow fix documentation

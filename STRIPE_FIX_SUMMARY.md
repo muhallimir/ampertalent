@@ -63,9 +63,11 @@ You were getting "Something went wrong" after Stripe payment because:
 ### Key Components
 
 #### 1. New Endpoint: `/api/payments/stripe-success`
+
 **Purpose**: Handle Stripe redirects after payment
 
 **Flow**:
+
 ```
 GET /api/payments/stripe-success?session_id=cs_test_...&pendingSignupId=cmn...
   ↓
@@ -81,24 +83,27 @@ GET /api/payments/stripe-success?session_id=cs_test_...&pendingSignupId=cmn...
 ```
 
 #### 2. Modified Endpoint: `/api/payments/stripe-checkout`
+
 **Change**: Updated `success_url` parameter
 
 ```typescript
 // BEFORE:
-success_url: `${process.env.NEXT_PUBLIC_APP_URL}/onboarding?...`
+success_url: `${process.env.NEXT_PUBLIC_APP_URL}/onboarding?...`;
 
 // AFTER:
-success_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/payments/stripe-success?session_id={CHECKOUT_SESSION_ID}&...`
+success_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/payments/stripe-success?session_id={CHECKOUT_SESSION_ID}&...`;
 ```
 
 This ensures Stripe always redirects through our verification endpoint first.
 
 #### 3. New Endpoint: `/api/onboarding/pending-signup/[id]`
+
 **Purpose**: Fetch pending signup by specific ID (not just "latest")
 
 **Why needed**: During payment flow, we have the exact pending signup ID in the URL, so we fetch that specific one instead of the latest one.
 
 #### 4. Enhanced Onboarding Page Logic
+
 **New flow when `payment_status=success` detected**:
 
 ```typescript
@@ -120,11 +125,13 @@ This ensures Stripe always redirects through our verification endpoint first.
 ## Files Modified/Created
 
 ### Created
+
 - ✅ `/app/api/payments/stripe-success/route.ts` - Stripe success handler
 - ✅ `/app/api/onboarding/pending-signup/[id]/route.ts` - Fetch pending signup by ID
 - ✅ `/__tests__/unit/stripe-success.test.ts` - Unit tests
 
 ### Modified
+
 - ✅ `/app/api/payments/stripe-checkout/route.ts` - Updated success_url
 - ✅ `/app/onboarding/page.tsx` - Added payment success detection and default data handling
 
@@ -133,6 +140,7 @@ This ensures Stripe always redirects through our verification endpoint first.
 ## Why This Works
 
 ### Before (Broke):
+
 ```
 Stripe redirect → /onboarding directly
   → Page loads, sees payment params
@@ -143,11 +151,12 @@ Stripe redirect → /onboarding directly
 ```
 
 ### After (Fixed):
+
 ```
 Stripe redirect → /api/payments/stripe-success
   → Verifies payment with Stripe
   → Redirects to /onboarding?payment_status=success&sessionId=...
-  
+
 /onboarding page detects payment_status=success
   → Fetches pending signup with onboardingData
   → If data missing, uses defaults (from Clerk user or "User"/"Not specified")
@@ -163,6 +172,7 @@ Stripe redirect → /api/payments/stripe-success
 This implementation follows the same pattern as `hire_my_mom_saas`:
 
 ### hire_my_mom_saas Flow:
+
 ```
 Authorize.net payment → /api/auth/external-return
   ↓
@@ -174,6 +184,7 @@ Returns to onboarding for continuation
 ```
 
 ### ampertalent Flow:
+
 ```
 Stripe payment → /api/payments/stripe-success
   ↓
@@ -193,6 +204,7 @@ Both follow the principle: **Verify payment → Create profile → Show dashboar
 See `STRIPE_E2E_TESTING_COMPLETE.md` for detailed step-by-step testing instructions.
 
 Quick test:
+
 ```bash
 1. npm run dev
 2. Navigate to http://localhost:3000/onboarding
