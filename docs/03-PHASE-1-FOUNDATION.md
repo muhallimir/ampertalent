@@ -220,18 +220,19 @@ __tests__/unit/file-validation.test.ts
 ### Logo & Brand Assets
 
 **Logo File:** `public/logo/ampertalent.png`
+
 - Dimensions: 1408 x 768 px
 - Already present in repository
 - Used in header, hero section, navigation
 
 **Key Brand Colors (extracted from logo):**
 
-| Color | Hex | RGB | Usage |
-|-------|-----|-----|-------|
+| Color            | Hex       | RGB           | Usage                             |
+| ---------------- | --------- | ------------- | --------------------------------- |
 | **Primary Blue** | `#0066FF` | (0, 102, 255) | CTA buttons, links, brand primary |
-| **Teal** | `#00BB88` | (0, 187, 136) | Success, secondary accents |
-| **Cyan** | `#00D9FF` | (0, 217, 255) | Highlights, lightning bolt |
-| **Dark Navy** | `#1A2D47` | (26, 45, 71) | Text, headings |
+| **Teal**         | `#00BB88` | (0, 187, 136) | Success, secondary accents        |
+| **Cyan**         | `#00D9FF` | (0, 217, 255) | Highlights, lightning bolt        |
+| **Dark Navy**    | `#1A2D47` | (26, 45, 71)  | Text, headings                    |
 
 ### Tasks
 

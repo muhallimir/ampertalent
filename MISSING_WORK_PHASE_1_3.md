@@ -11,6 +11,7 @@
 ## 🎯 Phase 1: Missing Work (15 tasks)
 
 ### Storage & File Upload
+
 - [ ] **`lib/storage.ts`** — Supabase Storage adapter
   - `generatePresignedUploadUrl(bucket, key, expiresIn)`
   - `generatePresignedDownloadUrl(bucket, key, expiresIn)`
@@ -29,6 +30,7 @@
   - Attachments: authenticated users only
 
 ### Stripe Payment Integration
+
 - [ ] **`lib/stripe.ts`** — Server-side Stripe client
   - `createCustomer(email, name)`
   - `createSetupIntent(customerId)`
@@ -64,6 +66,7 @@
 - [ ] **`components/payments/StripeTestModeBanner.tsx`** — "Use card 4242 4242 4242 4242" banner
 
 ### Core Utilities
+
 - [ ] **`lib/utils.ts`** — Utility functions
   - `cn(...classes)` — class name merger
   - `formatCurrency(amount, currency)`
@@ -96,6 +99,7 @@
   - **Test**: Export all constants, verify count
 
 ### Database Seed
+
 - [ ] **`prisma/seed.ts`** — Demo data script
   - 5 demo seekers (various profiles)
   - 5 demo employers (various companies)
@@ -109,6 +113,7 @@
 ## 🔐 Phase 2: Missing Work (10 tasks)
 
 ### Webhooks (Critical for Production)
+
 - [ ] **`app/api/webhooks/clerk/route.ts`** — Clerk webhook handler
   - Events: `user.created`, `user.updated`, `user.deleted`
   - Create/update Clerk-synced records in DB
@@ -120,6 +125,7 @@
   - Trigger notifications or syncs
 
 ### User Invitations (Admin → User)
+
 - [ ] **`lib/user-invitations.ts`** — Invitation management
   - `createInvitation(email, role)` → UserInvitation with token
   - `validateToken(token)` → check expiry
@@ -140,6 +146,7 @@
   - Skip role selection
 
 ### Team Invitations (Employer → Team Member)
+
 - [ ] **`lib/team-invitations.ts`** — Team invitation logic
   - `sendTeamInvite(companyId, email, role)`
   - `acceptTeamInvite(token)`
@@ -162,6 +169,7 @@
   - Delete confirmations
 
 ### Auth Helpers (Refinements)
+
 - [ ] **`lib/seeker-access-guard.ts`** — Seeker subscription checks
   - `checkSubscriptionActive(seekerId)` → true/false
   - `checkResumeQuota(seekerId)` → remaining resumes
@@ -173,6 +181,7 @@
 ## 👤 Phase 3: Missing Work (30+ tasks)
 
 ### Job APIs (5 endpoints)
+
 - [ ] **`app/api/jobs/[id]/route.ts`** — Job detail API
   - GET: Return full job details + employer info + application count
   - **Dependencies**: Prisma, getCurrentUser
@@ -193,6 +202,7 @@
   - **Test**: Return filled jobs
 
 ### Application APIs (1 endpoint)
+
 - [ ] **`app/api/applicant/route.ts`** — Submit application
   - POST: Create Application record
   - Body: `{ jobId, resumeId, coverLetter? }`
@@ -201,6 +211,7 @@
   - **Test**: Submit app, verify created, prevent duplicates
 
 ### Saved Jobs APIs (1 endpoint)
+
 - [ ] **`app/api/seeker/saved-jobs/route.ts`** — CRUD saved jobs
   - GET: List saved jobs (with pagination)
   - POST: Save a job
@@ -209,6 +220,7 @@
   - **Test**: Save/unsave, list, prevent duplicates
 
 ### Resume APIs (6 endpoints)
+
 - [ ] **`app/api/seeker/resumes/route.ts`** — Resume list CRUD
   - GET: List resumes (paginated)
   - POST: Create resume metadata
@@ -241,6 +253,7 @@
   - Delete from Supabase Storage
 
 ### Cover Letter APIs (1 endpoint)
+
 - [ ] **`app/api/seeker/cover-letter-templates/route.ts`** — CRUD cover letters
   - GET: List templates
   - POST: Create template
@@ -248,6 +261,7 @@
   - DELETE: Delete template
 
 ### Subscription APIs (4 endpoints)
+
 - [ ] **`lib/subscription-plans.ts`** — Plan configuration
   - Export 4 plans: Trial, Gold, VIP, Annual
   - Pricing, resume limits, trial days
@@ -274,6 +288,7 @@
   - DELETE: Remove method
 
 ### Seeker Profile APIs (4 endpoints)
+
 - [ ] **`app/api/seeker/profile/route.ts`** — Profile CRUD
   - GET: Seeker profile
   - PATCH: Update profile (name, phone, bio, location, etc.)
@@ -291,6 +306,7 @@
   - DELETE: Delete account (soft delete or hard delete?)
 
 ### Notification & Billing APIs (3 endpoints)
+
 - [ ] **`app/api/seeker/notifications/route.ts`** — Notification preferences
   - GET: Preferences
   - PATCH: Update preferences
@@ -303,6 +319,7 @@
   - GET: Invoice details
 
 ### Premium Services APIs (2 endpoints)
+
 - [ ] **`lib/additional-services.ts`** — Services configuration
   - Career Jumpstart ($299)
   - Interview Training ($399)
@@ -319,6 +336,7 @@
   - Create AdditionalServicePurchase record
 
 ### UI Components (15+ missing)
+
 - [ ] **`components/seeker/ResumeUpload.tsx`** — Drag & drop upload
 - [ ] **`components/seeker/ResumeCritiqueRequest.tsx`** — Critique form
 - [ ] **`components/seeker/ResumeCritiqueResults.tsx`** — Results display
@@ -340,6 +358,7 @@
 ## 🎯 TDD Implementation Order (By Priority)
 
 ### Phase 1 Priority (Do First - 5 tasks)
+
 1. **`lib/storage.ts`** — File upload needed for resume feature
 2. **`lib/job-constants.ts`** — Constants needed for all search/filter APIs
 3. **`lib/utils.ts`** — Used by all components/APIs
@@ -347,6 +366,7 @@
 5. **`lib/stripe.ts`** + **`lib/stripe-webhook.ts`** — Payments (later in flow)
 
 ### Phase 3 Priority (High Impact - 8 tasks)
+
 1. **`app/api/jobs/[id]/route.ts`** — Fix 404 on job detail page
 2. **`app/api/seeker/saved-jobs/route.ts`** — Saved jobs feature
 3. **`app/api/applicant/route.ts`** — Applications feature
@@ -357,6 +377,7 @@
 8. **`app/api/seeker/billing-history/route.ts`** — Billing history
 
 ### Phase 2 & Remaining (Medium Priority - 10+ tasks)
+
 - Webhooks (needed for production)
 - Team/user invitations (needed for multi-user support)
 - Remaining Phase 3 APIs and components
@@ -366,6 +387,7 @@
 ## 🧪 Testing Strategy (TDD)
 
 **For each missing item:**
+
 1. Write test file (`__tests__/unit/*` or `__tests__/integration/*`)
 2. Define test cases (happy path + error cases)
 3. Run test (RED ❌)
@@ -375,14 +397,19 @@
 7. Commit with message: `feat: implement [feature]`
 
 **Example:**
+
 ```typescript
 // __tests__/unit/storage.test.ts
-describe('Storage', () => {
-  it('should generate presigned upload URL', async () => {
-    const url = await generatePresignedUploadUrl('resumes', 'user-123/resume.pdf', 3600);
-    expect(url).toContain('supabase');
-    expect(url).toContain('token');
-  });
+describe("Storage", () => {
+	it("should generate presigned upload URL", async () => {
+		const url = await generatePresignedUploadUrl(
+			"resumes",
+			"user-123/resume.pdf",
+			3600,
+		);
+		expect(url).toContain("supabase");
+		expect(url).toContain("token");
+	});
 });
 ```
 
@@ -410,4 +437,3 @@ Before starting Phase 4 (Employer Portal), verify:
 - **Critical Path**: Phase 1 storage (blocks Phase 3 uploads), Phase 3 job APIs (blocks user flow)
 - **No Bloat Rule**: Each task implements ONLY what's needed, no extra files or documentation
 - **Testing Focus**: Integration tests for APIs, unit tests for utilities, UI tests for components
-
