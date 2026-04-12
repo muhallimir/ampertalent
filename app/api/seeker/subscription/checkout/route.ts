@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth'
 import { db } from '@/lib/db'
+import { SEEKER_SUBSCRIPTION_PLANS } from '@/lib/subscription-plans'
 
 export async function POST(request: NextRequest) {
   try {
@@ -98,6 +99,15 @@ export async function POST(request: NextRequest) {
       expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000)
     }
 
+    // Get plan details to fetch price
+    const plan = SEEKER_SUBSCRIPTION_PLANS.find(p => p.id === selectedPackage)
+    if (!plan) {
+      return NextResponse.json(
+        { error: `Plan not found: ${selectedPackage}` },
+        { status: 400 }
+      )
+    }
+
     // Use PayPal checkout - return checkout page URL with parameters
     const paypalCheckoutUrl = new URL('/checkout/paypal', baseUrl)
     paypalCheckoutUrl.searchParams.set('planId', selectedPackage)
@@ -105,6 +115,7 @@ export async function POST(request: NextRequest) {
     paypalCheckoutUrl.searchParams.set('sessionToken', sessionToken)
     paypalCheckoutUrl.searchParams.set('returnUrl', `${baseUrl}/seeker/dashboard`)
     paypalCheckoutUrl.searchParams.set('userType', 'seeker')
+    paypalCheckoutUrl.searchParams.set('totalPrice', plan.price.toString())
 
     const userName = currentUser.clerkUser.firstName && currentUser.clerkUser.lastName
       ? `${currentUser.clerkUser.firstName} ${currentUser.clerkUser.lastName}`
@@ -125,6 +136,7 @@ export async function POST(request: NextRequest) {
       sessionId,
       userId: currentUser.clerkUser.id,
       selectedPlan: selectedPackage,
+      planPrice: plan.price,
       upgradeType,
       isOnboardingUser,
       checkoutUrl
