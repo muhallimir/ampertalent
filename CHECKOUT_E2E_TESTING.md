@@ -3,8 +3,9 @@
 ## Environment Verification ✓
 
 All required credentials are configured in `.env`:
-- ✓ `STRIPE_SECRET_KEY` (sk_test_...)
-- ✓ `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` (pk_test_...)
+
+- ✓ `STRIPE_SECRET_KEY` (sk*test*...)
+- ✓ `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` (pk*test*...)
 - ✓ `NEXT_PUBLIC_PAYPAL_CLIENT_ID` (sandbox)
 - ✓ `PAYPAL_CLIENT_SECRET`
 - ✓ `NEXT_PUBLIC_PAYPAL_ENVIRONMENT=sandbox`
@@ -12,6 +13,7 @@ All required credentials are configured in `.env`:
 ## Stripe Checkout Flow - VERIFIED ✓
 
 ### Automated Test Results
+
 ```
 ✅ Stripe session created successfully!
   • Session ID: cs_test_a1ZYkwfnTscB1SzEncUZpo7lOMII0meuJXEXHX9F2p7cBJsslCaA7g7and
@@ -23,6 +25,7 @@ All required credentials are configured in `.env`:
 ```
 
 ### How It Works
+
 1. User clicks "Pay with Stripe" button on `/checkout` page
 2. Button calls `/api/payments/stripe-checkout` POST endpoint
 3. Backend creates Stripe checkout session via `stripe.checkout.sessions.create()`
@@ -41,12 +44,14 @@ All required credentials are configured in `.env`:
 ### Manual Testing
 
 **Test Card (Stripe Sandbox):**
+
 - Card Number: `4242 4242 4242 4242`
 - Expiry: Any future date (e.g., 12/25)
 - CVC: Any 3 digits (e.g., 123)
 - ZIP: Any valid ZIP (e.g., 12345)
 
 **Test Steps:**
+
 ```
 1. npm run dev
 2. Navigate to: http://localhost:3000/onboarding
@@ -78,6 +83,7 @@ All required credentials are configured in `.env`:
 ## PayPal Checkout Flow - READY TO TEST
 
 ### How It Works
+
 1. User clicks PayPal tab on `/checkout` page
 2. PayPal SDK loads from `window.paypal.Buttons()`
 3. Button renders using PayPal's SDK components
@@ -97,17 +103,20 @@ All required credentials are configured in `.env`:
 ### PayPal Sandbox Credentials
 
 **Test Buyer Account:**
+
 - Email: `buyer@example.com` (or your sandbox account email)
 - Password: `qweasd123` (or your sandbox password)
 - Environment: Sandbox (automatically for sandbox keys)
 
 **Sandbox Links:**
+
 - Buyer Dashboard: https://www.sandbox.paypal.com
 - Create Sandbox Accounts: https://developer.paypal.com/dashboard/
 
 ### Manual Testing
 
 **Test Steps:**
+
 ```
 1. npm run dev
 2. Navigate to: http://localhost:3000/onboarding
@@ -144,6 +153,7 @@ All required credentials are configured in `.env`:
 ### Flow: New User Onboarding → Checkout → Payment → Dashboard
 
 **End-to-End Steps:**
+
 ```
 1. Start dev server: npm run dev
 
@@ -217,24 +227,28 @@ All required credentials are configured in `.env`:
 ### Stripe Issues
 
 **Problem: "Something went wrong" error on Stripe page**
+
 - ❌ OLD: URL was `https://checkout.stripe.com/pay/{sessionId}` (incorrect)
 - ✅ FIXED: Now uses `session.url` from Stripe API (correct)
 - **Solution:** Verify `/api/payments/stripe-checkout` returns `{ sessionId, url }`
 
 **Problem: "Checkout session not found"**
+
 - **Cause:** Session ID is invalid or expired
-- **Solution:** 
+- **Solution:**
   - Check Stripe Dashboard for session
   - Verify sessionId is being passed correctly
   - Sessions expire after 24 hours
 
 **Problem: Redirect not working**
+
 - **Cause:** Success URL not set correctly
 - **Solution:** Verify `NEXT_PUBLIC_APP_URL` matches current domain
 
 **Problem: "Failed to create checkout session" error**
+
 - **Cause:** Stripe API key invalid or request malformed
-- **Solution:** 
+- **Solution:**
   - Verify `STRIPE_SECRET_KEY` in .env
   - Check Stripe Dashboard API logs
   - Verify request payload has required fields
@@ -242,6 +256,7 @@ All required credentials are configured in `.env`:
 ### PayPal Issues
 
 **Problem: PayPal button not rendering**
+
 - **Cause:** SDK not loading or client ID invalid
 - **Solution:**
   - Check browser console for errors
@@ -250,6 +265,7 @@ All required credentials are configured in `.env`:
   - Check PayPal SDK loads: `console.log(window.paypal)`
 
 **Problem: "Something went wrong" after clicking PayPal button**
+
 - **Cause:** Order creation failed or auth failed
 - **Solution:**
   - Check browser console for error details
@@ -257,10 +273,12 @@ All required credentials are configured in `.env`:
   - Check PayPal Dashboard for failed requests
 
 **Problem: Popup blocked**
+
 - **Cause:** Browser popup blocker
 - **Solution:** Allow popups for localhost
 
 **Problem: "Invalid merchant" or "Not authorized"**
+
 - **Cause:** PayPal account/credentials issue
 - **Solution:**
   - Verify credentials at https://developer.paypal.com/dashboard/
@@ -272,6 +290,7 @@ All required credentials are configured in `.env`:
 ## Database Records After Successful Payment
 
 ### Stripe Payment
+
 ```
 PendingSignup:
   - id: (matches pendingSignupId from URL)
@@ -290,6 +309,7 @@ Subscription (if created):
 ```
 
 ### PayPal Payment
+
 ```
 PendingSignup:
   - id: (matches pendingSignupId from URL)
@@ -312,6 +332,7 @@ Subscription:
 ## Success Criteria Checklist
 
 ### Stripe Flow
+
 - [ ] Session creates successfully
 - [ ] Redirect URL is valid Stripe page
 - [ ] Test card accepted
@@ -322,6 +343,7 @@ Subscription:
 - [ ] Console shows: "✅ STRIPE-CHECKOUT: Created checkout session"
 
 ### PayPal Flow
+
 - [ ] SDK loads
 - [ ] Button renders
 - [ ] Popup opens on click
@@ -334,6 +356,7 @@ Subscription:
 - [ ] Console shows successful order creation
 
 ### Overall
+
 - [ ] No 404 errors
 - [ ] No console errors
 - [ ] Plan names correct (Flex Trial, not Mom Professional)
@@ -353,4 +376,3 @@ Subscription:
 - All credentials use sandbox/test environments (no live charges)
 - Trial period is 3 days, then $34.99/month charged
 - $0 charge on trial initial transaction (no actual charge, but creates payment record)
-

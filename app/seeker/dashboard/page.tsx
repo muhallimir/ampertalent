@@ -185,7 +185,7 @@ export default function SeekerDashboard() {
 
           const result = await response.json()
           console.log('✅ DASHBOARD: Payment processed successfully:', result)
-          
+
           // Clean up URL params after successful processing
           // This prevents the payment from being processed again if user refreshes
           window.history.replaceState({}, document.title, '/seeker/dashboard')

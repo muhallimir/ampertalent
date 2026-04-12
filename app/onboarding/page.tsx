@@ -239,12 +239,70 @@ export default function OnboardingPage() {
     const pendingSignupId = searchParams.get('pendingSignupId')
 
     if (paymentStatus === 'success' && sessionId) {
-      console.log('💳 ONBOARDING: Payment success detected, processing subscription')
+      console.log('💳 ONBOARDING: Payment success detected, completing onboarding and processing subscription')
 
-      // Call the payment processor endpoint to create subscription
-      const processPayment = async () => {
+      // Complete payment and onboarding
+      const completePaymentFlow = async () => {
         try {
-          const response = await fetch('/api/seeker/subscription/process-payment', {
+          // First, fetch the pending signup data to complete onboarding
+          console.log('🔍 ONBOARDING: Fetching pending signup data for completion')
+          const pendingSignupResponse = await fetch(`/api/onboarding/pending-signup/latest`)
+
+          if (!pendingSignupResponse.ok) {
+            console.error('❌ ONBOARDING: Failed to fetch pending signup')
+            return
+          }
+
+          const { pendingSignup } = await pendingSignupResponse.json()
+          if (!pendingSignup) {
+            console.error('❌ ONBOARDING: No pending signup found')
+            return
+          }
+
+          // Parse the onboarding data from the pending signup
+          let parsedData
+          try {
+            parsedData = typeof pendingSignup.onboardingData === 'string'
+              ? JSON.parse(pendingSignup.onboardingData)
+              : pendingSignup.onboardingData
+          } catch (e) {
+            console.error('❌ ONBOARDING: Failed to parse onboarding data:', e)
+            return
+          }
+
+          console.log('📋 ONBOARDING: Parsed pending signup data:', parsedData)
+
+          // Step 1: Complete the onboarding (create user profile)
+          console.log('💾 ONBOARDING: Completing onboarding profile...')
+          const completeResponse = await fetch('/api/onboarding/complete', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              role: parsedData.role || 'seeker',
+              firstName: parsedData.firstName,
+              lastName: parsedData.lastName,
+              location: parsedData.location,
+              experience: parsedData.experience,
+              skills: parsedData.skills,
+              companyName: parsedData.companyName,
+              companySize: parsedData.companySize,
+              professionalSummary: parsedData.professionalSummary
+            })
+          })
+
+          if (!completeResponse.ok) {
+            const error = await completeResponse.json()
+            console.error('❌ ONBOARDING: Failed to complete onboarding:', error)
+            return
+          }
+
+          console.log('✅ ONBOARDING: Onboarding profile completed successfully')
+
+          // Step 2: Process the Stripe payment (create subscription)
+          console.log('💳 ONBOARDING: Processing Stripe payment to create subscription...')
+          const paymentResponse = await fetch('/api/seeker/subscription/process-payment', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -256,14 +314,14 @@ export default function OnboardingPage() {
             })
           })
 
-          if (!response.ok) {
-            const error = await response.json()
+          if (!paymentResponse.ok) {
+            const error = await paymentResponse.json()
             console.error('❌ ONBOARDING: Payment processing failed:', error)
-            // Don't redirect on error, let user stay on onboarding
+            // Even if payment fails, onboarding was completed
             return
           }
 
-          const result = await response.json()
+          const result = await paymentResponse.json()
           console.log('✅ ONBOARDING: Subscription created successfully:', result)
 
           // Clean up URL params to prevent duplicate processing
@@ -275,11 +333,11 @@ export default function OnboardingPage() {
             router.push('/seeker/dashboard?welcome=true')
           }, 1500)
         } catch (error) {
-          console.error('❌ ONBOARDING: Error processing payment:', error)
+          console.error('❌ ONBOARDING: Error in payment flow:', error)
         }
       }
 
-      processPayment()
+      completePaymentFlow()
       return
     }
   }, [isLoaded, user, router])

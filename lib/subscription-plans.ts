@@ -151,10 +151,10 @@ export function planIdToMembershipPlan(planId: string): string {
   if (exact) return exact.membershipPlan
 
   const lower = planId.toLowerCase()
-  if (lower.includes('annual'))                          return 'annual_platinum'
+  if (lower.includes('annual')) return 'annual_platinum'
   if (lower.includes('vip') || lower.includes('platinum')) return 'vip_quarterly'
-  if (lower.includes('gold'))                            return 'gold_bimonthly'
-  if (lower.includes('trial'))                           return 'trial_monthly'
+  if (lower.includes('gold')) return 'gold_bimonthly'
+  if (lower.includes('trial')) return 'trial_monthly'
 
   console.warn(`[planIdToMembershipPlan] No match found for planId: "${planId}" — returning 'none'`)
   return 'none'

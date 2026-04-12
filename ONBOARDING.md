@@ -13,6 +13,7 @@
 ## What's Working
 
 ### Endpoints (All Verified)
+
 - `POST /api/onboarding/pending-signup` - Save progress
 - `GET /api/onboarding/pending-signup/latest` - Resume
 - `GET /api/onboarding/resume` - Resume by token
@@ -21,6 +22,7 @@
 - `POST /api/onboarding/complete` - Finish & create accounts
 
 ### Database (100% Tested)
+
 - UserProfile CRUD with role
 - JobSeeker profile with skills array
 - PendingSignup JSON serialization
@@ -28,6 +30,7 @@
 - Session token generation
 
 ### Features
+
 - Save progress at each step
 - Resume incomplete onboarding
 - Draft expires in 24h, regular in 7d
@@ -93,13 +96,13 @@ f725ea4 - test: Add comprehensive tests for status and draft endpoints
 
 ## Troubleshooting
 
-| Issue | Check |
-|-------|-------|
-| 404 on page | Is `yarn dev` running? |
-| API 401 | Need Clerk auth (test mocks it) |
-| Session token missing | Check localStorage/cookies in browser |
-| Draft not loading | Did you refresh? Token might be expired (24h) |
-| Tests fail | `yarn test --verbose` for details |
+| Issue                 | Check                                         |
+| --------------------- | --------------------------------------------- |
+| 404 on page           | Is `yarn dev` running?                        |
+| API 401               | Need Clerk auth (test mocks it)               |
+| Session token missing | Check localStorage/cookies in browser         |
+| Draft not loading     | Did you refresh? Token might be expired (24h) |
+| Tests fail            | `yarn test --verbose` for details             |
 
 ## Key Learnings
 
