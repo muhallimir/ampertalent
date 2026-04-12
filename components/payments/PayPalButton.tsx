@@ -1,98 +1,112 @@
-// Mock PayPal Button component for Phase 3
-// This will be replaced with Stripe integration in Phase 6
-// See docs/01-TECH-STACK-AND-FREE-ALTERNATIVES.md for Stripe implementation details
-
 'use client'
 
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
+import { useEffect, useRef } from 'react'
 import { Loader2 } from 'lucide-react'
+
+// Extend window to include paypal
+declare global {
+  interface Window {
+    paypal?: any
+  }
+}
 
 interface PayPalButtonProps {
   amount: number
   onSuccess: (details: any) => void
-  onError: (error: any) => void
+  onError: (error: string) => void
   disabled?: boolean
+  className?: string
+  variant?: string
+  size?: string
+  [key: string]: any
 }
 
-export function PayPalButton({ amount, onSuccess, onError, disabled }: PayPalButtonProps) {
-  const [isLoading, setIsLoading] = useState(false)
+export function PayPalButton({
+  amount,
+  onSuccess,
+  onError,
+  disabled = false,
+  className = '',
+  ...props
+}: PayPalButtonProps) {
+  const containerRef = useRef<HTMLDivElement>(null)
 
-  const handleClick = async () => {
-    setIsLoading(true)
+  useEffect(() => {
+    // Load PayPal script
+    if (!window.paypal) {
+      const script = document.createElement('script')
+      script.src = `https://www.paypal.com/sdk/js?client-id=${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID}&components=buttons&enable-funding=venmo`
+      script.async = true
 
-    try {
-      // Mock PayPal payment - always succeeds in development
-      console.log(`Mock PayPal: Processing payment for $${amount}`)
-
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 2000))
-
-      // Mock successful payment
-      const mockDetails = {
-        id: `paypal_mock_${Date.now()}`,
-        amount: amount,
-        currency: 'USD',
-        status: 'COMPLETED',
-        payer: {
-          email: 'test@example.com',
-          name: 'Test User'
-        }
+      script.onload = () => {
+        renderPayPalButton()
       }
 
-      onSuccess(mockDetails)
-    } catch (error) {
-      console.error('Mock PayPal payment failed:', error)
-      onError(error)
-    } finally {
-      setIsLoading(false)
+      script.onerror = () => {
+        onError('Failed to load PayPal SDK')
+      }
+
+      document.head.appendChild(script)
+    } else {
+      renderPayPalButton()
     }
-  }
 
-  return (
-    <Button
-      onClick={handleClick}
-      disabled={disabled || isLoading}
-      className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-    >
-      {isLoading ? (
-        <>
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Processing...
-        </>
-      ) : (
-        `Pay $${amount} with PayPal (Mock)`
-      )}
-    </Button>
-  )
-}
-
-// Mock hook for PayPal return handling
-export function usePayPalReturn() {
-  return {
-    isLoading: false,
-    error: null,
-    success: false,
-    handleReturn: async () => {
-      console.log('Mock PayPal: Handling return')
-      // Mock successful return
-      return { success: true }
+    return () => {
+      // Cleanup: remove existing PayPal buttons on unmount
+      if (containerRef.current) {
+        containerRef.current.innerHTML = ''
+      }
     }
-  }
-}
+  }, [amount, onSuccess, onError])
 
-// Mock PayPal subscription functions
-export async function createPayPalSubscription(planId: string, userId: string) {
-  console.warn('⚠️ Using deprecated mock PayPal function - will be replaced with Stripe in Phase 6')
-  return {
-    id: `paypal_sub_mock_${Date.now()}`,
-    status: 'ACTIVE',
-    planId
-  }
-}
+  const renderPayPalButton = () => {
+    if (!containerRef.current || !window.paypal) return
 
-export async function cancelPayPalSubscription(subscriptionId: string) {
-  console.warn('⚠️ Using deprecated mock PayPal function - will be replaced with Stripe in Phase 6')
-  console.log(`Mock PayPal: Canceled subscription ${subscriptionId}`)
-  return { success: true }
+    // Clear any existing buttons
+    containerRef.current.innerHTML = ''
+
+    window.paypal
+      .Buttons({
+        createOrder: (data: any, actions: any) => {
+          return actions.order.create({
+            intent: 'CAPTURE',
+            purchase_units: [
+              {
+                amount: {
+                  value: amount.toFixed(2)
+                }
+              }
+            ]
+          })
+        },
+        onApprove: async (data: any, actions: any) => {
+          try {
+            const order = await actions.order.capture()
+            onSuccess({
+              id: order.id,
+              status: order.status,
+              amount: amount,
+              payer: order.payer
+            })
+          } catch (error) {
+            onError(`Payment capture failed: ${error}`)
+          }
+        },
+        onError: (err: any) => {
+          onError(`PayPal error: ${err.message || 'Unknown error'}`)
+        }
+      })
+      .render(containerRef.current)
+  }
+
+  if (disabled) {
+    return (
+      <div className={`w-full rounded-lg bg-gray-100 p-4 flex items-center justify-center ${className}`}>
+        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+        <span>Processing...</span>
+      </div>
+    )
+  }
+
+  return <div ref={containerRef} className={className} />
 }

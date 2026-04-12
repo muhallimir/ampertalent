@@ -1,0 +1,72 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { getCurrentUser } from '@/lib/auth'
+import { db } from '@/lib/db'
+import Stripe from 'stripe'
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+  apiVersion: '2023-10-16' as any
+})
+
+export async function POST(request: NextRequest) {
+  try {
+    const currentUser = await getCurrentUser(request)
+    if (!currentUser?.clerkUser) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { planId, amount, pendingSignupId, sessionToken } = await request.json()
+
+    if (!planId || !amount) {
+      return NextResponse.json(
+        { error: 'Plan and amount required' },
+        { status: 400 }
+      )
+    }
+
+    const email = currentUser.clerkUser.emailAddresses[0]?.emailAddress || ''
+
+    // Create Stripe checkout session
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price_data: {
+            currency: 'usd',
+            product_data: {
+              name: `Flex ${planId.charAt(0).toUpperCase()}${planId.slice(1).replace('-', ' ')}`
+            },
+            unit_amount: amount
+          },
+          quantity: 1
+        }
+      ],
+      mode: 'payment',
+      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/seeker/dashboard?checkout=success&sessionId={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/paypal?planId=${planId}&pendingSignupId=${pendingSignupId}`,
+      customer_email: email,
+      metadata: {
+        planId,
+        pendingSignupId,
+        sessionToken,
+        clerkUserId: currentUser.clerkUser.id
+      }
+    })
+
+    console.log('✅ STRIPE-CHECKOUT: Created checkout session:', {
+      sessionId: session.id,
+      planId,
+      amount,
+      email
+    })
+
+    return NextResponse.json({
+      sessionId: session.id
+    })
+  } catch (error) {
+    console.error('Error creating Stripe checkout session:', error)
+    return NextResponse.json(
+      { error: 'Failed to create checkout session' },
+      { status: 500 }
+    )
+  }
+}
