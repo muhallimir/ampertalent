@@ -5,7 +5,7 @@
 After the user completes Stripe payment and the profile/subscription creation flow starts, you were getting:
 
 ```
-🚨 DATABASE ERROR: Foreign key constraint violated: 
+🚨 DATABASE ERROR: Foreign key constraint violated:
 `subscriptions_external_payment_id_fkey (index)`
 ```
 
@@ -30,12 +30,13 @@ model Subscription {
 When you try to create a subscription with `externalPaymentId`, the database **requires** an `ExternalPayment` record with that ID to exist first.
 
 **What was happening**:
+
 ```
 Old code tried:
   CREATE Subscription {
     externalPaymentId: 'stripe-session-id'  // ← But no ExternalPayment record with this ID!
   }
-  
+
 Result: Foreign key constraint violated ❌
 ```
 
@@ -70,6 +71,7 @@ const subscription = await db.subscription.create({
 ```
 
 **Why this works**:
+
 - `ExternalPayment` record is created → Gets an ID
 - `Subscription` is created → References that ID
 - Foreign key constraint is satisfied ✅
@@ -79,43 +81,47 @@ const subscription = await db.subscription.create({
 ## What Changed
 
 ### File Modified
+
 `/app/api/seeker/subscription/process-payment/route.ts`
 
 ### Changes Made
 
 1. **Added Import**:
+
 ```typescript
-import { Decimal } from '@prisma/client/runtime/library'
+import { Decimal } from "@prisma/client/runtime/library";
 ```
 
 2. **Before Subscription Creation, Create ExternalPayment**:
+
 ```typescript
 // CRITICAL FIX: Create ExternalPayment record FIRST
-const amountInDollars = ((session.amount_total || 0) / 100).toFixed(2)
+const amountInDollars = ((session.amount_total || 0) / 100).toFixed(2);
 const externalPayment = await db.externalPayment.create({
-  data: {
-    userId: userProfile.id,
-    amount: new Decimal(amountInDollars),
-    planId: planId,
-    status: 'completed',
-    webhookProcessedAt: new Date()
-  }
-})
+	data: {
+		userId: userProfile.id,
+		amount: new Decimal(amountInDollars),
+		planId: planId,
+		status: "completed",
+		webhookProcessedAt: new Date(),
+	},
+});
 
-console.log('✅ PROCESS-PAYMENT: External payment created:', {
-  id: externalPayment.id,
-  amount: externalPayment.amount,
-  planId: externalPayment.planId
-})
+console.log("✅ PROCESS-PAYMENT: External payment created:", {
+	id: externalPayment.id,
+	amount: externalPayment.amount,
+	planId: externalPayment.planId,
+});
 ```
 
 3. **Link Subscription to ExternalPayment**:
+
 ```typescript
 // Changed from:
 // externalPaymentId: session.id
 
 // To:
-externalPaymentId: externalPayment.id  // ← Reference the created ExternalPayment
+externalPaymentId: externalPayment.id; // ← Reference the created ExternalPayment
 ```
 
 ---
@@ -172,9 +178,10 @@ Expected logs (NEW):
 
 ## Why This Matters
 
-The `ExternalPayment` table is the **payment tracking table** that records all payments (Stripe, PayPal, Authorize.net, etc.). 
+The `ExternalPayment` table is the **payment tracking table** that records all payments (Stripe, PayPal, Authorize.net, etc.).
 
 By creating a record here, you:
+
 1. **Track the payment** for auditing/reports
 2. **Satisfy foreign key constraints** for linked tables
 3. **Maintain data integrity** in the database
@@ -189,8 +196,9 @@ This is how the system is designed - each payment must be recorded in `ExternalP
 ✅ **Fixed and Committed**
 
 The payment flow should now complete successfully:
+
 - Profile created ✅
-- Subscription created ✅  
+- Subscription created ✅
 - ExternalPayment recorded ✅
 - User redirected to dashboard ✅
 

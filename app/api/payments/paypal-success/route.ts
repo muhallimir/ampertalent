@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
             onboardingUrl.searchParams.set('payment_status', 'success')
             onboardingUrl.searchParams.set('transaction_id', transactionId) // Use PayPal transaction ID for payment processing
             onboardingUrl.searchParams.set('pendingSignupId', pendingSignupId)
-            
+
             console.log('🔗 PAYPAL-SUCCESS: Redirect URL:', onboardingUrl.toString())
 
             return NextResponse.redirect(onboardingUrl)

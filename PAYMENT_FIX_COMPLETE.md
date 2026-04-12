@@ -9,6 +9,7 @@ The critical database foreign key constraint error has been **completely resolve
 ## What Was Wrong
 
 After completing Stripe payment:
+
 ```
 ❌ Foreign key constraint violated: `subscriptions_external_payment_id_fkey`
 ❌ Subscription not created
@@ -25,8 +26,8 @@ The `Subscription` table requires a valid `ExternalPayment` record to exist befo
 ```typescript
 // ❌ WRONG: Set externalPaymentId to Stripe session ID without creating the record
 subscription.create({
-  externalPaymentId: 'cs_test_...'  // No ExternalPayment record with this ID!
-})
+	externalPaymentId: "cs_test_...", // No ExternalPayment record with this ID!
+});
 // Result: Foreign key violated ❌
 ```
 
@@ -132,17 +133,20 @@ const subscription = await db.subscription.create({
 After successful payment, the database now has:
 
 ### 1. UserProfile
+
 - id: `cmn...`
 - name: "Firs Seeker"
 - role: "seeker"
 - email: "user@example.com"
 
 ### 2. JobSeeker
+
 - userId: (links to UserProfile)
 - membershipPlan: "gold_bimonthly"
 - status: "active"
 
 ### 3. ExternalPayment ← **NEW**
+
 - id: `cmn...`
 - userId: (links to UserProfile)
 - amount: 49.99
@@ -150,6 +154,7 @@ After successful payment, the database now has:
 - status: "completed"
 
 ### 4. Subscription
+
 - id: `cmn...`
 - seekerId: (links to JobSeeker)
 - plan: "gold_bimonthly"
@@ -165,12 +170,12 @@ All foreign keys satisfied! ✅
 ```
 ✅ PROCESS-PAYMENT: Stripe session retrieved
 💳 PROCESS-PAYMENT: Creating external payment record for Stripe session
-✅ PROCESS-PAYMENT: External payment created: { 
+✅ PROCESS-PAYMENT: External payment created: {
     id: 'cmn...',
     amount: 49.99,
     planId: 'gold'
 }
-✅ PROCESS-PAYMENT: Subscription created: { 
+✅ PROCESS-PAYMENT: Subscription created: {
     subscriptionId: 'cmn...',
     plan: 'gold_bimonthly',
     seekerId: '...'
@@ -185,6 +190,7 @@ All foreign keys satisfied! ✅
 See: `TEST_PAYMENT_FLOW_NOW.md`
 
 Quick test:
+
 ```
 1. npm run build && npm run dev
 2. Complete onboarding → Select "Flex Gold" → Checkout
@@ -207,6 +213,7 @@ Quick test:
 ## Why This Works
 
 The database schema requires:
+
 ```sql
 CREATE TABLE subscriptions (
   ...
@@ -218,6 +225,7 @@ CREATE TABLE subscriptions (
 Before, trying to set `external_payment_id` to a non-existent value violated the constraint.
 
 Now:
+
 1. We create an `ExternalPayment` record first (gets an ID)
 2. We use that ID when creating the Subscription
 3. Foreign key constraint is satisfied ✅
@@ -244,11 +252,12 @@ Now:
 
 ## You're Ready! 🚀
 
-The payment flow is now completely fixed and ready to test. 
+The payment flow is now completely fixed and ready to test.
 
 **Next**: Follow the testing guide in `TEST_PAYMENT_FLOW_NOW.md` to verify everything works end-to-end.
 
 All the infrastructure is in place:
+
 - ✅ Stripe integration
 - ✅ Payment verification
 - ✅ Profile creation

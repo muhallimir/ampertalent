@@ -9,6 +9,7 @@ The database foreign key constraint error is now resolved. The fix creates an `E
 ## Quick Test (5 minutes)
 
 ### Step 1: Rebuild & Start Server
+
 ```bash
 cd /Users/amirlocus/Documents/Projects/Locus/ampertalent
 
@@ -44,6 +45,7 @@ npm run dev
 ### Step 3: Verify Success
 
 You should see in **server console**:
+
 ```
 ✅ PROCESS-PAYMENT: Stripe session retrieved: { ... paid ... }
 💳 PROCESS-PAYMENT: Creating external payment record for Stripe session
@@ -58,7 +60,7 @@ Then browser should redirect to: `/seeker/dashboard?welcome=true`
 
 Check these tables for new records:
 
-1. **external_payments**: 
+1. **external_payments**:
    - Should have 1 new record with amount 49.99
    - status: 'completed'
 
@@ -108,19 +110,23 @@ Browser Result:
 ## If Still Having Issues
 
 ### Check Console for Errors
+
 Open DevTools → Console → Look for error messages
 
 ### Common Issues
 
 **Issue**: Still seeing foreign key error
+
 - **Fix**: Restart server with `npm run dev`
 - Check that the code in `/app/api/seeker/subscription/process-payment/route.ts` has the `externalPayment.create()` call
 
-**Issue**: Redirects back to onboarding indefinitely  
+**Issue**: Redirects back to onboarding indefinitely
+
 - **Fix**: Check browser console for error messages
 - May need to clear localStorage/cache
 
 **Issue**: Payment succeeds but stuck on onboarding
+
 - **Fix**: Check console for "Payment success detected" message
 - Verify profile creation succeeded in database
 

@@ -175,6 +175,20 @@ export default function OnboardingPage() {
   const { user, isLoaded } = useUser()
   const { signOut } = useClerk()
   const router = useRouter()
+  
+  // Log immediately on mount
+  if (typeof window !== 'undefined') {
+    const url = new URL(window.location.href)
+    const hasPaymentParams = url.searchParams.has('payment_status') || url.searchParams.has('session_id') || url.searchParams.has('transaction_id')
+    console.log('🎬 ONBOARDING PAGE: Component mounted!', {
+      url: window.location.href,
+      hasPaymentParams,
+      isLoaded,
+      user: !!user,
+      timestamp: new Date().toISOString()
+    })
+  }
+  
   const [currentStep, setCurrentStep] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
   const [isNavigating, setIsNavigating] = useState(false)

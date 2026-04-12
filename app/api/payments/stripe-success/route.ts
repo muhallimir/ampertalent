@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
             onboardingUrl.searchParams.set('payment_status', 'success')
             onboardingUrl.searchParams.set('session_id', sessionId) // Use session_id (underscore, consistent with parameter name)
             onboardingUrl.searchParams.set('pendingSignupId', pendingSignupId)
-            
+
             console.log('🔗 STRIPE-SUCCESS: Redirect URL:', onboardingUrl.toString())
 
             return NextResponse.redirect(onboardingUrl)
