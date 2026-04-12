@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Loader2 } from 'lucide-react'
-import { loadStripe } from '@stripe/stripe-js'
 
 interface StripeCheckoutButtonProps {
   amount: number
@@ -50,17 +49,14 @@ export function StripeCheckoutButton({
         throw new Error('Failed to create checkout session')
       }
 
-      const { sessionId } = await response.json()
+      const { sessionId, url } = await response.json()
 
-      // Redirect to Stripe checkout using the session ID
-      const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
-
-      if (!stripe) {
-        throw new Error('Failed to load Stripe')
+      if (!url) {
+        throw new Error('No checkout URL provided')
       }
 
-      // Modern Stripe uses direct URL navigation
-      window.location.href = `https://checkout.stripe.com/pay/${sessionId}`
+      // Redirect directly to Stripe's hosted checkout page
+      window.location.href = url
 
       onSuccess(sessionId)
     } catch (error) {

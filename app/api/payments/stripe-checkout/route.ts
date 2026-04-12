@@ -54,13 +54,19 @@ export async function POST(request: NextRequest) {
 
     console.log('✅ STRIPE-CHECKOUT: Created checkout session:', {
       sessionId: session.id,
+      checkoutUrl: session.url,
       planId,
       amount,
       email
     })
 
+    if (!session.url) {
+      throw new Error('No checkout URL returned from Stripe')
+    }
+
     return NextResponse.json({
-      sessionId: session.id
+      sessionId: session.id,
+      url: session.url
     })
   } catch (error) {
     console.error('Error creating Stripe checkout session:', error)
