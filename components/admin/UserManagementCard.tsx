@@ -164,7 +164,7 @@ export function UserManagementCard({
 
   const getRoleDisplayName = (role: string, email: string) => {
     // Special case for owner
-    if (email === 'lesley@ampertalent.com' && role === 'admin') {
+    if (email === 'lesley@hiremymom.com' && role === 'admin') {
       return 'owner'
     }
     if (role === 'super_admin') {
@@ -177,7 +177,7 @@ export function UserManagementCard({
   }
 
   const isOwner = (email: string) => {
-    return email === 'lesley@ampertalent.com'
+    return email === 'lesley@hiremymom.com'
   }
 
   const getVerificationColor = (status: string) => {

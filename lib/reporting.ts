@@ -200,7 +200,7 @@ export class ReportingService {
           format: 'pdf'
         },
         schedule: 'weekly',
-        recipients: ['admin@ampertalent.com'],
+        recipients: ['admin@hiremymom.com'],
         isActive: true,
         lastGenerated: new Date('2024-01-01'),
         nextGeneration: new Date('2024-01-08')
@@ -217,7 +217,7 @@ export class ReportingService {
           format: 'excel'
         },
         schedule: 'monthly',
-        recipients: ['admin@ampertalent.com', 'analytics@ampertalent.com'],
+        recipients: ['admin@hiremymom.com', 'analytics@hiremymom.com'],
         isActive: true,
         lastGenerated: new Date('2024-01-01'),
         nextGeneration: new Date('2024-02-01')

@@ -1,12 +1,12 @@
 /**
  * Auto-Generation Service for CRM Sync Field Mappings
  * 
+ * STUB: This service will be replaced with HubSpot integration in Phase 10
  * Provides deterministic, idempotent auto-generation of Phase 2 field mappings
  * with comprehensive validation and safety guarantees.
  */
 
 import { db } from '@/lib/db'
-import { GHLSyncService } from '@/lib/ghl-sync-service'
 
 export interface AutoGenerationResult {
     success: boolean
@@ -190,10 +190,11 @@ const SYSTEM_GROUP_NAME = 'System Generated Mappings'
 const SYSTEM_GROUP_DESCRIPTION = 'Automatically generated field mappings connecting app data with GoHighLevel for streamlined synchronization. Essential standard fields (email, name, phone) ensure reliable contact sync. Custom fields enable targeted marketing campaigns and lead management. Disable at your own risk.'
 
 export class AutoGenerationService {
-    private ghlService: GHLSyncService
+    private ghlService: any
 
     constructor(apiKey: string, locationId: string) {
-        this.ghlService = new GHLSyncService(apiKey, locationId)
+        // STUB: GHLSyncService will be replaced with HubSpot in Phase 10
+        this.ghlService = null
     }
 
     /**

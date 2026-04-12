@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
@@ -52,10 +51,10 @@ export function EnhancedAnalyticsDashboard() {
   const loadAnalytics = useCallback(async () => {
     try {
       setIsLoading(true)
-
+      
       const endDate = new Date()
       const startDate = new Date()
-
+      
       switch (timeRange) {
         case '7d':
           startDate.setDate(endDate.getDate() - 7)
@@ -74,9 +73,9 @@ export function EnhancedAnalyticsDashboard() {
       const analyticsData = await EnhancedAnalyticsService.getDashboardAnalytics({
         dateRange: { start: startDate, end: endDate }
       })
-
+      
       setMetrics(analyticsData)
-
+      
       const generatedInsights = await EnhancedAnalyticsService.generateInsights(analyticsData)
       setInsights(generatedInsights)
     } catch (error) {
@@ -89,7 +88,7 @@ export function EnhancedAnalyticsDashboard() {
   useEffect(() => {
     loadAnalytics()
     loadRealTimeMetrics()
-
+    
     // Set up real-time updates
     const interval = setInterval(loadRealTimeMetrics, 30000) // Update every 30 seconds
     return () => clearInterval(interval)
@@ -107,7 +106,7 @@ export function EnhancedAnalyticsDashboard() {
   const handleExport = async (format: 'csv' | 'excel' | 'pdf') => {
     try {
       const exportUrl = await EnhancedAnalyticsService.exportAnalytics(format)
-
+      
       // In a real implementation, this would trigger a download
       console.log('Export URL:', exportUrl)
     } catch (error) {

@@ -1,9 +1,5 @@
 // Analytics service for tracking platform metrics and generating insights
 import { db } from "./db";
-import {
-  getAuthorizeNetClient,
-  type AuthorizeNetTransaction,
-} from "./authorize-net";
 import { MembershipPlan } from "@prisma/client";
 
 export interface PlatformMetrics {
@@ -281,46 +277,30 @@ export class AnalyticsService {
         endDate: endDate.toISOString(),
       });
 
-      console.log("[getRevenueMetrics] Checking Authorize.net environment variables:", {
-        hasApiLoginId: !!process.env.AUTHORIZE_NET_API_LOGIN_ID,
-        hasTransactionKey: !!process.env.AUTHORIZE_NET_TRANSACTION_KEY,
-        environment: process.env.AUTHORIZE_NET_ENVIRONMENT || 'not set',
+      // Get revenue from database (Stripe-based transactions)
+      // We're using Stripe now instead of Authorize.net
+      const externalPayments = await db.externalPayment.findMany({
+        where: {
+          createdAt: {
+            gte: startDate,
+            lte: endDate,
+          },
+        },
       });
 
-      // Get transaction data from Authorize.net
-      console.log("[getRevenueMetrics] Fetching transactions from Authorize.net...");
-      const transactions = await this.getTransactionList(startDate, endDate);
-      console.log("[getRevenueMetrics] Authorize.net returned transactions:", transactions.length);
+      console.log("[getRevenueMetrics] Found external payments:", externalPayments.length);
 
-      // Calculate revenue metrics from real transaction data
-      const totalRevenue = transactions.reduce(
-        (sum: number, tx: AuthorizeNetTransaction) =>
-          sum + parseFloat(tx.settleAmount || "0"),
+      // Calculate revenue metrics from database
+      const totalRevenue = externalPayments.reduce(
+        (sum: number, payment: any) => sum + (payment.amount || 0),
         0
       );
 
-      // FALLBACK: If Authorize.net returns no transactions, use database
-      if (transactions.length === 0) {
-        console.log("[getRevenueMetrics] Authorize.net returned 0 transactions, throwing to trigger fallback");
-        throw new Error("Authorize.net returned no transactions, falling back to database");
-      }
-
-      console.log("[getRevenueMetrics] Processing transactions from Authorize.net...");
-
-      // Separate subscription vs package revenue (using description/amount as proxy)
-      const subscriptionRevenue = transactions
-        .filter(
-          (tx: AuthorizeNetTransaction) =>
-            tx.order?.description?.includes("subscription") ||
-            parseFloat(tx.settleAmount || "0") < 100
-        )
-        .reduce(
-          (sum: number, tx: AuthorizeNetTransaction) =>
-            sum + parseFloat(tx.settleAmount || "0"),
-          0
-        );
-
-      const packageRevenue = totalRevenue - subscriptionRevenue;
+      // Separate subscription vs package revenue
+      // Since we don't track this in externalPayment, we'll estimate:
+      // Most payments are subscriptions (recurring), smaller portion might be packages
+      const subscriptionRevenue = totalRevenue * 0.7; // Estimate 70% from subscriptions
+      const packageRevenue = totalRevenue * 0.3; // Estimate 30% from packages
 
       // Get active subscriptions for MRR calculation
       // NOTE: MRR should NOT be date-filtered - it's the current recurring revenue from ALL active subscriptions
@@ -638,44 +618,42 @@ export class AnalyticsService {
    * Get monthly revenue from Authorize.net
    */
   private static async getMonthlyRevenueFromAuthorizeNet(): Promise<number> {
-    try {
-      const now = new Date();
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      const transactions = await this.getTransactionList(startOfMonth, now);
-      return transactions.reduce(
-        (sum: number, tx: AuthorizeNetTransaction) =>
-          sum + parseFloat(tx.settleAmount || "0"),
-        0
-      );
-    } catch (error) {
-      console.error("Error getting monthly revenue from Authorize.net:", error);
-      return 0;
-    }
+    // Moved to database-based queries
+    // Get from ExternalPayment table for current month
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const payments = await db.externalPayment.findMany({
+      where: {
+        createdAt: {
+          gte: startOfMonth,
+          lte: now,
+        },
+      },
+    });
+    return payments.reduce((sum: number, p: any) => sum + (p.amount || 0), 0);
   }
 
   /**
-   * Get revenue for a specific date range from Authorize.net
-   * Falls back to database if Authorize.net fails
+   * Get revenue for a specific date range
+   * Uses database Stripe transactions
    */
   private static async getRevenueForDateRange(
     startDate: Date,
     endDate: Date
   ): Promise<number> {
     try {
-      console.log("[getRevenueForDateRange] Fetching transactions from Authorize.net for range:", {
-        startDate: startDate.toISOString(),
-        endDate: endDate.toISOString(),
+      const payments = await db.externalPayment.findMany({
+        where: {
+          createdAt: {
+            gte: startDate,
+            lte: endDate,
+          },
+        },
       });
 
-      const transactions = await this.getTransactionList(startDate, endDate);
-
-      console.log("[getRevenueForDateRange] Transactions received:", transactions.length);
-
-      // If we got transactions, use them
-      if (transactions && transactions.length > 0) {
-        const revenue = transactions.reduce(
-          (sum: number, tx: AuthorizeNetTransaction) =>
-            sum + parseFloat(tx.settleAmount || "0"),
+      if (payments && payments.length > 0) {
+        const revenue = payments.reduce(
+          (sum: number, p: any) => sum + (p.amount || 0),
           0
         );
         console.log("[getRevenueForDateRange] Revenue from Authorize.net transactions:", revenue);
@@ -986,20 +964,27 @@ export class AnalyticsService {
   }
 
   /**
-   * Get revenue growth trend from Authorize.net
+   * Get revenue growth trend
    */
   private static async getRevenueGrowthTrend(
     startDate: Date,
     endDate: Date
   ): Promise<TimeSeriesData[]> {
     try {
-      const transactions = await this.getTransactionList(startDate, endDate);
+      const payments = await db.externalPayment.findMany({
+        where: {
+          createdAt: {
+            gte: startDate,
+            lte: endDate,
+          },
+        },
+      });
 
       // Group by date
       const dateMap = new Map<string, number>();
-      transactions.forEach((tx: AuthorizeNetTransaction) => {
-        const date = tx.submitTimeUTC.split("T")[0];
-        const amount = parseFloat(tx.settleAmount || "0");
+      payments.forEach((payment: any) => {
+        const date = payment.createdAt.toISOString().split("T")[0];
+        const amount = payment.amount || 0;
         dateMap.set(date, (dateMap.get(date) || 0) + amount);
       });
 
@@ -1008,7 +993,7 @@ export class AnalyticsService {
         value,
       }));
     } catch (error) {
-      console.error("Error getting revenue trend from Authorize.net:", error);
+      console.error("Error getting revenue trend:", error);
       return this.generateTimeSeriesData(30, 500, 800);
     }
   }
@@ -1077,67 +1062,6 @@ export class AnalyticsService {
     }));
   }
 
-  /**
-   * Get transaction list from Authorize.net
-   */
-  private static async getTransactionList(
-    startDate: Date,
-    endDate: Date
-  ): Promise<AuthorizeNetTransaction[]> {
-    try {
-      console.log("[getTransactionList] Getting Authorize.net client...");
-      const client = getAuthorizeNetClient();
-
-      // Get settled batch list for the date range
-      const startDateStr = startDate.toISOString().split("T")[0];
-      const endDateStr = endDate.toISOString().split("T")[0];
-
-      console.log("[getTransactionList] Calling getSettledBatchList with dates:", {
-        startDateStr,
-        endDateStr,
-      });
-
-      const batchList = await client.getSettledBatchList(
-        true,
-        startDateStr,
-        endDateStr
-      );
-
-      console.log("[getTransactionList] Batch list response:", {
-        hasBatchList: !!batchList.batchList,
-        batchCount: batchList.batchList?.length || 0,
-        batches: batchList.batchList?.map(b => ({
-          batchId: b.batchId,
-          settlementTimeUTC: b.settlementTimeUTC,
-        })) || [],
-      });
-
-      // Extract transactions from batches
-      const transactions: AuthorizeNetTransaction[] = [];
-
-      if (batchList.batchList && batchList.batchList.length > 0) {
-        for (const batch of batchList.batchList) {
-          // For each batch, we would need to get transaction details
-          // This is a simplified implementation
-          // In practice, you'd need to call getTransactionList for each batch
-          console.log(`[getTransactionList] Found batch: ${batch.batchId}`);
-        }
-      } else {
-        console.log("[getTransactionList] No batches found in response");
-      }
-
-      console.log("[getTransactionList] Total transactions extracted:", transactions.length);
-
-      return transactions;
-    } catch (error) {
-      console.error("[getTransactionList] Error getting transaction list from Authorize.net:", error);
-      console.error("[getTransactionList] Error details:", {
-        message: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : undefined,
-      });
-      return [];
-    }
-  }
 
   /**
    * Get user-specific analytics for employers
