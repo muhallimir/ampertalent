@@ -104,17 +104,26 @@ function CheckoutContent() {
         setSuccess(true)
 
         setTimeout(() => {
-            const successUrl = new URL(returnUrl || '/seeker/dashboard', window.location.origin)
-            successUrl.searchParams.set('payment_status', 'success')
-            successUrl.searchParams.set('transaction_id', result.transactionId)
-            if (result.sessionId) {
+            // Use appropriate handler based on payment method
+            let successUrl: URL
+
+            if (paymentMethod === 'stripe' && result.sessionId) {
+                // Stripe: use stripe-success handler
+                console.log('💳 CHECKOUT: Redirecting through Stripe success handler')
+                successUrl = new URL('/api/payments/stripe-success', window.location.origin)
                 successUrl.searchParams.set('session_id', result.sessionId)
-            }
-            if (pendingSignupId) {
-                successUrl.searchParams.set('pending_signup_id', pendingSignupId)
-            }
-            if (sessionToken) {
-                successUrl.searchParams.set('session_token', sessionToken)
+                if (pendingSignupId) {
+                    successUrl.searchParams.set('pendingSignupId', pendingSignupId)
+                }
+            } else {
+                // PayPal: use paypal-success handler
+                console.log('💳 CHECKOUT: Redirecting through PayPal success handler')
+                successUrl = new URL('/api/payments/paypal-success', window.location.origin)
+                successUrl.searchParams.set('transaction_id', result.transactionId)
+                successUrl.searchParams.set('payment_status', 'success')
+                if (pendingSignupId) {
+                    successUrl.searchParams.set('pendingSignupId', pendingSignupId)
+                }
             }
 
             window.location.href = successUrl.toString()

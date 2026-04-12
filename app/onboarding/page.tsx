@@ -227,20 +227,29 @@ export default function OnboardingPage() {
     })
   }
 
-  // Handle Stripe payment success redirect from checkout
+  // Handle Stripe/PayPal payment success redirect from checkout
   // This useEffect runs BEFORE the main onboarding initialization
-  // to detect and process payment_status=success from Stripe redirect
+  // to detect and process payment_status=success from payment handlers
   useEffect(() => {
     if (!isLoaded || !user) return
 
-    // Check for payment success from Stripe redirect
+    // Check for payment success from Stripe or PayPal redirect
     const searchParams = new URLSearchParams(window.location.search)
     const paymentStatus = searchParams.get('payment_status')
-    const sessionId = searchParams.get('sessionId')
+    const sessionId = searchParams.get('sessionId') // Stripe session ID
+    const transactionId = searchParams.get('transaction_id') // PayPal transaction ID
     const pendingSignupId = searchParams.get('pendingSignupId')
+    
+    // Determine payment method and ID
+    const paymentId = sessionId || transactionId
+    const paymentMethod = sessionId ? 'stripe' : (transactionId ? 'paypal' : null)
 
-    if (paymentStatus === 'success' && sessionId) {
-      console.log('💳 ONBOARDING: Payment success detected, completing onboarding and processing subscription')
+    if (paymentStatus === 'success' && paymentId) {
+      console.log('💳 ONBOARDING: Payment success detected', {
+        paymentMethod,
+        paymentId,
+        pendingSignupId
+      })
       
       // Show loading overlay immediately
       setIsProcessingPayment(true)
@@ -321,16 +330,19 @@ export default function OnboardingPage() {
 
           console.log('✅ ONBOARDING: Onboarding profile completed successfully')
 
-          // Step 2: Process the Stripe payment (create subscription)
-          console.log('💳 ONBOARDING: Processing Stripe payment to create subscription...')
+          // Step 2: Process the payment (create subscription) - works for both Stripe and PayPal
+          console.log('💳 ONBOARDING: Processing payment to create subscription...', {
+            paymentMethod,
+            paymentId
+          })
           const paymentResponse = await fetch('/api/seeker/subscription/process-payment', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              sessionId,
-              paymentMethod: 'stripe',
+              sessionId: paymentId, // Works for both Stripe (session ID) and PayPal (transaction ID)
+              paymentMethod: paymentMethod,
               paymentStatus
             })
           })
@@ -352,9 +364,10 @@ export default function OnboardingPage() {
           setTimeout(() => {
             console.log('🎉 ONBOARDING: Payment complete, redirecting to dashboard')
             router.push('/seeker/dashboard?welcome=true')
-          }, 1500)
+          }, 1000)
         } catch (error) {
           console.error('❌ ONBOARDING: Error in payment flow:', error)
+          setIsProcessingPayment(false)
         }
       }
 
@@ -363,7 +376,7 @@ export default function OnboardingPage() {
     }
   }, [isLoaded, user, router])
 
-  useEffect(() => {
+  useEffect(() {
     if (!user) {
       router.push('/sign-in')
       return
