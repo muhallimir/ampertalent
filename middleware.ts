@@ -322,27 +322,29 @@ export default clerkMiddleware(async (auth, request: NextRequest) => {
               userRole = 'admin';
             } else {
               if (process.env.DEBUG_MODE === 'true') {
-                console.log('🚫 MIDDLEWARE: Fallback check - not admin, redirecting to onboarding');
+                console.log('🚫 MIDDLEWARE: Fallback check - not admin, redirecting to sign-in');
               }
-              return NextResponse.redirect(new URL('/onboarding', request.url));
+              return NextResponse.redirect(new URL('/sign-in', request.url));
             }
           } else {
             if (process.env.DEBUG_MODE === 'true') {
-              console.log('🚫 MIDDLEWARE: Fallback API call failed, redirecting to onboarding');
+              console.log('🚫 MIDDLEWARE: Fallback API call failed, redirecting to sign-in');
             }
-            return NextResponse.redirect(new URL('/onboarding', request.url));
+            return NextResponse.redirect(new URL('/sign-in', request.url));
           }
         } catch (fallbackError) {
           console.error('🚨 MIDDLEWARE: Fallback role check also failed:', fallbackError || 'Unknown error');
-          return NextResponse.redirect(new URL('/onboarding', request.url));
+          return NextResponse.redirect(new URL('/sign-in', request.url));
         }
       } else {
-        // For non-admin routes, redirect to onboarding on error
+        // For non-admin routes, redirect to sign-in when role lookup fails
+        // This prevents redirect loops for users who have completed onboarding
+        // but have role lookup issues
         if (process.env.DEBUG_MODE === 'true') {
           const totalDuration = Date.now() - middlewareStartTime;
-          console.log(`🔄 MIDDLEWARE: Redirecting to onboarding due to role lookup error (${totalDuration}ms)`);
+          console.log(`🔄 MIDDLEWARE: Redirecting to sign-in due to role lookup error (${totalDuration}ms)`);
         }
-        return NextResponse.redirect(new URL('/onboarding', request.url));
+        return NextResponse.redirect(new URL('/sign-in', request.url));
       }
     }
 
@@ -381,19 +383,9 @@ export default clerkMiddleware(async (auth, request: NextRequest) => {
         console.log(`🚫 MIDDLEWARE: Access denied for role '${userRole}' to ${pathname} (${totalDuration}ms)`);
       }
 
-      // Redirect to appropriate dashboard based on user's actual role
-      let redirectPath = '/onboarding'; // Default fallback
-
-      if (userRole === 'team_member') {
-        // Team members go to employer dashboard
-        redirectPath = '/employer/dashboard';
-      } else if (userRole === 'seeker') {
-        redirectPath = '/seeker/dashboard';
-      } else if (userRole === 'employer') {
-        redirectPath = '/employer/dashboard';
-      }
-
-      return NextResponse.redirect(new URL(redirectPath, request.url));
+      // Redirect to sign-in for access denied, rather than trying to guess the correct dashboard
+      // This prevents redirect loops and ensures users re-authenticate if there are role issues
+      return NextResponse.redirect(new URL('/sign-in', request.url));
     }
 
     // Log if we're allowing onboarding access
