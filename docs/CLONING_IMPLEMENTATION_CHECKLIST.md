@@ -40,6 +40,7 @@
 **Branding Adjustments (with Ampertalent Logo Colors):**
 
 **Color System:**
+
 ```
 Primary Blue:      #0066FF (electric blue, CTAs)
 Secondary Teal:    #00BB88 (success, accents)
@@ -48,6 +49,7 @@ Dark Navy:         #1A2D47 (text, headings)
 ```
 
 **Tasks:**
+
 - [ ] Update `tailwind.config.ts` with color palette:
   - `amper-blue: #0066FF`
   - `amper-teal: #00BB88`

@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { 
+      {
         error: 'Not yet implemented',
         message: 'Payment retry functionality is not yet implemented. Use Stripe dashboard to manually retry payments.',
         status: 'stub'

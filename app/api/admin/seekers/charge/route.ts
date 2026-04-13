@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-    
+
     return NextResponse.json(
       { error: 'Not yet implemented', message: 'Use Stripe dashboard for manual charging', status: 'stub' },
       { status: 501 }

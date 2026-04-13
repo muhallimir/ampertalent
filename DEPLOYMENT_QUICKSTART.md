@@ -70,6 +70,7 @@ STEP 8: PRODUCTION READY ✅
 ## 📋 Environment Variables Checklist
 
 ### Required Before First Deploy (7 variables)
+
 ```
 ✓ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY    (from Clerk dashboard)
 ✓ CLERK_SECRET_KEY                     (from Clerk dashboard)
@@ -81,12 +82,14 @@ STEP 8: PRODUCTION READY ✅
 ```
 
 ### Optional Before First Deploy (2 variables)
+
 ```
 □ SENTRY_DSN                           (from Sentry - optional)
 □ RESEND_API_KEY                       (from Resend - optional)
 ```
 
 ### Required After First Deploy (1 variable)
+
 ```
 ⏳ STRIPE_WEBHOOK_SECRET               (generated after first deploy)
 ```
@@ -96,6 +99,7 @@ STEP 8: PRODUCTION READY ✅
 ## 🔑 Getting Environment Variables
 
 ### Clerk
+
 ```
 Dashboard: https://dashboard.clerk.com
 ├─ Select Your Application
@@ -108,6 +112,7 @@ Dashboard: https://dashboard.clerk.com
 ```
 
 ### Supabase
+
 ```
 Dashboard: https://app.supabase.com
 ├─ Select Your Project
@@ -121,6 +126,7 @@ Dashboard: https://app.supabase.com
 ```
 
 ### Stripe
+
 ```
 Dashboard: https://dashboard.stripe.com (LIVE MODE)
 ├─ Developers → API Keys
@@ -135,6 +141,7 @@ Dashboard: https://dashboard.stripe.com (LIVE MODE)
 ```
 
 ### Sentry (Optional)
+
 ```
 Dashboard: https://sentry.io
 ├─ Create Project (or use existing)
@@ -144,6 +151,7 @@ Dashboard: https://sentry.io
 ```
 
 ### Resend (Optional)
+
 ```
 Dashboard: https://resend.com
 ├─ API Keys
@@ -156,29 +164,34 @@ Dashboard: https://resend.com
 ## ✅ Post-Deployment Verification (10 Minutes)
 
 ### Minute 1-2: Health Check
+
 ```bash
 curl https://ampertalent-[your-id].vercel.app/api/health
 # Expected: {"status":"ok"} or 200 OK
 ```
 
 ### Minute 3-4: Clerk Auth
+
 1. Go to https://ampertalent-[your-id].vercel.app/sign-up
 2. Sign up with test email
 3. Check for errors in browser console (should be none)
 4. ✅ Verify user created in Clerk dashboard
 
 ### Minute 5-6: Database
+
 1. Go to admin page (if logged in as admin)
 2. Try to load any user list
 3. ✅ Verify data loads without errors
 
 ### Minute 7-8: Stripe Payment
+
 1. Navigate to any checkout page
 2. Test with card: `4242 4242 4242 4242`
 3. Complete payment
 4. ✅ Verify transaction in Stripe dashboard
 
 ### Minute 9-10: Error Monitoring
+
 1. Go to https://sentry.io
 2. Select your project
 3. ✅ Should see some events from testing
@@ -190,6 +203,7 @@ curl https://ampertalent-[your-id].vercel.app/api/health
 ## 🐛 Quick Troubleshooting
 
 ### Build Fails
+
 ```
 ❌ Error: "Build failed"
 ✅ Solution: Check Vercel build logs
@@ -200,6 +214,7 @@ curl https://ampertalent-[your-id].vercel.app/api/health
 ```
 
 ### Clerk Auth Not Working
+
 ```
 ❌ Error: "Invalid publishable key" or "Not in test environment"
 ✅ Solution:
@@ -209,17 +224,19 @@ curl https://ampertalent-[your-id].vercel.app/api/health
 ```
 
 ### Stripe Webhook Failing
+
 ```
 ❌ Error: "Webhook signature verification failed"
 ✅ Solution:
    1. Verify STRIPE_WEBHOOK_SECRET in Vercel matches Stripe
-   2. Verify endpoint URL is exactly: 
+   2. Verify endpoint URL is exactly:
       https://ampertalent-[your-id].vercel.app/api/webhooks/stripe
    3. Redeploy
    4. Resend test event from Stripe dashboard
 ```
 
 ### Database Connection Error
+
 ```
 ❌ Error: "failed to connect to database"
 ✅ Solution:
@@ -230,6 +247,7 @@ curl https://ampertalent-[your-id].vercel.app/api/health
 ```
 
 ### Storage Upload Fails
+
 ```
 ❌ Error: "Cannot upload to storage" or 403
 ✅ Solution:
@@ -244,12 +262,14 @@ curl https://ampertalent-[your-id].vercel.app/api/health
 ## 🔄 Rollback Procedure (If Needed)
 
 ### Option 1: Instant Rollback (30 seconds)
+
 ```
 Vercel Dashboard → Deployments → Find Previous Good Version
 Click "Redeploy" → Deployment complete
 ```
 
 ### Option 2: Git Rollback (1 minute)
+
 ```bash
 # Identify problem commit
 git log --oneline -5
@@ -262,6 +282,7 @@ git push origin main
 ```
 
 ### Option 3: Full Emergency Disable (15 seconds)
+
 ```
 Vercel Dashboard → Settings → Git
 Uncheck "Deploy on push" → Investigate issue
@@ -273,25 +294,25 @@ Uncheck "Deploy on push" → Investigate issue
 
 ### Key URLs
 
-| Service | URL |
-|---------|-----|
-| 🌐 App | https://ampertalent-[your-id].vercel.app |
-| 📊 Vercel | https://vercel.com/dashboard |
-| 🔐 Clerk | https://dashboard.clerk.com |
-| 💾 Supabase | https://app.supabase.com |
-| 💳 Stripe | https://dashboard.stripe.com |
-| 🚨 Sentry | https://sentry.io |
-| 📧 Resend | https://resend.com |
+| Service     | URL                                      |
+| ----------- | ---------------------------------------- |
+| 🌐 App      | https://ampertalent-[your-id].vercel.app |
+| 📊 Vercel   | https://vercel.com/dashboard             |
+| 🔐 Clerk    | https://dashboard.clerk.com              |
+| 💾 Supabase | https://app.supabase.com                 |
+| 💳 Stripe   | https://dashboard.stripe.com             |
+| 🚨 Sentry   | https://sentry.io                        |
+| 📧 Resend   | https://resend.com                       |
 
 ### Monitoring Tools
 
-| Tool | Purpose | Check |
-|------|---------|-------|
-| Vercel | Deployments, logs | View logs if issues |
-| Sentry | Error tracking | Check error rate < 1% |
-| Stripe | Payment processing | Verify webhook events received |
-| Supabase | Database health | Check connection pool |
-| Clerk | Authentication | Verify user creation |
+| Tool     | Purpose            | Check                          |
+| -------- | ------------------ | ------------------------------ |
+| Vercel   | Deployments, logs  | View logs if issues            |
+| Sentry   | Error tracking     | Check error rate < 1%          |
+| Stripe   | Payment processing | Verify webhook events received |
+| Supabase | Database health    | Check connection pool          |
+| Clerk    | Authentication     | Verify user creation           |
 
 ---
 
@@ -310,6 +331,7 @@ Uncheck "Deploy on push" → Investigate issue
 - [ ] No critical errors in Sentry
 
 ✅ **If any are false:**
+
 - Check Vercel build logs
 - Review environment variables
 - Check Sentry for error details
@@ -348,5 +370,5 @@ Uncheck "Deploy on push" → Investigate issue
 
 ---
 
-*For detailed instructions, see PHASE_13_DEPLOYMENT.md*
-*For post-deployment checklist, see DEPLOYMENT_VERIFICATION.md*
+_For detailed instructions, see PHASE_13_DEPLOYMENT.md_
+_For post-deployment checklist, see DEPLOYMENT_VERIFICATION.md_

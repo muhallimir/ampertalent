@@ -416,7 +416,7 @@ export default function OnboardingPage() {
           // Redirect to dashboard with welcome message
           setTimeout(() => {
             console.log('🎉 ONBOARDING: Payment complete, redirecting to dashboard')
-            router.push('/seeker/dashboard?welcome=true')
+            window.location.href = '/seeker/dashboard?welcome=true'
           }, 1000)
         } catch (error) {
           console.error('❌ ONBOARDING: Error in payment flow:', error)
@@ -1140,7 +1140,10 @@ export default function OnboardingPage() {
 
     // Redirect to appropriate dashboard
     const dashboardPath = getDashboardPath(onboardingData.role || 'seeker')
-    router.push(dashboardPath)
+    console.log('🔄 ONBOARDING: Completing onboarding, redirecting to dashboard:', dashboardPath)
+    // Use window.location.href for a hard navigation to ensure the redirect completes
+    // This prevents redirect loops by forcing a full page reload and letting middleware do a fresh role check
+    window.location.href = dashboardPath
   }
 
   const handleSaveAndContinueLater = async () => {
@@ -1211,7 +1214,7 @@ export default function OnboardingPage() {
 
       // Redirect to seeker dashboard
       console.log('🔄 ONBOARDING: Redirecting to seeker dashboard')
-      router.push('/seeker/dashboard')
+      window.location.href = '/seeker/dashboard'
     } catch (error) {
       console.error('❌ ONBOARDING: Error saving profile:', error)
       alert('There was an error saving your profile. Please try again.')

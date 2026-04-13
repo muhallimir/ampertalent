@@ -11,6 +11,7 @@
 ## Pre-Flight Checklist (Before Clicking Deploy)
 
 ### 1. Code Quality
+
 ```bash
 # Verify build passes
 npm run build
@@ -18,6 +19,7 @@ npm run build
 ```
 
 ### 2. Git Status
+
 ```bash
 # Ensure all changes committed
 git status
@@ -25,6 +27,7 @@ git status
 ```
 
 ### 3. Critical Files Verified
+
 - ✅ vercel.json - Stripe webhook & cron config
 - ✅ next.config.js - Build configuration
 - ✅ tsconfig.json - TypeScript settings
@@ -32,23 +35,27 @@ git status
 - ✅ prisma/schema.prisma - Database schema
 
 ### 4. Environment Configuration Ready
+
 Create environment variables in Vercel Dashboard (Settings → Environment Variables):
 
 **Critical (Must Have Before Deploy):**
+
 - [ ] NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 - [ ] CLERK_SECRET_KEY
 - [ ] DATABASE_URL
 - [ ] NEXT_PUBLIC_SUPABASE_URL
 - [ ] NEXT_PUBLIC_SUPABASE_ANON_KEY
-- [ ] STRIPE_SECRET_KEY (sk_live_)
-- [ ] NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY (pk_live_)
+- [ ] STRIPE*SECRET_KEY (sk_live*)
+- [ ] NEXT*PUBLIC_STRIPE_PUBLISHABLE_KEY (pk_live*)
 - [ ] SENTRY_DSN
 - [ ] RESEND_API_KEY
 
 **After First Deploy (Step 5 in PHASE_13_DEPLOYMENT.md):**
-- [ ] STRIPE_WEBHOOK_SECRET (whsec_)
+
+- [ ] STRIPE*WEBHOOK_SECRET (whsec*)
 
 ### 5. Dependencies Installed
+
 ```bash
 # Verify node_modules exists
 ls -la | grep node_modules
@@ -58,6 +65,7 @@ ls -la | grep node_modules
 ## Deployment Steps
 
 ### Step 1: Push to GitHub
+
 ```bash
 cd ampertalent
 git add -A
@@ -66,6 +74,7 @@ git push origin main
 ```
 
 ### Step 2: Vercel Setup
+
 1. Go to https://vercel.com/dashboard
 2. Click "Add New..." → "Project"
 3. Import GitHub repository: `amirlocus/ampertalent`
@@ -75,6 +84,7 @@ git push origin main
    - Output Directory: .next
 
 ### Step 3: Environment Variables (Vercel Dashboard)
+
 1. Settings → Environment Variables
 2. Add all variables from "Critical" list above
 3. Set for: Production, Preview, Development
@@ -82,11 +92,13 @@ git push origin main
 5. Click "Save"
 
 ### Step 4: Deploy
+
 - Click "Deploy"
 - Wait for build to complete (~3-5 minutes)
 - Note your Vercel URL (e.g., https://ampertalent-xyz.vercel.app)
 
 ### Step 5: Webhook Configuration
+
 After successful first deploy:
 
 1. **Get Vercel URL from deployment info**
@@ -108,7 +120,7 @@ After successful first deploy:
    - Vercel Dashboard → Settings → Environment Variables
    - Add new variable:
      - Key: STRIPE_WEBHOOK_SECRET
-     - Value: whsec_[paste-from-stripe]
+     - Value: whsec\_[paste-from-stripe]
    - Set for: Production
    - Click "Save"
 
@@ -120,6 +132,7 @@ After successful first deploy:
 ## Post-Deployment Verification
 
 ### ✅ Health Check (Immediate)
+
 ```bash
 curl https://ampertalent-[your-id].vercel.app/api/health
 
@@ -127,11 +140,13 @@ curl https://ampertalent-[your-id].vercel.app/api/health
 ```
 
 ### ✅ Database Connection (5 min)
+
 1. Go to application → any page requiring DB query
 2. Check for errors in Sentry dashboard
 3. Should see no database connection errors
 
 ### ✅ Clerk Authentication (10 min)
+
 1. Go to: https://ampertalent-[your-id].vercel.app/sign-up
 2. Test sign-up flow
 3. Verify email verification works
@@ -139,6 +154,7 @@ curl https://ampertalent-[your-id].vercel.app/api/health
 5. No auth errors in browser console
 
 ### ✅ Stripe Integration (15 min)
+
 1. Log in to application
 2. Navigate to payment/checkout page
 3. Test with Stripe test card:
@@ -150,12 +166,14 @@ curl https://ampertalent-[your-id].vercel.app/api/health
 6. Verify webhook received (Developers → Webhooks → Recent Events)
 
 ### ✅ File Storage (20 min)
+
 1. Try uploading a resume/file
 2. Verify upload completes
 3. Check Supabase Storage bucket for file
 4. Verify no errors in Sentry
 
 ### ✅ Error Monitoring (25 min)
+
 1. Go to https://sentry.io
 2. Select your project
 3. Should see some events from initial tests
@@ -165,17 +183,20 @@ curl https://ampertalent-[your-id].vercel.app/api/health
    - Stack traces
 
 ### ✅ Email Service (30 min)
+
 1. Check for welcome email from Resend
 2. Verify email arrives in inbox
 3. Check Resend dashboard for delivery status
 
 ### ✅ Admin Panel (35 min)
+
 1. Log in with admin/super_admin role
 2. Access: https://ampertalent-[your-id].vercel.app/admin
 3. Test dashboard loads
 4. Verify no console errors
 
 ### ✅ Cron Jobs (Next run)
+
 1. Verify in Vercel Dashboard → Settings → Cron Jobs
 2. Should show:
    - `/api/cron/employer-recurring-billing` (every 6 hours)
@@ -185,6 +206,7 @@ curl https://ampertalent-[your-id].vercel.app/api/health
 ## Troubleshooting Guide
 
 ### Build Fails on Deploy
+
 ```
 Error: "Cannot find module '@prisma/client'"
 Solution:
@@ -194,6 +216,7 @@ Solution:
 ```
 
 ### Environment Variables Not Loading
+
 ```
 Error: "STRIPE_SECRET_KEY is undefined"
 Solution:
@@ -204,6 +227,7 @@ Solution:
 ```
 
 ### Clerk Authentication Fails
+
 ```
 Error: "Invalid publishable key" or "Not in test environment"
 Solution:
@@ -216,6 +240,7 @@ Solution:
 ```
 
 ### Stripe Webhook Not Working
+
 ```
 Error: "Webhook signature verification failed"
 Solution:
@@ -226,6 +251,7 @@ Solution:
 ```
 
 ### Database Connection Issues
+
 ```
 Error: "failed to connect to database" or timeout
 Solution:
@@ -237,6 +263,7 @@ Solution:
 ```
 
 ### Storage Upload Fails
+
 ```
 Error: "Cannot upload to storage" or 403 Forbidden
 Solution:
@@ -251,6 +278,7 @@ Solution:
 If critical issues occur:
 
 ### Option 1: Revert Deployment
+
 ```bash
 # View deployments
 vercel list
@@ -260,6 +288,7 @@ vercel rollback [deployment-id]
 ```
 
 ### Option 2: Fix and Redeploy
+
 ```bash
 # Identify issue
 git log --oneline -5
@@ -274,7 +303,9 @@ git push origin main
 ```
 
 ### Option 3: Emergency Disable
+
 In Vercel Dashboard:
+
 1. Go to: Settings → Git
 2. Uncheck "Deploy on push"
 3. Investigate and fix
@@ -283,11 +314,13 @@ In Vercel Dashboard:
 ## Performance Monitoring
 
 ### Core Web Vitals (After 24 hours)
+
 - LCP (Largest Contentful Paint): < 2.5s
 - FID (First Input Delay): < 100ms
 - CLS (Cumulative Layout Shift): < 0.1
 
 ### Analytics Dashboard
+
 - Vercel: Deployments → Analytics
 - Sentry: Performance tab
 - Supabase: Metrics → Database
