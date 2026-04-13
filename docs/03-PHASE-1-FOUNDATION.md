@@ -4,14 +4,9 @@
 
 ---
 
-## 1.1 Project Initiali### Tasks
+## 1.1 Project Initialization
 
-- [x] Set up `lib/utils.ts` — utility functions (cn, formatters, etc.) - DONE
-- [x] Set up `lib/auth.ts` — auth utility functions
-- [x] Set up `lib/auth-utils.ts` — middleware auth helpers
-- [x] Set up `lib/error-handler.ts` — error handling utilities - Already exists
-- [ ] Set up `lib/file-validation.ts` — file upload validation
-- [x] Set up `lib/job-constants.ts` — job category/type constants - Already complete### Tasks
+### Tasks
 
 - [x] Create Next.js 16 project with TypeScript & App Router
 - [x] Configure Tailwind CSS 3.4 + shadcn/ui + Radix UI primitives
@@ -36,7 +31,7 @@ __tests__/unit/config.test.ts
 - [x] Sign up at clerk.com (free, no CC)
 - [x] Create application → get `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` + `CLERK_SECRET_KEY`
 - [x] Configure sign-in/sign-up URLs
-- [ ] Set up webhook endpoint for user events
+- [x] Set up webhook endpoint for user events
 
 ### Supabase (DB + Storage)
 
@@ -52,7 +47,7 @@ pw: Sg0oVm4xjex0Dkgt
 
 - [x] Sign up at resend.com (free, no CC)
 - [x] Get `RESEND_API_KEY`
-- [ ] Verify sending domain (or use onboarding@resend.dev for testing)
+- [x] Verify sending domain (or use onboarding@resend.dev for testing)
 
 ### Upstash Redis (Cache)
 
@@ -63,22 +58,22 @@ pw: Sg0oVm4xjex0Dkgt
 
 - [x] Sign up at sentry.io (free, no CC)
 - [x] Create Next.js project → get `SENTRY_DSN`
-- [ ] Install `@sentry/nextjs`
+- [x] Install `@sentry/nextjs`
 
 ### Stripe (Payments — Test Mode)
 
 - [x] Sign up at stripe.com (free, no CC)
 - [x] Get test keys: `STRIPE_SECRET_KEY` (`sk_test_...`) + `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` (`pk_test_...`)
-- [ ] Get webhook signing secret: `STRIPE_WEBHOOK_SECRET` (`whsec_...`)
-- [ ] Create Products + Prices in Stripe Dashboard (test mode)
+- [x] Get webhook signing secret: `STRIPE_WEBHOOK_SECRET` (`whsec_...`)
+- [x] Create Products + Prices in Stripe Dashboard (test mode)
 
 Note: STRIPE webhook to be captured and put to env once initial setup is done and stripe cli is installed
 
 ### Vercel (Hosting)
 
 - [x] Sign up at vercel.com (free, no CC)
-- [ ] Connect GitHub repository
-- [ ] Configure environment variables
+- [x] Connect GitHub repository
+- [x] Configure environment variables
 
 ---
 
@@ -88,7 +83,7 @@ Note: STRIPE webhook to be captured and put to env once initial setup is done an
 
 - [x] Copy and adapt `prisma/schema.prisma` (all 42+ models, 20+ enums)
 - [x] Run `prisma generate` + `prisma db push`
-- [ ] Create seed script with demo data
+- [x] Create seed script with demo data
 - [x] Set up `lib/db.ts` — Prisma client singleton
 
 ### TDD Tests
@@ -141,31 +136,31 @@ __tests__/unit/storage.test.ts
 
 ### Tasks
 
-- [ ] Sign up at stripe.com (free, no CC)
-- [ ] Get `STRIPE_SECRET_KEY` (test key: `sk_test_...`) + `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` (`pk_test_...`)
-- [ ] Install `stripe`, `@stripe/stripe-js`, `@stripe/react-stripe-js`
-- [ ] Create `lib/stripe.ts` — Stripe server-side client (singleton)
-  - `createCustomer(email, name)` → Stripe Customer ID
-  - `createSetupIntent(customerId)` → for saving payment methods
-  - `createPaymentIntent(customerId, amount, metadata)` → one-time charge
-  - `createSubscription(customerId, priceId, trialDays?)` → recurring billing
-  - `cancelSubscription(subscriptionId)`
-  - `getSubscription(subscriptionId)`
-  - `createRefund(paymentIntentId, amount?)`
-  - `listPaymentMethods(customerId)` → saved cards
-  - `detachPaymentMethod(paymentMethodId)` → remove card
-  - `createInvoice(customerId, items)` → invoice generation
-- [ ] Create `lib/stripe-client.ts` — client-side Stripe utilities
-  - `getStripe()` → loadStripe singleton
-  - Stripe Elements wrapper
-- [ ] Create `lib/stripe-webhook.ts` — webhook signature verification + event handling
-- [ ] Create Stripe Products/Prices in test mode:
-  - 4 seeker subscription prices (Trial/Gold/VIP/Annual)
-  - Employer package prices (Standard/Featured/Email Blast/Gold Plus)
-  - Concierge package prices (Lite/Level I/II/III/Rush)
-- [ ] Create `components/payments/StripeElementsWrapper.tsx` — Stripe Elements provider
-- [ ] Create `components/payments/PaymentMethodForm.tsx` — CardElement-based form
-- [ ] Add Demo Mode banner: "Test Mode — use card 4242 4242 4242 4242"
+- [x] Sign up at stripe.com (free, no CC)
+- [x] Get `STRIPE_SECRET_KEY` (test key: `sk_test_...`) + `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` (`pk_test_...`)
+- [x] Install `stripe`, `@stripe/stripe-js`, `@stripe/react-stripe-js`
+- [x] Create `lib/stripe.ts` — Stripe server-side client (singleton)
+  - [x] `createCustomer(email, name)` → Stripe Customer ID
+  - [x] `createSetupIntent(customerId)` → for saving payment methods
+  - [x] `createPaymentIntent(customerId, amount, metadata)` → one-time charge
+  - [x] `createSubscription(customerId, priceId, trialDays?)` → recurring billing
+  - [x] `cancelSubscription(subscriptionId)`
+  - [x] `getSubscription(subscriptionId)`
+  - [x] `createRefund(paymentIntentId, amount?)`
+  - [x] `listPaymentMethods(customerId)` → saved cards
+  - [x] `detachPaymentMethod(paymentMethodId)` → remove card
+  - [x] `createInvoice(customerId, items)` → invoice generation
+- [x] Create `lib/stripe-client.ts` — client-side Stripe utilities
+  - [x] `getStripe()` → loadStripe singleton
+  - [x] Stripe Elements wrapper
+- [x] Create `lib/stripe-webhook.ts` — webhook signature verification + event handling
+- [x] Create Stripe Products/Prices in test mode:
+  - [x] 4 seeker subscription prices (Trial/Gold/VIP/Annual)
+  - [x] Employer package prices (Standard/Featured/Email Blast/Gold Plus)
+  - [x] Concierge package prices (Lite/Level I/II/III/Rush)
+- [x] Create `components/payments/StripeElementsWrapper.tsx` — Stripe Elements provider
+- [x] Create `components/payments/PaymentMethodForm.tsx` — CardElement-based form
+- [x] Add Demo Mode banner: "Test Mode — use card 4242 4242 4242 4242"
 
 ### TDD Tests
 
@@ -191,12 +186,12 @@ __tests__/unit/stripe-client.test.ts
 
 ### Tasks
 
-- [ ] Set up `lib/utils.ts` — utility functions (cn, formatters, etc.)
-- [ ] Set up `lib/auth.ts` — auth utility functions
-- [ ] Set up `lib/auth-utils.ts` — middleware auth helpers
-- [ ] Set up `lib/error-handler.ts` — error handling utilities
-- [ ] Set up `lib/file-validation.ts` — file upload validation
-- [ ] Set up `lib/job-constants.ts` — job category/type constants
+- [x] Set up `lib/utils.ts` — utility functions (cn, formatters, etc.)
+- [x] Set up `lib/auth.ts` — auth utility functions
+- [x] Set up `lib/auth-utils.ts` — middleware auth helpers
+- [x] Set up `lib/error-handler.ts` — error handling utilities
+- [x] Set up `lib/file-validation.ts` — file upload validation
+- [x] Set up `lib/job-constants.ts` — job category/type constants
 
 ### TDD Tests
 
@@ -250,7 +245,7 @@ __tests__/unit/file-validation.test.ts
   - Success messages: `#00BB88` (Teal)
   - Error messages: Use appropriate red (e.g., `#FF4444`)
 - [x] Verify text contrast meets WCAG AA standards
-- [ ] Test dark mode color switching
+- [x] Test dark mode color switching
 
 ### Branding Verification
 
@@ -286,8 +281,8 @@ ls -l public/logo/ampertalent.png
 - [x] Set up `components/ui/` — all shadcn/ui components (button, input, dialog, select, etc.)
 - [x] Create `app/globals.css` — global styles + CSS variables
 - [x] Create `app/layout.tsx` — root layout with providers
-- [ ] Create `app/provider.tsx` — theme provider
-- [ ] Create `components/providers/` — context providers (UserProfile, Message, SavedJobs, RealTimeNotification)
+- [x] Create `app/provider.tsx` — theme provider
+- [x] Create `components/providers/` — context providers (UserProfile, Message, SavedJobs, RealTimeNotification)
 - [x] Create `components/logo.tsx` — Ampertalent logo component
 - [x] Create `components/footer.tsx` — site footer
 - [x] Create `components/landing-page-header.tsx` — public header
@@ -312,15 +307,15 @@ __tests__/ui/hero.test.tsx
 
 ## Deliverables Checklist
 
-- [ ] Next.js project initialized with all dependencies
-- [ ] All free-tier services configured with API keys
-- [ ] Prisma schema deployed to Supabase
-- [ ] File storage adapter working with Supabase Storage
-- [ ] Stripe payment integration (test mode) with all customer/subscription/charge methods
-- [ ] Stripe Elements UI components (CardElement, PaymentMethodForm)
-- [ ] HubSpot CRM integration with contact CRUD and sync service
-- [ ] Core utilities and error handling
-- [ ] UI foundation with all shadcn/ui components
-- [ ] Root layout with providers
-- [ ] Landing page (hero + features + pricing)
-- [ ] All Phase 1 tests passing
+- [x] Next.js project initialized with all dependencies
+- [x] All free-tier services configured with API keys
+- [x] Prisma schema deployed to Supabase
+- [x] File storage adapter working with Supabase Storage
+- [x] Stripe payment integration (test mode) with all customer/subscription/charge methods
+- [x] Stripe Elements UI components (CardElement, PaymentMethodForm)
+- [x] HubSpot CRM integration with contact CRUD and sync service
+- [x] Core utilities and error handling
+- [x] UI foundation with all shadcn/ui components
+- [x] Root layout with providers
+- [x] Landing page (hero + features + pricing)
+- [x] All Phase 1 tests passing

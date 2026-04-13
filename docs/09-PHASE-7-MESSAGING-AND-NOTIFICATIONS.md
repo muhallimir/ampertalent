@@ -215,20 +215,20 @@ __tests__/ui/notifications/notification-panel.test.tsx
 
 ## Deliverables Checklist
 
-- [ ] Message send/receive between seekers and employers
-- [ ] Threaded message conversations
-- [ ] File attachments via Supabase Storage
-- [ ] Message templates CRUD
-- [ ] Message drafts auto-save
-- [ ] Contact selector with search
-- [ ] Message search
-- [ ] Real-time notifications via SSE
-- [ ] In-app notification center
-- [ ] 50+ notification types
-- [ ] Email notifications via Resend
-- [ ] Admin order notification emails
-- [ ] Customer payment confirmation emails
-- [ ] Subscription renewal reminder emails
-- [ ] External webhook dispatch
-- [ ] Notification preferences per user
-- [ ] All Phase 7 tests passing
+- [x] Message send/receive between seekers and employers
+- [x] Threaded message conversations
+- [x] File attachments via Supabase Storage
+- [x] Message templates CRUD
+- [x] Message drafts auto-save
+- [x] Contact selector with search
+- [x] Message search
+- [x] Real-time notifications via SSE
+- [x] In-app notification center
+- [x] 50+ notification types
+- [x] Email notifications via Resend
+- [x] Admin order notification emails
+- [x] Customer payment confirmation emails
+- [x] Subscription renewal reminder emails
+- [x] External webhook dispatch
+- [x] Notification preferences per user
+- [x] All Phase 7 tests passing

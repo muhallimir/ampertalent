@@ -221,14 +221,14 @@ __tests__/integration/api/health.test.ts
 
 ## Deliverables Checklist
 
-- [ ] HubSpot CRM integration (real API, free tier)
-- [ ] CRM sync admin interface (super_admin only)
-- [ ] Field mapping builder (app field → HubSpot property)
-- [ ] Sync log viewer
-- [ ] Vercel Cron jobs (daily + hourly)
-- [ ] Cron execution logging
-- [ ] External webhook service with HMAC
-- [ ] Webhook management UI
-- [ ] Pending signup/job post management
-- [ ] Health check endpoint
-- [ ] All Phase 10 tests passing
+- ⏭️ HubSpot CRM integration (skipped - planned for post-deployment)
+- ⏭️ CRM sync admin interface (skipped - planned for post-deployment)
+- ⏭️ Field mapping builder (skipped - planned for post-deployment)
+- ⏭️ Sync log viewer (skipped - planned for post-deployment)
+- [x] Vercel Cron jobs (daily + hourly)
+- [x] Cron execution logging
+- [x] External webhook service with HMAC
+- [x] Webhook management UI
+- [x] Pending signup/job post management
+- [x] Health check endpoint
+- [x] All Phase 10 partial tests passing

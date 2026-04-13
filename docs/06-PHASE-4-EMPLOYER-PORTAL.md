@@ -8,9 +8,9 @@
 
 ### Tasks
 
-- [ ] Create `app/employer/layout.tsx` — sidebar navigation (dashboard, jobs, applications, talent, messages, team, billing, profile, settings)
-- [ ] Create `app/employer/dashboard/page.tsx` — overview (active jobs, total applications, package status, featured/email blast status)
-- [ ] Create `lib/employerStatus.ts` — employer status utilities
+- [x] Create `app/employer/layout.tsx` — sidebar navigation (dashboard, jobs, applications, talent, messages, team, billing, profile, settings)
+- [x] Create `app/employer/dashboard/page.tsx` — overview (active jobs, total applications, package status, featured/email blast status)
+- [x] Create `lib/employerStatus.ts` — employer status utilities
 
 ### TDD Tests
 
@@ -262,17 +262,17 @@ __tests__/integration/employer/concierge.test.ts
 
 ## Deliverables Checklist
 
-- [ ] Employer dashboard with stats
-- [ ] Job posting form with 28 categories, all fields
-- [ ] Job lifecycle management (draft → pending → approved → paused → archived)
-- [ ] Application management with 7-stage interview pipeline
-- [ ] Talent search with virtualized grid and invitation system
-- [ ] Package purchase system (6+ package types, Stripe test mode)
-- [ ] Concierge package purchase with add-ons
-- [ ] Featured job & email blast requests
-- [ ] Team management with invitations
-- [ ] Company profile management with logo upload
-- [ ] Exclusive plan activation
-- [ ] Extension request system
-- [ ] Billing history and payment methods
-- [ ] All Phase 4 tests passing
+- [x] Employer dashboard with stats
+- [x] Job posting form with 28 categories, all fields
+- [x] Job lifecycle management (draft → pending → approved → paused → archived)
+- [x] Application management with 7-stage interview pipeline
+- [x] Talent search with virtualized grid and invitation system
+- [x] Package purchase system (6+ package types, Stripe test mode)
+- [x] Concierge package purchase with add-ons
+- [x] Featured job & email blast requests
+- [x] Team management with invitations
+- [x] Company profile management with logo upload
+- [x] Exclusive plan activation
+- [x] Extension request system
+- [x] Billing history and payment methods
+- [x] All Phase 4 tests passing

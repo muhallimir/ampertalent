@@ -298,16 +298,16 @@ __tests__/integration/seeker/services.test.ts
 
 ## Deliverables Checklist
 
-- [ ] Seeker dashboard with stats
-- [ ] Advanced job search with 28 categories, filters, sorting, pagination
-- [ ] Job application flow with resume + cover letter
-- [ ] Saved jobs CRUD
-- [ ] Resume management with upload, quota, credits, soft delete
-- [ ] Resume critique request/results
-- [ ] Cover letter templates CRUD
-- [ ] Subscription management (4 tiers + Stripe test mode)
-- [ ] Profile management with all fields
-- [ ] Settings (notification preferences, email/password change)
-- [ ] Billing history
-- [ ] Premium services catalog + purchase
-- [ ] All Phase 3 tests passing
+- [x] Seeker dashboard with stats
+- [x] Advanced job search with 28 categories, filters, sorting, pagination
+- [x] Job application flow with resume + cover letter
+- [x] Saved jobs CRUD
+- [x] Resume management with upload, quota, credits, soft delete
+- [x] Resume critique request/results
+- [x] Cover letter templates CRUD
+- [x] Subscription management (4 tiers + Stripe test mode)
+- [x] Profile management with all fields
+- [x] Settings (notification preferences, email/password change)
+- [x] Billing history
+- [x] Premium services catalog + purchase
+- [x] All Phase 3 tests passing

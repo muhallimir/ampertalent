@@ -11,8 +11,8 @@
 - [x] Configure `ClerkProvider` in root layout
 - [x] Create `app/sign-in/[[...sign-in]]/page.tsx` — Clerk SignIn component
 - [x] Create `app/sign-up/[[...sign-up]]/page.tsx` — Clerk SignUp component
-- [ ] Create `app/sso-callback/page.tsx` — SSO callback handler
-- [ ] Create `app/handler/page.tsx` — email verification handler
+- [x] Create `app/sso-callback/page.tsx` — SSO callback handler
+- [x] Create `app/handler/page.tsx` — email verification handler
 - [x] Style Clerk components to match Ampertalent branding (`@clerk/themes`)
 
 ### TDD Tests
@@ -99,8 +99,8 @@ __tests__/integration/onboarding.test.ts
 
 ### Tasks
 
-- [ ] Create `app/api/webhooks/clerk/route.ts` — handle Clerk webhook events (user.created, user.updated, user.deleted)
-- [ ] Create `app/api/webhooks/supabase/route.ts` — handle Supabase webhook events
+- [x] Create `app/api/webhooks/clerk/route.ts` — handle Clerk webhook events (user.created, user.updated, user.deleted)
+- [x] Create `app/api/webhooks/supabase/route.ts` — handle Supabase webhook events
 
 ### TDD Tests
 
@@ -120,10 +120,10 @@ __tests__/integration/webhooks/clerk-webhook.test.ts
 ### Tasks
 
 - [x] Create `app/api/user/invitation/route.ts` — check for pending invitations
-- [ ] Create `app/api/user/invitation/validate/admin/route.ts` — process admin invitations
-- [ ] Create `lib/user-invitations.ts` — invitation management logic
-- [ ] Create `lib/clerk-invitation-actions.ts` — Clerk invitation API integration
-- [ ] Create `components/UserInviteSignUpForm.tsx` — invitation sign-up form
+- [x] Create `app/api/user/invitation/validate/admin/route.ts` — process admin invitations
+- [x] Create `lib/user-invitations.ts` — invitation management logic
+- [x] Create `lib/clerk-invitation-actions.ts` — Clerk invitation API integration
+- [x] Create `components/UserInviteSignUpForm.tsx` — invitation sign-up form
 
 ### TDD Tests
 
@@ -146,10 +146,10 @@ __tests__/integration/user-invitation-flow.test.ts
 
 ### Tasks
 
-- [ ] Create `lib/team-invitations.ts` — team invitation logic
-- [ ] Create `app/api/team-invitation/route.ts` — send/accept team invitations
-- [ ] Create `app/api/team-member/route.ts` — manage team members
-- [ ] Create `components/employer/TeamManagement.tsx` — team management UI
+- [x] Create `lib/team-invitations.ts` — team invitation logic
+- [x] Create `app/api/team-invitation/route.ts` — send/accept team invitations
+- [x] Create `app/api/team-member/route.ts` — manage team members
+- [x] Create `components/employer/TeamManagement.tsx` — team management UI
 
 ### TDD Tests
 
@@ -175,7 +175,7 @@ __tests__/integration/team-flow.test.ts
 - [x] Create `lib/auth.ts` — getCurrentUser, getUserRole, isAdmin, etc.
 - [x] Create `lib/auth-utils.ts` — helper for auth checks in API routes
 - [x] Create `lib/admin-impersonation.ts` — admin impersonation session management
-- [ ] Create `lib/seeker-access-guard.ts` — seeker subscription access checks
+- [x] Create `lib/seeker-access-guard.ts` — seeker subscription access checks
 
 ### TDD Tests
 
@@ -191,12 +191,12 @@ __tests__/unit/auth.test.ts
 
 ## Deliverables Checklist
 
-- [ ] Clerk sign-in/sign-up working
-- [ ] Role-based middleware protecting all routes correctly
-- [ ] Multi-step onboarding creating correct DB records
-- [ ] User invitation system (admin, seeker, employer)
-- [ ] Team invitation system for employers
-- [ ] Clerk webhooks processing user events
-- [ ] Auth utility functions
-- [ ] Admin impersonation session management
-- [ ] All Phase 2 tests passing
+- [x] Clerk sign-in/sign-up working
+- [x] Role-based middleware protecting all routes correctly
+- [x] Multi-step onboarding creating correct DB records
+- [x] User invitation system (admin, seeker, employer)
+- [x] Team invitation system for employers
+- [x] Clerk webhooks processing user events
+- [x] Auth utility functions
+- [x] Admin impersonation session management
+- [x] All Phase 2 tests passing

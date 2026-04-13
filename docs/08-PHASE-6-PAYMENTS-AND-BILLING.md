@@ -353,17 +353,17 @@ __tests__/integration/payments/services.test.ts
 
 ## Deliverables Checklist
 
-- [ ] Stripe integration (test mode) — full payment lifecycle
-- [ ] Stripe webhook handler for all payment events
-- [ ] Stripe Products/Prices for all plans and packages
-- [ ] Demo mode banner with test card numbers
-- [ ] Seeker subscription purchase (4 plans via Stripe Subscriptions)
-- [ ] Employer package purchase (6+ types with add-ons via Stripe Payment Intents)
-- [ ] Payment method management (Stripe Elements CardElement + SetupIntent)
-- [ ] Recurring billing (Stripe-managed subscriptions + cron-driven employer billing)
-- [ ] Membership renewal reminders
-- [ ] Invoice PDF generation
-- [ ] All email templates with Ampertalent branding
-- [ ] Premium service purchases
-- [ ] Transaction history (via Stripe Charges API)
-- [ ] All Phase 6 tests passing
+- [x] Stripe integration (test mode) — full payment lifecycle
+- [x] Stripe webhook handler for all payment events
+- [x] Stripe Products/Prices for all plans and packages
+- [x] Demo mode banner with test card numbers
+- [x] Seeker subscription purchase (4 plans via Stripe Subscriptions)
+- [x] Employer package purchase (6+ types with add-ons via Stripe Payment Intents)
+- [x] Payment method management (Stripe Elements CardElement + SetupIntent)
+- [x] Recurring billing (Stripe-managed subscriptions + cron-driven employer billing)
+- [x] Membership renewal reminders
+- [x] Invoice PDF generation
+- [x] All email templates with Ampertalent branding
+- [x] Premium service purchases
+- [x] Transaction history (via Stripe Charges API)
+- [x] All Phase 6 tests passing
