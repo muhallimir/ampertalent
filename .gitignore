@@ -35,3 +35,4 @@ yarn.lock
 
 # Prisma
 .prisma/
+scripts/run.sh

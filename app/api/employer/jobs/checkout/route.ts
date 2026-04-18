@@ -156,33 +156,33 @@ export async function POST(request: NextRequest) {
       // Don't fail the checkout if update fails, but log it for monitoring
     }
 
-    // Use Authorize.net checkout - return checkout page URL with parameters
-    const authorizeNetCheckoutUrl = new URL('/checkout/authnet', request.url)
-    authorizeNetCheckoutUrl.searchParams.set('planId', planId)
-    authorizeNetCheckoutUrl.searchParams.set('pendingJobPostId', pendingJobId)
-    authorizeNetCheckoutUrl.searchParams.set('sessionToken', sessionToken)
-    authorizeNetCheckoutUrl.searchParams.set('returnUrl', returnUrl)
+    // Use Stripe/PayPal checkout - redirect to employer checkout page
+    const checkoutUrl = new URL('/checkout/employer', request.url)
+    checkoutUrl.searchParams.set('planId', planId)
+    checkoutUrl.searchParams.set('pendingJobPostId', pendingJobId)
+    checkoutUrl.searchParams.set('sessionToken', sessionToken)
+    checkoutUrl.searchParams.set('returnUrl', returnUrl)
 
     // Add totalPrice if provided
     if (totalPrice) {
-      authorizeNetCheckoutUrl.searchParams.set('totalPrice', totalPrice.toString())
+      checkoutUrl.searchParams.set('totalPrice', totalPrice.toString())
       console.log('📝 EMPLOYER-CHECKOUT: Using custom total price:', totalPrice)
     }
 
     // Add selected add-ons to checkout URL
     if (addOnIds && addOnIds.length > 0) {
-      authorizeNetCheckoutUrl.searchParams.set('addOnIds', JSON.stringify(addOnIds))
+      checkoutUrl.searchParams.set('addOnIds', JSON.stringify(addOnIds))
       console.log('📝 EMPLOYER-CHECKOUT: Including add-ons in checkout URL:', addOnIds)
     }
 
     if (userInfo) {
-      authorizeNetCheckoutUrl.searchParams.set('userInfo', JSON.stringify(userInfo))
+      checkoutUrl.searchParams.set('userInfo', JSON.stringify(userInfo))
     }
 
-    console.log('✅ EMPLOYER-CHECKOUT: Generated Authorize.net checkout URL:', authorizeNetCheckoutUrl.toString())
+    console.log('✅ EMPLOYER-CHECKOUT: Generated Stripe/PayPal checkout URL:', checkoutUrl.toString())
 
     // 10. AUDIT LOG: Log the checkout URL generation for security monitoring
-    console.log('Employer Authorize.net checkout URL generated:', {
+    console.log('Employer checkout URL generated:', {
       userId: currentUser.clerkUser.id,
       packageId,
       pendingJobId,
@@ -192,8 +192,8 @@ export async function POST(request: NextRequest) {
     })
 
     return NextResponse.json({
-      checkoutUrl: authorizeNetCheckoutUrl.toString(),
-      paymentMethod: 'authorize-net'
+      checkoutUrl: checkoutUrl.toString(),
+      paymentMethod: 'stripe'
     })
 
   } catch (error) {

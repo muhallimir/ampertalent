@@ -508,6 +508,7 @@ export function SeekerSubscriptionPurchaseModal({
                         </p>
                       </div>
                       <PayPalButton
+                        amount={planInfo.price}
                         planId={planInfo.id}
                         onSuccess={handlePayPalSuccess}
                         onError={handlePayPalError}
@@ -536,7 +537,7 @@ export function SeekerSubscriptionPurchaseModal({
                 </h4>
                 <p className="text-sm text-green-700 mt-1">
                   {paymentType === 'card'
-                    ? 'Your payment is processed securely through Authorize.net with industry-standard encryption.'
+                    ? 'Your payment is processed securely through Stripe with industry-standard encryption.'
                     : 'Your payment is processed securely through PayPal with buyer protection.'}
                 </p>
               </div>

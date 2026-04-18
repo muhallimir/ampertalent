@@ -147,7 +147,7 @@ export function AppFooter() {
               <div className="flex items-center">
                 <Phone className="h-4 w-4 mr-2" />
                 <a href="tel:+12814071651" className="hover:text-brand-teal transition-colors">
-                  281-407-1651
+                  299-834-2122
                 </a>
               </div>
             </div>

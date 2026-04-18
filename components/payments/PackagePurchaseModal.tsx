@@ -483,6 +483,7 @@ export function PackagePurchaseModal({
                             </p>
                           </div>
                           <PayPalButton
+                            amount={totalPrice}
                             planId={`package_${packageInfo.id}`}
                             onSuccess={handlePayPalSuccess}
                             onError={handlePayPalError}
@@ -509,7 +510,7 @@ export function PackagePurchaseModal({
                     <h4 className="text-sm font-medium text-green-800">Secure Payment</h4>
                     <p className="text-sm text-green-700 mt-1">
                       {paymentType === 'card'
-                        ? 'Your payment is processed securely through Authorize.net with industry-standard encryption.'
+                        ? 'Your payment is processed securely through Stripe with industry-standard encryption.'
                         : 'Your payment is processed securely through PayPal with buyer protection.'}
                     </p>
                   </div>
