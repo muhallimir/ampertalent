@@ -18,11 +18,11 @@ export function useSocket(): UseSocketReturn {
     return {
         socket: null,
         isConnected: false,
-        joinThread: () => {},
-        leaveThread: () => {},
-        sendTypingStart: () => {},
-        sendTypingStop: () => {},
-        sendMessage: () => {},
-        requestOnlineStatus: () => {},
+        joinThread: () => { },
+        leaveThread: () => { },
+        sendTypingStart: () => { },
+        sendTypingStop: () => { },
+        sendMessage: () => { },
+        requestOnlineStatus: () => { },
     }
 }
