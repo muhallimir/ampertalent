@@ -1,15 +1,7 @@
-// AWS S3 service for secure file upload and management
+// Supabase Storage service for secure file upload and management
+// Replaces AWS S3 — uses @supabase/supabase-js storage client
 
-import {
-  S3Client,
-  PutObjectCommand,
-  DeleteObjectCommand,
-  GetObjectCommand,
-  HeadObjectCommand,
-  ListObjectsV2Command,
-  CopyObjectCommand
-} from '@aws-sdk/client-s3'
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
+import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
 export interface UploadConfig {
   bucket: string
@@ -36,46 +28,34 @@ export interface FileMetadata {
 }
 
 /**
- * AWS S3 service for file upload, download, and management
+ * Supabase Storage service — drop-in replacement for S3Service.
+ * Keeps the same static method interface so all callers work unchanged.
  */
 export class S3Service {
-  private static client: S3Client | null = null
+  private static _client: SupabaseClient | null = null
 
-  /**
-   * Initialize S3 client with configuration
-   */
-  private static getClient(): S3Client {
-    if (!this.client) {
-      const region = process.env.AWS_REGION || 'us-east-2'
-      const accessKeyId = process.env.AWS_ACCESS_KEY_ID
-      const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY
-      
-      console.log('🔧 S3: Initializing client with config:', {
-        region,
-        hasAccessKeyId: !!accessKeyId,
-        hasSecretAccessKey: !!secretAccessKey,
-        accessKeyIdLength: accessKeyId?.length || 0
-      })
-      
-      if (!accessKeyId || !secretAccessKey) {
-        throw new Error('Missing AWS credentials: AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are required')
+  /** Initialize Supabase client with service-role key for server-side ops */
+  private static getClient(): SupabaseClient {
+    if (!this._client) {
+      const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+      const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+      if (!url || !key) {
+        throw new Error('Missing Supabase credentials: NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required')
       }
-      
-      this.client = new S3Client({
-        region,
-        credentials: {
-          accessKeyId,
-          secretAccessKey,
-        },
-      })
-      
-      console.log('✅ S3: Client initialized successfully')
+      this._client = createClient(url, key)
+      console.log('✅ Supabase Storage: Client initialized successfully')
     }
-    return this.client
+    return this._client
+  }
+
+  /** Build the public URL for a stored object */
+  private static buildPublicUrl(bucket: string, key: string): string {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+    return `${url}/storage/v1/object/public/${bucket}/${key}`
   }
 
   /**
-   * Generate presigned URL for secure file upload
+   * Generate a presigned upload URL (Supabase: createSignedUploadUrl)
    */
   static async generatePresignedUploadUrl(config: PresignedUrlConfig): Promise<{
     uploadUrl: string
@@ -83,23 +63,19 @@ export class S3Service {
     fields: Record<string, string>
   }> {
     try {
-      const client = this.getClient()
-      const { bucket, key, contentType, expiresIn = 3600 } = config
+      const supabase = this.getClient()
+      const { bucket, key, contentType } = config
 
-      const command = new PutObjectCommand({
-        Bucket: bucket,
-        Key: key,
-        ContentType: contentType,
-      })
+      const { data, error } = await supabase.storage
+        .from(bucket)
+        .createSignedUploadUrl(key)
 
-      const uploadUrl = await getSignedUrl(client, command, { expiresIn })
+      if (error) throw error
 
       return {
-        uploadUrl,
+        uploadUrl: data.signedUrl,
         key,
-        fields: {
-          'Content-Type': contentType,
-        }
+        fields: { 'Content-Type': contentType }
       }
     } catch (error) {
       console.error('Error generating presigned upload URL:', error)
@@ -108,24 +84,23 @@ export class S3Service {
   }
 
   /**
-   * Generate presigned URL for secure file download
+   * Generate a presigned download URL (Supabase: createSignedUrl)
    */
   static async generatePresignedDownloadUrl(
     bucket: string,
     key: string,
     expiresIn: number = 3600,
-    inline: boolean = false
+    _inline: boolean = false
   ): Promise<string> {
     try {
-      const client = this.getClient()
+      const supabase = this.getClient()
 
-      const command = new GetObjectCommand({
-        Bucket: bucket,
-        Key: key,
-        ...(inline && { ResponseContentDisposition: 'inline' })
-      })
+      const { data, error } = await supabase.storage
+        .from(bucket)
+        .createSignedUrl(key, expiresIn)
 
-      return await getSignedUrl(client, command, { expiresIn })
+      if (error) throw error
+      return data.signedUrl
     } catch (error) {
       console.error('Error generating presigned download URL:', error)
       throw new Error('Failed to generate download URL')
@@ -133,7 +108,7 @@ export class S3Service {
   }
 
   /**
-   * Generate multiple presigned URLs in batch for better performance
+   * Generate multiple presigned URLs in batch
    */
   static async generateBatchPresignedDownloadUrls(
     bucket: string,
@@ -141,32 +116,27 @@ export class S3Service {
     expiresIn: number = 3600
   ): Promise<Record<string, string>> {
     try {
-      const client = this.getClient()
+      const supabase = this.getClient()
       const results: Record<string, string> = {}
 
-      // Process in parallel but limit concurrency to avoid overwhelming S3
       const batchSize = 10
       for (let i = 0; i < keys.length; i += batchSize) {
         const batch = keys.slice(i, i + batchSize)
         const batchPromises = batch.map(async (key) => {
           try {
-            const command = new GetObjectCommand({
-              Bucket: bucket,
-              Key: key,
-            })
-            const url = await getSignedUrl(client, command, { expiresIn })
-            return { key, url }
-          } catch (error) {
-            console.error(`Error generating presigned URL for key ${key}:`, error)
+            const { data, error } = await supabase.storage
+              .from(bucket)
+              .createSignedUrl(key, expiresIn)
+            if (error) return { key, url: null }
+            return { key, url: data.signedUrl }
+          } catch {
             return { key, url: null }
           }
         })
 
         const batchResults = await Promise.all(batchPromises)
         batchResults.forEach(({ key, url }) => {
-          if (url) {
-            results[key] = url
-          }
+          if (url) results[key] = url
         })
       }
 
@@ -178,93 +148,80 @@ export class S3Service {
   }
 
   /**
-   * Upload file directly to S3 (server-side)
+   * Upload file directly (server-side)
    */
   static async uploadFile(
     bucket: string,
     key: string,
     file: Buffer | Uint8Array | string,
     contentType: string,
-    metadata?: Record<string, string>
+    _metadata?: Record<string, string>
   ): Promise<{ key: string; url: string }> {
     try {
-      const client = this.getClient()
+      const supabase = this.getClient()
 
-      const command = new PutObjectCommand({
-        Bucket: bucket,
-        Key: key,
-        Body: file,
-        ContentType: contentType,
-        Metadata: metadata,
-      })
+      const body = typeof file === 'string' ? Buffer.from(file) : file
 
-      await client.send(command)
+      const { error } = await supabase.storage
+        .from(bucket)
+        .upload(key, body, { contentType, upsert: true })
 
-      const url = `https://${bucket}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`
+      if (error) throw error
 
+      const url = this.buildPublicUrl(bucket, key)
       return { key, url }
     } catch (error) {
-      console.error('Error uploading file to S3:', error)
+      console.error('Error uploading file:', error)
       throw new Error('Failed to upload file')
     }
   }
 
   /**
-   * Delete file from S3
+   * Delete file from Supabase Storage
    */
   static async deleteFile(bucket: string, key: string): Promise<void> {
     try {
-      const client = this.getClient()
-
-      const command = new DeleteObjectCommand({
-        Bucket: bucket,
-        Key: key,
-      })
-
-      await client.send(command)
+      const supabase = this.getClient()
+      const { error } = await supabase.storage.from(bucket).remove([key])
+      if (error) throw error
     } catch (error) {
-      console.error('Error deleting file from S3:', error)
+      console.error('Error deleting file:', error)
       throw new Error('Failed to delete file')
     }
   }
 
   /**
-   * Get file metadata
+   * Get file metadata (Supabase: list with search)
    */
   static async getFileMetadata(bucket: string, key: string): Promise<FileMetadata> {
     try {
-      console.log(`📊 S3: Getting metadata for: ${bucket}/${key}`)
-      const client = this.getClient()
+      console.log(`📊 Storage: Getting metadata for: ${bucket}/${key}`)
+      const supabase = this.getClient()
 
-      const command = new HeadObjectCommand({
-        Bucket: bucket,
-        Key: key,
-      })
+      // Split key into folder prefix and filename
+      const lastSlash = key.lastIndexOf('/')
+      const prefix = lastSlash >= 0 ? key.substring(0, lastSlash) : ''
+      const filename = lastSlash >= 0 ? key.substring(lastSlash + 1) : key
 
-      const response = await client.send(command)
-      
-      const metadata = {
+      const { data, error } = await supabase.storage
+        .from(bucket)
+        .list(prefix, { search: filename })
+
+      if (error) throw error
+
+      const fileInfo = data?.find((f) => f.name === filename)
+      if (!fileInfo) throw new Error(`File not found: ${key}`)
+
+      return {
         key,
-        size: response.ContentLength || 0,
-        contentType: response.ContentType || 'application/octet-stream',
-        lastModified: response.LastModified || new Date(),
-        etag: response.ETag || '',
-        url: `https://${bucket}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`
+        size: fileInfo.metadata?.size || 0,
+        contentType: fileInfo.metadata?.mimetype || 'application/octet-stream',
+        lastModified: fileInfo.updated_at ? new Date(fileInfo.updated_at) : new Date(),
+        etag: fileInfo.id || '',
+        url: this.buildPublicUrl(bucket, key)
       }
-      
-      console.log(`✅ S3: Metadata retrieved:`, {
-        size: metadata.size,
-        contentType: metadata.contentType,
-        lastModified: metadata.lastModified
-      })
-
-      return metadata
     } catch (error) {
-      console.error(`❌ S3: Error getting file metadata for ${bucket}/${key}:`, {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        code: error instanceof Error && 'code' in error ? error.code : undefined,
-        statusCode: error instanceof Error && 'statusCode' in error ? error.statusCode : undefined
-      })
+      console.error(`❌ Storage: Error getting file metadata for ${bucket}/${key}:`, error)
       throw new Error(`Failed to get file metadata: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
@@ -273,28 +230,26 @@ export class S3Service {
    * List files in a bucket with prefix
    */
   static async listFiles(
-    bucket: string, 
-    prefix?: string, 
+    bucket: string,
+    prefix?: string,
     maxKeys: number = 1000
   ): Promise<FileMetadata[]> {
     try {
-      const client = this.getClient()
+      const supabase = this.getClient()
 
-      const command = new ListObjectsV2Command({
-        Bucket: bucket,
-        Prefix: prefix,
-        MaxKeys: maxKeys,
-      })
+      const { data, error } = await supabase.storage
+        .from(bucket)
+        .list(prefix || '', { limit: maxKeys })
 
-      const response = await client.send(command)
+      if (error) throw error
 
-      return (response.Contents || []).map((object) => ({
-        key: object.Key || '',
-        size: object.Size || 0,
-        contentType: 'application/octet-stream', // S3 doesn't return content type in list
-        lastModified: object.LastModified || new Date(),
-        etag: object.ETag || '',
-        url: `https://${bucket}.s3.${process.env.AWS_REGION}.amazonaws.com/${object.Key}`
+      return (data || []).map((file) => ({
+        key: prefix ? `${prefix}/${file.name}` : file.name,
+        size: file.metadata?.size || 0,
+        contentType: file.metadata?.mimetype || 'application/octet-stream',
+        lastModified: file.updated_at ? new Date(file.updated_at) : new Date(),
+        etag: file.id || '',
+        url: this.buildPublicUrl(bucket, prefix ? `${prefix}/${file.name}` : file.name)
       }))
     } catch (error) {
       console.error('Error listing files:', error)
@@ -307,20 +262,15 @@ export class S3Service {
    */
   static async fileExists(bucket: string, key: string): Promise<boolean> {
     try {
-      console.log(`🔍 S3: Checking if file exists: ${bucket}/${key}`)
       await this.getFileMetadata(bucket, key)
-      console.log(`✅ S3: File exists: ${bucket}/${key}`)
       return true
-    } catch (error) {
-      console.log(`❌ S3: File does not exist or error checking: ${bucket}/${key}`, {
-        error: error instanceof Error ? error.message : 'Unknown error'
-      })
+    } catch {
       return false
     }
   }
 
   /**
-   * Copy file within S3
+   * Copy file within Supabase Storage (download + re-upload)
    */
   static async copyFile(
     sourceBucket: string,
@@ -329,18 +279,25 @@ export class S3Service {
     destinationKey: string
   ): Promise<{ key: string; url: string }> {
     try {
-      const client = this.getClient()
+      const supabase = this.getClient()
 
-      const command = new CopyObjectCommand({
-        Bucket: destinationBucket,
-        Key: destinationKey,
-        CopySource: `${sourceBucket}/${sourceKey}`,
-      })
+      // Download source
+      const { data: fileData, error: downloadError } = await supabase.storage
+        .from(sourceBucket)
+        .download(sourceKey)
 
-      await client.send(command)
+      if (downloadError) throw downloadError
 
-      const url = `https://${destinationBucket}.s3.${process.env.AWS_REGION}.amazonaws.com/${destinationKey}`
+      const buffer = Buffer.from(await fileData.arrayBuffer())
 
+      // Upload to destination
+      const { error: uploadError } = await supabase.storage
+        .from(destinationBucket)
+        .upload(destinationKey, buffer, { upsert: true })
+
+      if (uploadError) throw uploadError
+
+      const url = this.buildPublicUrl(destinationBucket, destinationKey)
       return { key: destinationKey, url }
     } catch (error) {
       console.error('Error copying file:', error)
@@ -366,15 +323,10 @@ export class S3Service {
   }
 
   /**
-   * Get file URL (public or presigned based on bucket configuration)
+   * Get file URL (public)
    */
-  static getFileUrl(bucket: string, key: string, isPublic: boolean = false): string {
-    if (isPublic) {
-      return `https://${bucket}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`
-    }
-    // For private files, you would generate a presigned URL
-    // This is a placeholder - in practice, you'd call generatePresignedDownloadUrl
-    return `https://${bucket}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`
+  static getFileUrl(bucket: string, key: string, _isPublic: boolean = false): string {
+    return this.buildPublicUrl(bucket, key)
   }
 
   /**
@@ -387,79 +339,53 @@ export class S3Service {
   ): { isValid: boolean; errors: string[] } {
     const errors: string[] = []
 
-    // Check file size
     if (file.size > maxSize) {
       errors.push(`File size must be less than ${this.formatFileSize(maxSize)}`)
     }
 
-    // Check file type
     if (!allowedTypes.includes(file.type)) {
       errors.push(`File type ${file.type} is not allowed. Allowed types: ${allowedTypes.join(', ')}`)
     }
 
-    // Check file name
     if (file.name.length > 255) {
       errors.push('File name is too long (max 255 characters)')
     }
 
-    return {
-      isValid: errors.length === 0,
-      errors
-    }
+    return { isValid: errors.length === 0, errors }
   }
 
-  /**
-   * Format file size for display
-   */
   static formatFileSize(bytes: number): string {
     if (bytes === 0) return '0 Bytes'
-
     const k = 1024
     const sizes = ['Bytes', 'KB', 'MB', 'GB']
     const i = Math.floor(Math.log(bytes) / Math.log(k))
-
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   }
 
-  /**
-   * Get file extension from filename
-   */
   static getFileExtension(filename: string): string {
     return filename.split('.').pop()?.toLowerCase() || ''
   }
 
-  /**
-   * Get MIME type from file extension
-   */
   static getMimeType(extension: string): string {
     const mimeTypes: Record<string, string> = {
-      // Documents
-      'pdf': 'application/pdf',
-      'doc': 'application/msword',
-      'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'txt': 'text/plain',
-      'rtf': 'application/rtf',
-      
-      // Images
-      'jpg': 'image/jpeg',
-      'jpeg': 'image/jpeg',
-      'png': 'image/png',
-      'gif': 'image/gif',
-      'webp': 'image/webp',
-      'svg': 'image/svg+xml',
-      
-      // Other
-      'zip': 'application/zip',
-      'csv': 'text/csv',
-      'json': 'application/json',
+      pdf: 'application/pdf',
+      doc: 'application/msword',
+      docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      txt: 'text/plain',
+      rtf: 'application/rtf',
+      jpg: 'image/jpeg',
+      jpeg: 'image/jpeg',
+      png: 'image/png',
+      gif: 'image/gif',
+      webp: 'image/webp',
+      svg: 'image/svg+xml',
+      zip: 'application/zip',
+      csv: 'text/csv',
+      json: 'application/json',
     }
-
     return mimeTypes[extension.toLowerCase()] || 'application/octet-stream'
   }
 
-  /**
-   * Clean up old files (for maintenance)
-   */
   static async cleanupOldFiles(
     bucket: string,
     prefix: string,
@@ -468,7 +394,7 @@ export class S3Service {
     try {
       const files = await this.listFiles(bucket, prefix)
       const cutoffDate = new Date(Date.now() - olderThanDays * 24 * 60 * 60 * 1000)
-      
+
       let deletedCount = 0
       const errors: string[] = []
 
@@ -490,9 +416,6 @@ export class S3Service {
     }
   }
 
-  /**
-   * Get storage usage statistics
-   */
   static async getStorageStats(bucket: string, prefix?: string): Promise<{
     totalFiles: number
     totalSize: number
@@ -502,26 +425,20 @@ export class S3Service {
   }> {
     try {
       const files = await this.listFiles(bucket, prefix)
-      
+
       if (files.length === 0) {
-        return {
-          totalFiles: 0,
-          totalSize: 0,
-          averageSize: 0,
-          oldestFile: null,
-          newestFile: null
-        }
+        return { totalFiles: 0, totalSize: 0, averageSize: 0, oldestFile: null, newestFile: null }
       }
 
       const totalSize = files.reduce((sum, file) => sum + file.size, 0)
-      const dates = files.map(file => file.lastModified)
-      
+      const dates = files.map((file) => file.lastModified)
+
       return {
         totalFiles: files.length,
         totalSize,
         averageSize: totalSize / files.length,
-        oldestFile: new Date(Math.min(...dates.map(d => d.getTime()))),
-        newestFile: new Date(Math.max(...dates.map(d => d.getTime())))
+        oldestFile: new Date(Math.min(...dates.map((d) => d.getTime()))),
+        newestFile: new Date(Math.max(...dates.map((d) => d.getTime())))
       }
     } catch (error) {
       console.error('Error getting storage stats:', error)
@@ -530,7 +447,7 @@ export class S3Service {
   }
 }
 
-// File type configurations
+// File type configurations — bucket now points to Supabase bucket name
 export const FILE_CONFIGS = {
   resume: {
     allowedTypes: [
@@ -539,17 +456,12 @@ export const FILE_CONFIGS = {
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     ],
     maxSize: 5 * 1024 * 1024, // 5MB
-    bucket: process.env.AWS_S3_BUCKET || 'amper-talent-files'
+    bucket: process.env.SUPABASE_STORAGE_BUCKET || 'hire-my-mom-files'
   },
   logo: {
-    allowedTypes: [
-      'image/jpeg',
-      'image/png',
-      'image/gif',
-      'image/webp'
-    ],
+    allowedTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
     maxSize: 2 * 1024 * 1024, // 2MB
-    bucket: process.env.AWS_S3_BUCKET || 'amper-talent-files'
+    bucket: process.env.SUPABASE_STORAGE_BUCKET || 'hire-my-mom-files'
   },
   document: {
     allowedTypes: [
@@ -560,27 +472,16 @@ export const FILE_CONFIGS = {
       'application/rtf'
     ],
     maxSize: 10 * 1024 * 1024, // 10MB
-    bucket: process.env.AWS_S3_BUCKET || 'amper-talent-files'
+    bucket: process.env.SUPABASE_STORAGE_BUCKET || 'hire-my-mom-files'
   },
   image: {
-    allowedTypes: [
-      'image/jpeg',
-      'image/png',
-      'image/gif',
-      'image/webp',
-      'image/svg+xml'
-    ],
+    allowedTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'],
     maxSize: 5 * 1024 * 1024, // 5MB
-    bucket: process.env.AWS_S3_BUCKET || 'amper-talent-files'
+    bucket: process.env.SUPABASE_STORAGE_BUCKET || 'hire-my-mom-files'
   },
   avatar: {
-    allowedTypes: [
-      'image/jpeg',
-      'image/png',
-      'image/gif',
-      'image/webp'
-    ],
+    allowedTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
     maxSize: 5 * 1024 * 1024, // 5MB
-    bucket: process.env.AWS_S3_BUCKET || 'amper-talent-files'
+    bucket: process.env.SUPABASE_STORAGE_BUCKET || 'hire-my-mom-files'
   }
 }

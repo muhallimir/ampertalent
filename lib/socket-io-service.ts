@@ -1,3 +1,5 @@
+import { connectionsStore } from './connections-store'
+
 interface MessageData {
   id: string
   threadId: string
@@ -19,9 +21,6 @@ interface MessageData {
   attachments?: any[]
 }
 
-// Realtime server URL (Render in production, localhost in development)
-const REALTIME_SERVER_URL = process.env.NEXT_PUBLIC_SOCKET_URL ?? 'https://amper-talent-saas-realtime-server-1.onrender.com'; // Staging Env
-
 export class SocketIOService {
   private static instance: SocketIOService
 
@@ -35,149 +34,68 @@ export class SocketIOService {
   }
 
   /**
-   * Emit a new message to all users in a thread (via Realtime Server)
+   * Emit a new message to the recipient via SSE
    */
   public async emitNewMessage(threadId: string, messageData: MessageData): Promise<boolean> {
     try {
-      const res = await fetch(`${REALTIME_SERVER_URL}/broadcast/new-message`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          threadId,
-          message: messageData,
-        }),
+      if (!messageData.recipientId) return false
+      connectionsStore.broadcastToUser(messageData.recipientId, {
+        type: 'new_message',
+        threadId,
+        message: messageData,
       })
-
-      if (!res.ok) {
-        console.error('❌ emitNewMessage failed with HTTP status', res.status)
-        return false
-      }
-
       return true
-    } catch (err) {
-      console.error('❌ emitNewMessage network error:', err)
+    } catch (error) {
+      console.error('[SSE] emitNewMessage error:', error)
       return false
     }
   }
 
   /**
-   * Emit typing_start event
+   * Emit a new thread notification to the recipient via SSE
    */
-  public async emitTypingStart(threadId: string, userId: string): Promise<boolean> {
+  public async emitNewThread(recipientId: string, thread: any, messageData: MessageData): Promise<boolean> {
     try {
-      const res = await fetch(`${REALTIME_SERVER_URL}/broadcast/typing-start`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ threadId, userId }),
+      if (!recipientId) return false
+      connectionsStore.broadcastToUser(recipientId, {
+        type: 'new_thread',
+        thread,
+        message: messageData,
       })
-
-      return res.ok
-    } catch (err) {
-      console.error('❌ emitTypingStart error:', err)
+      return true
+    } catch (error) {
+      console.error('[SSE] emitNewThread error:', error)
       return false
     }
   }
 
   /**
-   * Emit typing_stop event
+   * Typing events are best-effort; skipped without external server
    */
-  public async emitTypingStop(threadId: string, userId: string): Promise<boolean> {
-    try {
-      const res = await fetch(`${REALTIME_SERVER_URL}/broadcast/typing-stop`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ threadId, userId }),
-      })
+  public async emitTypingStart(_threadId: string, _userId: string): Promise<boolean> {
+    return true
+  }
 
-      return res.ok
-    } catch (err) {
-      console.error('❌ emitTypingStop error:', err)
-      return false
-    }
+  public async emitTypingStop(_threadId: string, _userId: string): Promise<boolean> {
+    return true
   }
 
   /**
-   * Update user presence (online/offline)
+   * Broadcast presence update to all connected users
    */
   public async updateUserPresence(userId: string, isOnline: boolean): Promise<boolean> {
     try {
-      const res = await fetch(`${REALTIME_SERVER_URL}/broadcast/presence`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, isOnline }),
+      connectionsStore.broadcastToAll({
+        type: 'presence',
+        userId,
+        isOnline,
       })
-
-      return res.ok
-    } catch (err) {
-      console.error('❌ updateUserPresence error:', err)
-      return false
-    }
-  }
-
-  /**
-   * Emit a new thread creation event
-   * This should be called when the first message of a brand-new thread is created.
-   * It notifies the recipient so their inbox can show the new conversation immediately.
-   */
-  public async emitNewThread(
-    recipientId: string,
-    thread: {
-      id: string
-      participantDetails: {
-        id: string
-        name: string
-        firstName?: string
-        lastName?: string
-        profilePictureUrl?: string
-        presignedProfilePictureUrl?: string
-        employer?: { companyName: string }
-      }[]
-    },
-    messageData: MessageData
-  ): Promise<boolean> {
-    try {
-      const res = await fetch(`${REALTIME_SERVER_URL}/broadcast/new-thread`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          recipientId,
-          thread,
-          message: messageData,
-        }),
-      })
-
-      if (!res.ok) {
-        console.error('❌ emitNewThread failed with HTTP status', res.status)
-        return false
-      }
-
       return true
-    } catch (err) {
-      console.error('❌ emitNewThread network error:', err)
+    } catch (error) {
+      console.error('[SSE] updateUserPresence error:', error)
       return false
-    }
-  }
-
-  /**
-   * Optional helper for debugging realtime stats
-   */
-  public async getConnectionStats(): Promise<{ connectedSockets: number } | null> {
-    try {
-      const res = await fetch(`${REALTIME_SERVER_URL}/stats`, {
-        method: 'GET',
-      })
-      if (!res.ok) return null
-      return res.json()
-    } catch (err) {
-      console.error('❌ getConnectionStats error:', err)
-      return null
     }
   }
 }
 
-// Export singleton instance
 export const socketIOService = SocketIOService.getInstance()
