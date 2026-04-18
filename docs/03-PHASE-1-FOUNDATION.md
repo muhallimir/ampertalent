@@ -214,7 +214,7 @@ __tests__/unit/file-validation.test.ts
 
 ### Logo & Brand Assets
 
-**Logo File:** `public/logo/ampertalent.png`
+**Logo File:** `public/logo/logo.png`
 
 - Dimensions: 1408 x 768 px
 - Already present in repository
@@ -234,7 +234,7 @@ __tests__/unit/file-validation.test.ts
 - [x] Create `docs/AMPERTALENT-BRAND-GUIDELINES.md` — comprehensive brand guide (ALREADY CREATED)
 - [x] Update `tailwind.config.ts` with Ampertalent color palette
 - [x] Add CSS variables to `app/globals.css`
-- [x] Copy logo to `public/logo/ampertalent.png` (already in repo root, move if needed)
+- [x] Copy logo to `public/logo/logo.png` (already in repo root, move if needed)
 - [ ] Create favicon from logo (multiple sizes: 16x16, 32x32, 64x64, 192x192)
 - [ ] Update `next.config.mjs` favicon references
 - [x] Replace all "HireMyMom" text with "Ampertalent"
@@ -259,13 +259,13 @@ grep -n "amper-blue\|amper-teal\|amper-cyan" tailwind.config.ts
 grep -n "color-primary\|color-secondary" app/globals.css
 
 # Verify logo is accessible
-ls -l public/logo/ampertalent.png
+ls -l public/logo/logo.png
 ```
 
 ### Reference Files
 
 - **Brand Guidelines:** `docs/AMPERTALENT-BRAND-GUIDELINES.md` (comprehensive, created today)
-- **Logo:** `public/logo/ampertalent.png` (1.2MB, 1408x768px)
+- **Logo:** `public/logo/logo.png` (1.2MB, 1408x768px)
 - **Color Quick Reference:**
   - `#0066FF` — Primary blue (buttons, links)
   - `#00BB88` — Secondary teal (success, accents)

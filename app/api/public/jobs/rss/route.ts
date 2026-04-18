@@ -179,19 +179,19 @@ export async function GET(request: NextRequest) {
     }).join('');
 
     const rssXml = `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:job="http://hiremymom.com/job-namespace">
+<rss version="2.0" xmlns:job="http://ampertalent.com/job-namespace">
   <channel>
-    <title>Hire My Mom - Active Jobs</title>
-    <description>Current job openings from Hire My Mom platform</description>
+    <title>ampertalent - Active Jobs</title>
+    <description>Current job openings from ampertalent platform</description>
     <link>${process.env.NEXT_PUBLIC_APP_URL}</link>
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
     <language>en-us</language>
-    <managingEditor>jobs@hiremymom.com (Hire My Mom)</managingEditor>
-    <webMaster>tech@hiremymom.com (Hire My Mom Tech Team)</webMaster>
+    <managingEditor>jobs@ampertalent.com (ampertalent)</managingEditor>
+    <webMaster>tech@ampertalent.com (ampertalent Tech Team)</webMaster>
     <ttl>15</ttl>
     <image>
       <url>${process.env.NEXT_PUBLIC_APP_URL}/logo.png</url>
-      <title>Hire My Mom</title>
+      <title>ampertalent</title>
       <link>${process.env.NEXT_PUBLIC_APP_URL}</link>
     </image>
     ${rssItems}

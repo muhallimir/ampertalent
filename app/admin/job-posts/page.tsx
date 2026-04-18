@@ -1324,7 +1324,7 @@ export default function AdminJobPostsPage() {
                       </span>
                     </div>
                     <a
-                      href={`https://archive.hiremymom.com/wp-admin/post.php?post=${selectedJob.legacyId}&action=edit&classic-editor&classic-editor__forget`}
+                      href={`https://archive.ampertalent.com/wp-admin/post.php?post=${selectedJob.legacyId}&action=edit&classic-editor&classic-editor__forget`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-sm font-medium text-amber-700 hover:text-amber-900 hover:underline"

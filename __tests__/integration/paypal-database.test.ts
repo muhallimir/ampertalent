@@ -1,7 +1,7 @@
 /**
  * PayPal Integration Tests - REAL Database Operations
  * 
- * These tests use the LOCAL database (hiremymom_local on port 5433)
+ * These tests use the LOCAL database (ampertalent_local on port 5433)
  * to verify PayPal payment flows work correctly with actual DB operations.
  * 
  * CLEANUP STRATEGY:
@@ -23,15 +23,15 @@ import {
 const db = new PrismaClient({
     datasources: {
         db: {
-            url: 'postgresql://hiremymom_user:local_dev_password@localhost:5433/hiremymom_local'
+            url: 'postgresql://ampertalent_user:local_dev_password@localhost:5433/ampertalent_local'
         }
     }
 });
 
 // Test data identifiers - ALL test data uses these prefixes for cleanup
 const TEST_PREFIX = 'TEST_PAYPAL_';
-const TEST_USER_EMAIL = 'test_paypal_user@test.hiremymom.com';
-const TEST_EMPLOYER_EMAIL = 'test_paypal_employer@test.hiremymom.com';
+const TEST_USER_EMAIL = 'test_paypal_user@test.ampertalent.com';
+const TEST_EMPLOYER_EMAIL = 'test_paypal_employer@test.ampertalent.com';
 const TEST_BILLING_AGREEMENT_ID = 'B-TEST123456789ABCD';
 const TEST_PAYPAL_STORAGE_ID = `PAYPAL|${TEST_BILLING_AGREEMENT_ID}`;
 
@@ -521,7 +521,7 @@ describe('PayPal Sandbox API Integration', () => {
         const client = new PayPalClient();
 
         const result = await client.createBillingAgreementToken({
-            description: 'TEST - HireMyMom Integration Test',
+            description: 'TEST - ampertalent Integration Test',
             returnUrl: 'http://localhost:3000/test/paypal-return',
             cancelUrl: 'http://localhost:3000/test/paypal-cancel',
         });

@@ -3,7 +3,7 @@
  * 
  * These tests verify:
  * 1. WordPress MySQL (legacy_wordpress_mysql:3307) PayPal data structure
- * 2. NextJS PostgreSQL (hiremymom_local:5433) created data matches migration plan
+ * 2. NextJS PostgreSQL (ampertalent_local:5433) created data matches migration plan
  * 3. Data mapping alignment between WordPress and NextJS
  * 4. Post-cleanup verification that non-test data is untouched
  * 5. Pre/Post record counts to verify data isolation
@@ -23,7 +23,7 @@ import {
 const nextjsDb = new PrismaClient({
     datasources: {
         db: {
-            url: 'postgresql://hiremymom_user:local_dev_password@localhost:5433/hiremymom_local'
+            url: 'postgresql://ampertalent_user:local_dev_password@localhost:5433/ampertalent_local'
         }
     }
 });
@@ -32,14 +32,14 @@ const nextjsDb = new PrismaClient({
 const wordpressDbConfig = {
     host: 'localhost',
     port: 3307,
-    user: 'hiremymom_user',
+    user: 'ampertalent_user',
     password: 'local_dev_password',
     database: 'legacy_wordpress'
 };
 
 // Test data identifiers
 const TEST_PREFIX = 'TEST_MIGRATION_';
-const TEST_EMAIL = 'test_migration_paypal@test.hiremymom.com';
+const TEST_EMAIL = 'test_migration_paypal@test.ampertalent.com';
 
 // Pre-test record counts for verification
 interface RecordCounts {

@@ -175,7 +175,7 @@ export async function POST(request: NextRequest) {
       try {
         const webhookHeaders: HeadersInit = {
           'Content-Type': 'application/json',
-          'User-Agent': 'HireMyMom-Webhook/1.0'
+          'User-Agent': 'ampertalent-Webhook/1.0'
         }
 
         // Add authentication using the same pattern as ExternalWebhookService

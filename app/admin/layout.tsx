@@ -6,7 +6,7 @@ import { ImpersonationProvider } from "@/components/admin/ImpersonationContext"
 import { ImpersonationBanner } from "@/components/admin/ImpersonationBanner"
 
 export const metadata: Metadata = {
-  title: "Admin Dashboard - Hire My Mom",
+  title: "Admin Dashboard - ampertalent",
   description: "Manage platform operations, vet job postings, review users, and monitor platform analytics. Administrative tools for platform management.",
 }
 

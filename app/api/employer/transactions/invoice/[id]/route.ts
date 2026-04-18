@@ -110,7 +110,7 @@ export async function GET(
     const pdfBuffer = generateInvoicePDF(invoiceData)
 
     // Generate filename
-    const filename = `hiremymom-invoice-${invoice.id.slice(-8).toUpperCase()}.pdf`
+    const filename = `ampertalent-invoice-${invoice.id.slice(-8).toUpperCase()}.pdf`
 
     return new NextResponse(pdfBuffer, {
       status: 200,

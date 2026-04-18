@@ -191,7 +191,7 @@ export async function GET(request: NextRequest) {
 
     // Generate filename with current date
     const currentDate = new Date().toISOString().split('T')[0]
-    const filename = `hiremymom-employer-transactions-${currentDate}.csv`
+    const filename = `ampertalent-employer-transactions-${currentDate}.csv`
 
     return new NextResponse(csvContent, {
       status: 200,

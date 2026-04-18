@@ -295,13 +295,13 @@ stripe (Stripe Node SDK — server-side)
 
 | Element        | Original                          | Ampertalent                                  |
 | -------------- | --------------------------------- | -------------------------------------------- |
-| App Name       | Hire My Mom / HireMyMom           | **Ampertalent**                              |
+| App Name       | ampertalent / HireMyMom           | **Ampertalent**                              |
 | Tagline        | "Remote Jobs for Working Parents" | "Where Flexible Talent Meets Opportunity"    |
 | Domain         | hiremymom.com                     | Ampertalent-demo.vercel.app                  |
 | Email From     | team@notifications.hiremymom.com  | team@Ampertalent-demo.vercel.app             |
 | Logo           | hmm_logo.png                      | Custom Ampertalent logo                      |
 | Color Scheme   | Teal/Brand colors                 | Similar but distinct palette                 |
-| Metadata Title | "Hire My Mom - Remote Jobs..."    | "Ampertalent - Flexible Remote Job Platform" |
+| Metadata Title | "ampertalent - Remote Jobs..."    | "Ampertalent - Flexible Remote Job Platform" |
 
 ---
 

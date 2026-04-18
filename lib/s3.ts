@@ -456,12 +456,12 @@ export const FILE_CONFIGS = {
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     ],
     maxSize: 5 * 1024 * 1024, // 5MB
-    bucket: process.env.SUPABASE_STORAGE_BUCKET || 'hire-my-mom-files'
+    bucket: process.env.SUPABASE_STORAGE_BUCKET || 'ampertalent-files'
   },
   logo: {
     allowedTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
     maxSize: 2 * 1024 * 1024, // 2MB
-    bucket: process.env.SUPABASE_STORAGE_BUCKET || 'hire-my-mom-files'
+    bucket: process.env.SUPABASE_STORAGE_BUCKET || 'ampertalent-files'
   },
   document: {
     allowedTypes: [
@@ -472,16 +472,16 @@ export const FILE_CONFIGS = {
       'application/rtf'
     ],
     maxSize: 10 * 1024 * 1024, // 10MB
-    bucket: process.env.SUPABASE_STORAGE_BUCKET || 'hire-my-mom-files'
+    bucket: process.env.SUPABASE_STORAGE_BUCKET || 'ampertalent-files'
   },
   image: {
     allowedTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'],
     maxSize: 5 * 1024 * 1024, // 5MB
-    bucket: process.env.SUPABASE_STORAGE_BUCKET || 'hire-my-mom-files'
+    bucket: process.env.SUPABASE_STORAGE_BUCKET || 'ampertalent-files'
   },
   avatar: {
     allowedTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
     maxSize: 5 * 1024 * 1024, // 5MB
-    bucket: process.env.SUPABASE_STORAGE_BUCKET || 'hire-my-mom-files'
+    bucket: process.env.SUPABASE_STORAGE_BUCKET || 'ampertalent-files'
   }
 }

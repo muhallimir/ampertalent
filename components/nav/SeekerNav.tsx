@@ -9,7 +9,6 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useUserProfile } from '@/hooks/useUserProfile'
-import { useSocket } from '@/hooks/useSocket'
 import { useNotificationCenter } from '@/components/providers/NotificationCenterProvider'
 import { getNotificationPriorityStyle } from '@/lib/notificationStyles'
 import { handleUserLogout } from '@/lib/auth-utils'
@@ -53,7 +52,6 @@ export function SeekerNav() {
   const pathname = usePathname()
   const { isImpersonating, impersonatedUser } = useImpersonationAware()
   const { profile } = useUserProfile()
-  const { socket } = useSocket()
   const {
     notifications,
     unreadCount,
@@ -110,16 +108,7 @@ export function SeekerNav() {
     return () => clearInterval(interval)
   }, [loadMessageUnreadCount])
 
-  useEffect(() => {
-    if (!socket) return
-    const handleMessageReceived = () => {
-      setMessageUnreadCount(prev => prev + 1)
-    }
-    socket.on('message_received', handleMessageReceived)
-    return () => {
-      socket.off('message_received', handleMessageReceived)
-    }
-  }, [socket])
+  // Socket.IO removed - SSE via MessageProvider handles real-time message updates
 
   useEffect(() => {
     if (pathname.startsWith('/seeker/messages')) {
@@ -149,7 +138,7 @@ export function SeekerNav() {
           {/* Logo */}
           <Link href="/seeker/dashboard" className="flex items-center">
             <Image
-              src="/logo/ampertalent.png"
+              src="/logo/logo.png"
               alt="AmperTalent"
               width={150}
               height={50}

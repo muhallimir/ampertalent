@@ -11,7 +11,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ApplicantProfilePicture } from '@/components/common/ApplicantProfilePicture'
 import { useUserProfile } from '@/hooks/useUserProfile'
 import { getImpersonationSession } from '@/lib/admin-impersonation'
-import { useSocket } from '@/hooks/useSocket'
 import { handleUserLogout } from '@/lib/auth-utils'
 import {
   DropdownMenu,
@@ -85,7 +84,6 @@ export function EmployerNav() {
   }
 
   const { profile } = useUserProfile()
-  const { socket } = useSocket()
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [messageUnreadCount, setMessageUnreadCount] = useState(0)
@@ -277,20 +275,7 @@ export function EmployerNav() {
     return () => clearInterval(interval)
   }, [loadNotificationCount, loadMessageUnreadCount])
 
-  // Socket.IO for real-time message updates
-  useEffect(() => {
-    if (!socket) return
-
-    const handleMessageReceived = (data: any) => {
-      setMessageUnreadCount(prev => prev + 1)
-    }
-
-    socket.on('message_received', handleMessageReceived)
-
-    return () => {
-      socket.off('message_received', handleMessageReceived)
-    }
-  }, [socket])
+  // Socket.IO removed - SSE via MessageProvider handles real-time message updates
 
   const markAllAsRead = async () => {
     try {
@@ -381,7 +366,7 @@ export function EmployerNav() {
           {/* Logo */}
           <Link href="/employer/dashboard" className="flex items-center">
             <Image
-              src="/logo/ampertalent.png"
+              src="/logo/logo.png"
               alt="AmperTalent"
               width={180}
               height={60}

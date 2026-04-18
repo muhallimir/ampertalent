@@ -16,7 +16,7 @@ export function Logo(props: { className?: string, link?: string, showText?: bool
       {/* Ampertalent Logo */}
       <div className={`${sizeClasses[size]} rounded-lg flex items-center justify-center overflow-hidden`}>
         <Image
-          src="/logo/ampertalent_logo.png"
+          src="/logo/logo.png"
           alt="Ampertalent Logo"
           width={size === 'sm' ? 32 : size === 'md' ? 40 : 48}
           height={size === 'sm' ? 32 : size === 'md' ? 40 : 48}

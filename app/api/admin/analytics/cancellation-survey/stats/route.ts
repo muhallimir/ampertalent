@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
         });
 
         const primaryReasons: Record<string, number> = {
-            found_hiremymom: 0,
+            found_ampertalent: 0,
             found_other: 0,
             no_suitable_job: 0,
             budget_tight: 0,

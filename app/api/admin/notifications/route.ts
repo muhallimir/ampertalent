@@ -143,7 +143,7 @@ export async function GET(request: NextRequest) {
           timestamp: notification.createdAt,
           read: notification.read,
           priority: notification.priority as 'low' | 'medium' | 'high' | 'critical',
-          recipient: 'admin@hiremymom.com',
+          recipient: 'admin@ampertalent.com',
           status: 'delivered',
           userId: notification.data?.employerId || notification.data?.seekerId || notification.data?.userId,
           userName: notification.data?.companyName || notification.data?.seekerName || notification.data?.userName,
@@ -162,7 +162,7 @@ export async function GET(request: NextRequest) {
         timestamp: new Date(),
         read: false,
         priority: 'critical',
-        recipient: 'admin@hiremymom.com',
+        recipient: 'admin@ampertalent.com',
         status: 'delivered'
       })
     }
@@ -177,7 +177,7 @@ export async function GET(request: NextRequest) {
         timestamp: pendingJobs[0].createdAt,
         read: false,
         priority: pendingJobs.length > 5 ? 'high' : 'medium',
-        recipient: 'admin@hiremymom.com',
+        recipient: 'admin@ampertalent.com',
         status: 'delivered'
       })
     }

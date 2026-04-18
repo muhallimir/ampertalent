@@ -1,7 +1,6 @@
 'use client'
 
 import { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react'
-import { useSocket } from '@/hooks/useSocket'
 import { useNotificationListener } from '@/hooks/useRealTimeNotifications'
 
 interface MessageContextValue {
@@ -18,7 +17,6 @@ const MessageContext = createContext<MessageContextValue | undefined>(undefined)
 export function MessageProvider({ children }: { children: ReactNode }) {
   const [unreadCount, setUnreadCount] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
-  const { socket } = useSocket()
   const hasFetchedRef = useRef(false)
 
   const fetchUnreadCount = async () => {
@@ -44,50 +42,19 @@ export function MessageProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  // Polling as fallback (60s interval) - only if Socket.IO is not available
+  // Polling as fallback (60s interval)
   useEffect(() => {
-    if (!socket) {
-      const interval = setInterval(fetchUnreadCount, 60000)
-      return () => clearInterval(interval)
-    }
-  }, [socket])
+    const interval = setInterval(fetchUnreadCount, 60000)
+    return () => clearInterval(interval)
+  }, [])
 
-  // Listen for real-time message updates via Socket.IO
-  useEffect(() => {
-    if (!socket) return
 
-    const handleMessageReceived = (data: any) => {
-      console.log('🔄 MessageProvider: Received message_received via Socket.IO:', data)
-      setUnreadCount(prev => {
-        const newCount = prev + 1
-        console.log('✅ MessageProvider: Incremented unread count from', prev, 'to', newCount)
-        return newCount
-      })
-    }
-
-    const handleNewMessage = (data: any) => {
-      console.log('🔄 MessageProvider: Received new_message via Socket.IO:', data)
-      setUnreadCount(prev => {
-        const newCount = prev + 1
-        console.log('✅ MessageProvider: Incremented unread count from', prev, 'to', newCount, 'via new_message')
-        return newCount
-      })
-    }
-
-    socket.on('message_received', handleMessageReceived)
-    socket.on('new_message', handleNewMessage)
-
-    return () => {
-      socket.off('message_received', handleMessageReceived)
-      socket.off('new_message', handleNewMessage)
-    }
-  }, [socket])
-
-  // Listen for real-time message updates via SSE (fallback)
+  // Listen for real-time message updates via SSE
   useNotificationListener('new_message', (notification) => {
     console.log('📡 MessageProvider: Received new_message via SSE, updating unread count', notification)
     fetchUnreadCount()
   })
+
 
   const incrementUnreadCount = () => {
     setUnreadCount(prev => prev + 1)

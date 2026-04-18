@@ -1303,7 +1303,7 @@ export default function AdminSeekersPage() {
                       </span>
                     </div>
                     <a
-                      href={`https://archive.hiremymom.com/wp-admin/user-edit.php?user_id=${selectedSeeker.user.legacyId}&wp_http_referer=%2Fwp-admin%2Fusers.php`}
+                      href={`https://archive.ampertalent.com/wp-admin/user-edit.php?user_id=${selectedSeeker.user.legacyId}&wp_http_referer=%2Fwp-admin%2Fusers.php`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-sm font-medium text-amber-700 hover:text-amber-900 hover:underline"
@@ -1435,7 +1435,7 @@ export default function AdminSeekersPage() {
                               </span>
                             </div>
                             <a
-                              href={`https://archive.hiremymom.com/wp-admin/post.php?post=${subscription.legacyId}&action=edit`}
+                              href={`https://archive.ampertalent.com/wp-admin/post.php?post=${subscription.legacyId}&action=edit`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-sm font-medium text-amber-700 hover:text-amber-900 hover:underline"
@@ -1674,8 +1674,8 @@ export default function AdminSeekersPage() {
 
                   {chargeResult && (
                     <div className={`mt-3 rounded-lg border p-3 text-sm ${chargeResult.success
-                        ? 'bg-green-50 border-green-200'
-                        : 'bg-red-50 border-red-200'
+                      ? 'bg-green-50 border-green-200'
+                      : 'bg-red-50 border-red-200'
                       }`}>
                       <div className="font-semibold mb-2">
                         {chargeResult.success ? '✅ Charge Successful' : '❌ Charge Failed'}

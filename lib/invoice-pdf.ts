@@ -34,7 +34,7 @@ export function generateInvoicePDF(invoice: InvoiceData): Buffer {
 
   // Add AmperTalent logo
   try {
-    const logoPath = path.join(process.cwd(), 'public', 'logo', 'ampertalent.png')
+    const logoPath = path.join(process.cwd(), 'public', 'logo', 'logo.png')
     if (fs.existsSync(logoPath)) {
       const logoData = fs.readFileSync(logoPath)
       const logoBase64 = `data:image/png;base64,${logoData.toString('base64')}`
@@ -74,13 +74,13 @@ export function generateInvoicePDF(invoice: InvoiceData): Buffer {
 
   doc.setFontSize(12)
   doc.setTextColor(0, 0, 0) // Black
-  
+
   // Use company name for employers, user name for seekers
   const billingName = invoice.company_name || invoice.user_name || 'Customer'
   doc.text(billingName, 20, 95)
 
   let yPos = 102
-  
+
   // Add user email for seekers
   if (invoice.user_email && !invoice.company_name) {
     doc.setTextColor(100, 100, 100) // Gray
@@ -113,7 +113,7 @@ export function generateInvoicePDF(invoice: InvoiceData): Buffer {
   // Table headers with background
   doc.setFillColor(0, 102, 102) // Teal background
   doc.rect(20, tableTop - 8, 170, 15, 'F') // Fill rectangle
-  
+
   doc.setFontSize(12)
   doc.setTextColor(255, 255, 255) // White text
   doc.text('Description', 25, tableTop)
@@ -122,10 +122,10 @@ export function generateInvoicePDF(invoice: InvoiceData): Buffer {
   // Invoice item
   const itemY = tableTop + 20
   doc.setTextColor(0, 0, 0) // Black
-  const itemDescription = invoice.description || 
-                         invoice.package_name || 
-                         invoice.plan_name || 
-                         'Service Purchase'
+  const itemDescription = invoice.description ||
+    invoice.package_name ||
+    invoice.plan_name ||
+    'Service Purchase'
   doc.text(itemDescription, 25, itemY)
   doc.text(`$${(invoice.amount_due / 100).toFixed(2)}`, 155, itemY)
 
@@ -138,7 +138,7 @@ export function generateInvoicePDF(invoice: InvoiceData): Buffer {
   const totalY = subtotalY + 10
   doc.setFillColor(240, 240, 240) // Light gray background
   doc.rect(120, totalY - 8, 70, 15, 'F')
-  
+
   doc.setFontSize(14)
   doc.setTextColor(0, 0, 0) // Black
   doc.text('Total:', 125, totalY)
@@ -169,11 +169,11 @@ export function generateInvoicePDF(invoice: InvoiceData): Buffer {
   // Footer with better styling
   doc.setFontSize(10)
   doc.setTextColor(0, 102, 102) // Teal
-  const footerMessage = invoice.company_name 
-    ? 'Thank you for choosing AmperTalent for your hiring needs!' 
+  const footerMessage = invoice.company_name
+    ? 'Thank you for choosing AmperTalent for your hiring needs!'
     : 'Thank you for your subscription to AmperTalent!'
   doc.text(footerMessage, 20, 250)
-  
+
   doc.setTextColor(100, 100, 100) // Gray
   doc.text('For questions about this invoice, please contact support@ampertalent.com', 20, 257)
   doc.text('Visit us at www.ampertalent.com', 20, 264)

@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
       await notificationService.sendTeamInvitation({
         firstName: name || 'there',
         email: email.toLowerCase(),
-        companyName: 'Hire My Mom Platform',
+        companyName: 'ampertalent Platform',
         inviterName: currentUser.profile.name || 'Admin',
         role: role,
         acceptUrl: invitationUrl,

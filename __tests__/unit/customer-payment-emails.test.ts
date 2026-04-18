@@ -270,13 +270,13 @@ describe('Customer Payment Confirmation Emails', () => {
         it('should include invoice URL when provided', async () => {
             const paramsWithInvoice = {
                 ...baseParams,
-                invoiceUrl: 'https://hiremymom.com/invoice/INV-123'
+                invoiceUrl: 'https://ampertalent.com/invoice/INV-123'
             }
 
             const result = await NotificationService.sendCustomerPaymentConfirmationEmail(paramsWithInvoice)
 
             expect(emailTemplates.paymentConfirmation).toHaveBeenCalledWith(expect.objectContaining({
-                invoiceUrl: 'https://hiremymom.com/invoice/INV-123'
+                invoiceUrl: 'https://ampertalent.com/invoice/INV-123'
             }))
             expect(result.success).toBe(true)
         })
@@ -333,7 +333,7 @@ describe('Customer Subscription Renewal Reminder Emails', () => {
             plan: 'VIP Platinum',
             renewalDate: 'March 1, 2026',
             amount: 89.99,
-            manageUrl: 'https://hiremymom.com/seeker/subscription',
+            manageUrl: 'https://ampertalent.com/seeker/subscription',
             daysUntilRenewal: 7
         }
 
@@ -345,7 +345,7 @@ describe('Customer Subscription Renewal Reminder Emails', () => {
                 plan: 'VIP Platinum',
                 renewalDate: 'March 1, 2026',
                 amount: 89.99,
-                manageUrl: 'https://hiremymom.com/seeker/subscription',
+                manageUrl: 'https://ampertalent.com/seeker/subscription',
                 daysUntilRenewal: 7,
                 paymentMethod: undefined
             })
@@ -380,7 +380,7 @@ describe('Customer Subscription Renewal Reminder Emails', () => {
             const result = await NotificationService.sendCustomerSubscriptionReminderEmail(baseReminderParams)
 
             expect(emailTemplates.subscriptionReminder).toHaveBeenCalledWith(expect.objectContaining({
-                manageUrl: 'https://hiremymom.com/seeker/subscription'
+                manageUrl: 'https://ampertalent.com/seeker/subscription'
             }))
             expect(result.success).toBe(true)
         })
@@ -413,7 +413,7 @@ describe('Customer Subscription Renewal Reminder Emails', () => {
                 plan: 'Gold Plus Small Business (Month 4 of 6)',
                 renewalDate: 'March 15, 2026',
                 amount: 97.00,
-                manageUrl: 'https://hiremymom.com/employer/billing',
+                manageUrl: 'https://ampertalent.com/employer/billing',
                 daysUntilRenewal: 7
             }
 
@@ -557,7 +557,7 @@ describe('Feature Flag: ENABLE_CUSTOMER_PAYMENT_EMAILS', () => {
             plan: 'Gold',
             renewalDate: 'March 1, 2026',
             amount: 34.99,
-            manageUrl: 'https://hiremymom.com/seeker/subscription',
+            manageUrl: 'https://ampertalent.com/seeker/subscription',
             daysUntilRenewal: 3
         }
 

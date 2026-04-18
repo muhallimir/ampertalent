@@ -698,7 +698,7 @@ export default function AdminConciergeJobPage() {
               <div>
                 <p className="font-medium">Package Type</p>
                 <p className="text-sm text-gray-600">
-                  {jobDetails.conciergePackageType === 'concierge_lite' && 'HireMyMom Concierge LITE ($795) - Legacy'}
+                  {jobDetails.conciergePackageType === 'concierge_lite' && 'ampertalent Concierge LITE ($795) - Legacy'}
                   {jobDetails.conciergePackageType === 'concierge_level_1' && 'Concierge Level I ($1,695)'}
                   {jobDetails.conciergePackageType === 'concierge_level_2' && 'Concierge Level II ($2,695)'}
                   {jobDetails.conciergePackageType === 'concierge_level_3' && 'Concierge Level III ($3,995)'}

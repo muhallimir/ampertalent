@@ -262,7 +262,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Protect owner account from suspension or deletion
-    if (targetUser.email === 'lesley@hiremymom.com') {
+    if (targetUser.email === 'lesley@ampertalent.com') {
       if (action === 'updateStatus' && value !== 'active') {
         return NextResponse.json({
           error: 'Owner account cannot be suspended or banned'

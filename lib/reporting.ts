@@ -112,11 +112,11 @@ export class ReportingService {
       `# Total Records: ${report.summary.totalRecords}`,
       '',
       headers.join(','),
-      ...report.data.map(row => 
+      ...report.data.map(row =>
         headers.map(header => {
           const value = row[header]
-          return typeof value === 'string' && value.includes(',') 
-            ? `"${value}"` 
+          return typeof value === 'string' && value.includes(',')
+            ? `"${value}"`
             : value
         }).join(',')
       )
@@ -171,7 +171,7 @@ export class ReportingService {
       }
 
       console.log('Scheduled report created:', scheduledReport)
-      
+
       // In a real implementation, this would be saved to the database
       // and a background job would be scheduled
 
@@ -200,7 +200,7 @@ export class ReportingService {
           format: 'pdf'
         },
         schedule: 'weekly',
-        recipients: ['admin@hiremymom.com'],
+        recipients: ['admin@ampertalent.com'],
         isActive: true,
         lastGenerated: new Date('2024-01-01'),
         nextGeneration: new Date('2024-01-08')
@@ -217,7 +217,7 @@ export class ReportingService {
           format: 'excel'
         },
         schedule: 'monthly',
-        recipients: ['admin@hiremymom.com', 'analytics@hiremymom.com'],
+        recipients: ['admin@ampertalent.com', 'analytics@ampertalent.com'],
         isActive: true,
         lastGenerated: new Date('2024-01-01'),
         nextGeneration: new Date('2024-02-01')
@@ -230,7 +230,7 @@ export class ReportingService {
    */
   private static calculateNextGeneration(schedule: 'daily' | 'weekly' | 'monthly'): Date {
     const now = new Date()
-    
+
     switch (schedule) {
       case 'daily':
         return new Date(now.getTime() + 24 * 60 * 60 * 1000)
@@ -256,20 +256,20 @@ export class ReportingService {
       for (const scheduledReport of scheduledReports) {
         if (scheduledReport.isActive && scheduledReport.nextGeneration <= now) {
           console.log('Processing scheduled report:', scheduledReport.name)
-          
+
           // Generate the report
           const report = await this.generateReport(scheduledReport.config)
-          
+
           // Export to specified format
           const exportedContent = await this.exportReport(report, scheduledReport.config.format)
-          
+
           // Send to recipients (would integrate with email service)
           await this.sendReportToRecipients(report, exportedContent, scheduledReport.recipients)
-          
+
           // Update next generation date
           scheduledReport.lastGenerated = now
           scheduledReport.nextGeneration = this.calculateNextGeneration(scheduledReport.schedule)
-          
+
           console.log('Scheduled report processed successfully')
         }
       }
@@ -288,10 +288,10 @@ export class ReportingService {
   ): Promise<void> {
     try {
       console.log('Sending report to recipients:', recipients)
-      
+
       // In a real implementation, this would integrate with GoHighLevel or another email service
       // For now, just log the action
-      
+
       for (const recipient of recipients) {
         console.log(`Sending ${report.title} to ${recipient}`)
         // Email sending logic would go here

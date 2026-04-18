@@ -7,7 +7,7 @@ export default function Layout(props: { children: React.ReactNode }) {
         {/* Logo */}
         <div className="flex justify-center mb-4">
           <Image
-            src="/logo/ampertalent.png"
+            src="/logo/logo.png"
             alt="AmperTalent Logo"
             width={160}
             height={0}
@@ -16,12 +16,12 @@ export default function Layout(props: { children: React.ReactNode }) {
             priority
           />
         </div>
-        
+
         {/* Auth Card */}
         <div className="bg-white py-6 px-6 shadow-sm sm:rounded-xl sm:px-10 border border-gray-100 stack-auth-override">
           {props.children}
         </div>
-        
+
         {/* Footer */}
         <div className="mt-4 text-center">
           <p className="text-sm text-gray-500">

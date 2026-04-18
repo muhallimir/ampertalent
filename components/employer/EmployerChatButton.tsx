@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { MessageSquare } from 'lucide-react'
 import Link from 'next/link'
-import { useSocket } from '@/hooks/useSocket'
 import { useNotificationListener } from '@/hooks/useRealTimeNotifications'
 import { useUserProfile } from '@/hooks/useUserProfile'
 
@@ -33,7 +32,6 @@ export function EmployerChatButton({
     const [unreadCount, setUnreadCount] = useState(0)
     const [isLoading, setIsLoading] = useState(false)
     const { profile } = useUserProfile()
-    const { socket } = useSocket()
 
     useEffect(() => {
         if (!showUnreadBadge) return
@@ -61,45 +59,7 @@ export function EmployerChatButton({
         return () => clearInterval(interval)
     }, [showUnreadBadge])
 
-    // Listen for real-time message updates via Socket.IO
-    useEffect(() => {
-        if (!socket || !showUnreadBadge || !profile?.id) return
-
-        const handleMessageReceived = (data: any) => {
-            console.log('🔄 EmployerChatButton: Received message_received via Socket.IO:', data)
-            // Increment unread count immediately for instant update
-            setUnreadCount(prev => {
-                const newCount = prev + 1
-                console.log('✅ EmployerChatButton: Incremented unread count from', prev, 'to', newCount)
-                return newCount
-            })
-        }
-
-        const handleNewMessage = (data: any) => {
-            console.log('🔄 EmployerChatButton: Received new_message via Socket.IO:', data)
-            // Only increment if the message is for this user (not sent by this user)
-            if (data.recipientId === profile.id) {
-                setUnreadCount(prev => {
-                    const newCount = prev + 1
-                    console.log('✅ EmployerChatButton: Incremented unread count from', prev, 'to', newCount, 'via new_message')
-                    return newCount
-                })
-            }
-        }
-
-        socket.on('message_received', handleMessageReceived)
-        socket.on('new_message', handleNewMessage)
-
-        console.log('✅ EmployerChatButton: Subscribed to Socket.IO message events')
-
-        return () => {
-            socket.off('message_received', handleMessageReceived)
-            socket.off('new_message', handleNewMessage)
-            console.log('🔌 EmployerChatButton: Unsubscribed from Socket.IO message events')
-        }
-    }, [socket, showUnreadBadge, profile?.id])
-
-    // Listen for real-time message updates via SSE (fallback)
+    // Listen for real-time message updates via SSE
     useNotificationListener('new_message', (notification) => {
         console.log('📡 EmployerChatButton: Received new_message via SSE, updating unread count', notification)
         if (showUnreadBadge) {

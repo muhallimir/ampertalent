@@ -149,7 +149,7 @@ describe('PayPalClient', () => {
             const result = await client.createBillingAgreementToken({
                 returnUrl: 'https://example.com/success',
                 cancelUrl: 'https://example.com/cancel',
-                description: 'HireMyMom Gold Membership - Yearly',
+                description: 'ampertalent Gold Membership - Yearly',
             });
 
             expect(result.tokenId).toBe('BA-1234567890ABCDEF');
@@ -219,7 +219,7 @@ describe('PayPalClient', () => {
                 billingAgreementId: 'B-5YM51314FL220970W',
                 amount: 59.99,
                 currency: 'USD',
-                description: 'HireMyMom Gold Yearly Renewal',
+                description: 'ampertalent Gold Yearly Renewal',
                 invoiceNumber: 'REN-012025-1234',
             });
 
@@ -251,7 +251,7 @@ describe('PayPalClient', () => {
                 billingAgreementId: 'B-5YM51314FL220970W',
                 amount: 59.99,
                 currency: 'USD',
-                description: 'HireMyMom Gold Yearly Renewal',
+                description: 'ampertalent Gold Yearly Renewal',
                 invoiceNumber: 'REN-012025-1234',
             });
 

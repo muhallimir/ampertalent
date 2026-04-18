@@ -205,3 +205,8 @@ input[data-input-otp="true"] {
 .scrollbar-visible::-webkit-scrollbar-corner {
 	background: #f3f4f6;
 }
+
+/* Mix-blend-mode can often hide solid white backgrounds */
+.logo-container {
+	mix-blend-mode: multiply;
+}

@@ -629,7 +629,7 @@ export default function UserInviteSignupForm({ invitationToken }: { invitationTo
         {/* Information Panel */}
         <div className="max-lg:w-1/3 max-lg:px-0 max-sm:w-2/3 p-6 w-[27rem] mx-auto flex flex-col justify-center">
           <div className="flex items-center mb-6 w-2/3 mx-auto">
-            <img src="/logo/ampertalent.png" alt="AmperTalent Logo" className="h-20" />
+            <img src="/logo/logo.png" alt="AmperTalent Logo" className="h-20" />
           </div>
           <div className="space-y-4 flex flex-col w-2/3 mx-auto gap-1">
             <h2 className="text-md font-semibold text-gray-800">

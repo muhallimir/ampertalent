@@ -132,12 +132,12 @@ export async function GET(request: NextRequest) {
           status: display.informational
             ? 'Informational'
             : subscription.status === 'active'
-            ? 'Paid'
-            : subscription.status === 'canceled'
-            ? 'Cancelled'
-            : subscription.status === 'past_due'
-            ? 'Past Due'
-            : subscription.status.charAt(0).toUpperCase() + subscription.status.slice(1),
+              ? 'Paid'
+              : subscription.status === 'canceled'
+                ? 'Cancelled'
+                : subscription.status === 'past_due'
+                  ? 'Past Due'
+                  : subscription.status.charAt(0).toUpperCase() + subscription.status.slice(1),
           payment_method: display.informational ? 'N/A' : 'Credit Card',
           subscription_id: subscription.authnetSubscriptionId || subscription.id,
           plan: display.planLabel || planName,
@@ -218,7 +218,7 @@ export async function GET(request: NextRequest) {
 
     // Generate filename with current date
     const currentDate = new Date().toISOString().split('T')[0];
-    const filename = `hiremymom-seeker-transactions-${currentDate}.csv`;
+    const filename = `ampertalent-seeker-transactions-${currentDate}.csv`;
 
     return new NextResponse(csvContent, {
       status: 200,

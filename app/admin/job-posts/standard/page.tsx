@@ -356,12 +356,12 @@ export default function AdminStandardJobsPage() {
         prevJobs.map(job =>
           job.id === jobToPause
             ? {
-                ...job,
-                isPaused: true,
-                status: 'paused' as const,
-                pausedAt: data.job.pausedAt,
-                pausedDaysRemaining: data.job.pausedDaysRemaining
-              }
+              ...job,
+              isPaused: true,
+              status: 'paused' as const,
+              pausedAt: data.job.pausedAt,
+              pausedDaysRemaining: data.job.pausedDaysRemaining
+            }
             : job
         )
       )
@@ -424,12 +424,12 @@ export default function AdminStandardJobsPage() {
         prevJobs.map(job =>
           job.id === jobToResume
             ? {
-                ...job,
-                isPaused: false,
-                status: 'approved' as const,
-                resumedAt: data.job.resumedAt,
-                expiresAt: data.job.expiresAt
-              }
+              ...job,
+              isPaused: false,
+              status: 'approved' as const,
+              resumedAt: data.job.resumedAt,
+              expiresAt: data.job.expiresAt
+            }
             : job
         )
       )
@@ -627,159 +627,158 @@ export default function AdminStandardJobsPage() {
       {isSearching ? (
         <JobListSkeletons />
       ) : (
-      <div className="space-y-4">
-        {jobs.length > 0 ? (
-          jobs.map((job) => (
-            <Card
-              key={job.id}
-              className={`cursor-pointer hover:shadow-md transition-shadow ${
-                job.isPaused || job.status === 'paused' ? 'bg-amber-50 border-amber-200' : ''
-              }`}
-              onClick={() => handleJobClick(job)}
-            >
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-start space-x-4 flex-1 min-w-0">
-                    <div className="flex-shrink-0">
-                      <CompanyLogo
-                        companyName={job.employer.companyName}
-                        companyLogoUrl={job.employer.companyLogoUrl}
-                        size="md"
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0 overflow-hidden">
-                      <div className="flex items-start flex-wrap gap-2 mb-2">
-                        <h3 className="text-lg font-semibold text-gray-900 line-clamp-2 max-w-md">
-                          {job.title}
-                        </h3>
-                        <Badge className={getStatusColor(job.status)}>
-                          {job.status === 'pending_vetting' ? (
-                            <>
-                              <Clock className="h-3 w-3 mr-1" />
-                              Pending
-                            </>
-                          ) : job.status === 'paused' ? (
-                            <>
-                              <Pause className="h-3 w-3 mr-1" />
-                              Paused
-                            </>
-                          ) : job.status === 'approved' ? (
-                            <>
-                              <CheckCircle className="h-3 w-3 mr-1" />
-                              Approved
-                            </>
-                          ) : job.status === 'rejected' ? (
-                            <>
-                              <XCircle className="h-3 w-3 mr-1" />
-                              Declined
-                            </>
-                          ) : (
-                            job.status.charAt(0).toUpperCase() + job.status.slice(1)
-                          )}
-                        </Badge>
-                        {(job.isPaused || job.status === 'paused') && job.pausedDaysRemaining && (
-                          <Badge className="bg-amber-100 text-amber-800">
-                            <Clock className="h-3 w-3 mr-1" />
-                            {job.pausedDaysRemaining} {job.pausedDaysRemaining === 1 ? 'day' : 'days'} remaining
-                          </Badge>
-                        )}
-                        {job.employer.isVetted && (
-                          <Badge className="bg-purple-100 text-purple-800">
-                            <UserCheck className="h-3 w-3 mr-1" />
-                            Vetted Employer
-                          </Badge>
-                        )}
-                        {job.isCompanyPrivate && (
-                          <Badge className="bg-blue-50 text-blue-600 border-blue-200">
-                            <Shield className="h-3 w-3 mr-1" />
-                            Private Company
-                          </Badge>
-                        )}
-                        <Badge className="bg-blue-100 text-blue-800">
-                          <Briefcase className="h-3 w-3 mr-1" />
-                          Standard
-                        </Badge>
+        <div className="space-y-4">
+          {jobs.length > 0 ? (
+            jobs.map((job) => (
+              <Card
+                key={job.id}
+                className={`cursor-pointer hover:shadow-md transition-shadow ${job.isPaused || job.status === 'paused' ? 'bg-amber-50 border-amber-200' : ''
+                  }`}
+                onClick={() => handleJobClick(job)}
+              >
+                <CardContent className="p-6">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start space-x-4 flex-1 min-w-0">
+                      <div className="flex-shrink-0">
+                        <CompanyLogo
+                          companyName={job.employer.companyName}
+                          companyLogoUrl={job.employer.companyLogoUrl}
+                          size="md"
+                        />
                       </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
-                        <div className="flex items-center space-x-1">
-                          <Building2 className="h-4 w-4" />
-                          <span>{job.isCompanyPrivate ? 'Private Company' : job.employer.companyName}</span>
+                      <div className="flex-1 min-w-0 overflow-hidden">
+                        <div className="flex items-start flex-wrap gap-2 mb-2">
+                          <h3 className="text-lg font-semibold text-gray-900 line-clamp-2 max-w-md">
+                            {job.title}
+                          </h3>
+                          <Badge className={getStatusColor(job.status)}>
+                            {job.status === 'pending_vetting' ? (
+                              <>
+                                <Clock className="h-3 w-3 mr-1" />
+                                Pending
+                              </>
+                            ) : job.status === 'paused' ? (
+                              <>
+                                <Pause className="h-3 w-3 mr-1" />
+                                Paused
+                              </>
+                            ) : job.status === 'approved' ? (
+                              <>
+                                <CheckCircle className="h-3 w-3 mr-1" />
+                                Approved
+                              </>
+                            ) : job.status === 'rejected' ? (
+                              <>
+                                <XCircle className="h-3 w-3 mr-1" />
+                                Declined
+                              </>
+                            ) : (
+                              job.status.charAt(0).toUpperCase() + job.status.slice(1)
+                            )}
+                          </Badge>
+                          {(job.isPaused || job.status === 'paused') && job.pausedDaysRemaining && (
+                            <Badge className="bg-amber-100 text-amber-800">
+                              <Clock className="h-3 w-3 mr-1" />
+                              {job.pausedDaysRemaining} {job.pausedDaysRemaining === 1 ? 'day' : 'days'} remaining
+                            </Badge>
+                          )}
+                          {job.employer.isVetted && (
+                            <Badge className="bg-purple-100 text-purple-800">
+                              <UserCheck className="h-3 w-3 mr-1" />
+                              Vetted Employer
+                            </Badge>
+                          )}
+                          {job.isCompanyPrivate && (
+                            <Badge className="bg-blue-50 text-blue-600 border-blue-200">
+                              <Shield className="h-3 w-3 mr-1" />
+                              Private Company
+                            </Badge>
+                          )}
+                          <Badge className="bg-blue-100 text-blue-800">
+                            <Briefcase className="h-3 w-3 mr-1" />
+                            Standard
+                          </Badge>
                         </div>
-                        <div className="flex items-start space-x-1">
-                          <User className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                          <div className="flex flex-col min-w-0">
-                            <span className="font-medium text-gray-900">{job.employer.user.name}</span>
-                            <span className="text-gray-500 truncate">{job.employer.user.email}</span>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
+                          <div className="flex items-center space-x-1">
+                            <Building2 className="h-4 w-4" />
+                            <span>{job.isCompanyPrivate ? 'Private Company' : job.employer.companyName}</span>
+                          </div>
+                          <div className="flex items-start space-x-1">
+                            <User className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                            <div className="flex flex-col min-w-0">
+                              <span className="font-medium text-gray-900">{job.employer.user.name}</span>
+                              <span className="text-gray-500 truncate">{job.employer.user.email}</span>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <DollarSign className="h-4 w-4" />
+                            <span>{formatPayRange(job.payRangeMin, job.payRangeMax, job.payRangeText)}</span>
                           </div>
                         </div>
-                        <div className="flex items-center space-x-1">
-                          <DollarSign className="h-4 w-4" />
-                          <span>{formatPayRange(job.payRangeMin, job.payRangeMax, job.payRangeText)}</span>
+                        <div className="flex items-center space-x-4 text-sm text-gray-600 mt-2">
+                          <div className="flex items-center space-x-1">
+                            <Calendar className="h-4 w-4" />
+                            <span>Posted {formatDate(job.createdAt)}</span>
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex items-center space-x-4 text-sm text-gray-600 mt-2">
-                        <div className="flex items-center space-x-1">
-                          <Calendar className="h-4 w-4" />
-                          <span>Posted {formatDate(job.createdAt)}</span>
-                        </div>
-                      </div>
-                      {/* Expiration Date - Hide if paused */}
-                      {!job.isPaused && job.expiresAt && (
-                        <div className="flex items-center space-x-1 text-sm mt-2">
-                          <Clock className="h-4 w-4 text-gray-600" />
-                          <span className={new Date(job.expiresAt) < new Date() ? 'text-red-600 font-medium' : 'text-gray-600'}>
-                            Expires {formatDate(job.expiresAt)}
-                            {new Date(job.expiresAt) < new Date() && ' (Expired)'}
-                          </span>
-                        </div>
-                      )}
+                        {/* Expiration Date - Hide if paused */}
+                        {!job.isPaused && job.expiresAt && (
+                          <div className="flex items-center space-x-1 text-sm mt-2">
+                            <Clock className="h-4 w-4 text-gray-600" />
+                            <span className={new Date(job.expiresAt) < new Date() ? 'text-red-600 font-medium' : 'text-gray-600'}>
+                              Expires {formatDate(job.expiresAt)}
+                              {new Date(job.expiresAt) < new Date() && ' (Expired)'}
+                            </span>
+                          </div>
+                        )}
 
-                      {job.locationText && (
-                        <div className="flex items-center space-x-1 text-sm text-gray-600 mt-1">
-                          <MapPin className="h-4 w-4" />
-                          <span>{job.locationText}</span>
+                        {job.locationText && (
+                          <div className="flex items-center space-x-1 text-sm text-gray-600 mt-1">
+                            <MapPin className="h-4 w-4" />
+                            <span>{job.locationText}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex-shrink-0 ml-4 text-right">
+                      <div className="flex items-center space-x-4">
+                        <div className="text-center">
+                          <div className="text-lg font-semibold text-blue-600">{job.viewsCount}</div>
+                          <div className="text-xs text-gray-500">Views</div>
                         </div>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex-shrink-0 ml-4 text-right">
-                    <div className="flex items-center space-x-4">
-                      <div className="text-center">
-                        <div className="text-lg font-semibold text-blue-600">{job.viewsCount}</div>
-                        <div className="text-xs text-gray-500">Views</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-lg font-semibold text-green-600">{job._count.applications}</div>
-                        <div className="text-xs text-gray-500">Applications</div>
-                      </div>
-                      <div className="text-center">
-                        <Badge className={getJobStatusColor(job.jobStatus)}>
-                          {job.jobStatus}
-                        </Badge>
-                        <div className="text-xs text-gray-500 mt-1">Status</div>
+                        <div className="text-center">
+                          <div className="text-lg font-semibold text-green-600">{job._count.applications}</div>
+                          <div className="text-xs text-gray-500">Applications</div>
+                        </div>
+                        <div className="text-center">
+                          <Badge className={getJobStatusColor(job.jobStatus)}>
+                            {job.jobStatus}
+                          </Badge>
+                          <div className="text-xs text-gray-500 mt-1">Status</div>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
+                </CardContent>
+              </Card>
+            ))
+          ) : (
+            <Card>
+              <CardContent className="p-12 text-center">
+                <Briefcase className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">No standard jobs found</h3>
+                <p className="text-gray-600">
+                  {Object.values(filters).some(f => f && f !== 'all')
+                    ? 'Try adjusting your filters to see more results.'
+                    : 'No standard job posts have been created yet.'
+                  }
+                </p>
               </CardContent>
             </Card>
-          ))
-        ) : (
-          <Card>
-            <CardContent className="p-12 text-center">
-              <Briefcase className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">No standard jobs found</h3>
-              <p className="text-gray-600">
-                {Object.values(filters).some(f => f && f !== 'all')
-                  ? 'Try adjusting your filters to see more results.'
-                  : 'No standard job posts have been created yet.'
-                }
-              </p>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+          )}
+        </div>
       )}
 
       {/* Pagination */}
@@ -827,7 +826,7 @@ export default function AdminStandardJobsPage() {
                       </span>
                     </div>
                     <a
-                      href={`https://archive.hiremymom.com/wp-admin/post.php?post=${selectedJob.legacyId}&action=edit&classic-editor&classic-editor__forget`}
+                      href={`https://archive.ampertalent.com/wp-admin/post.php?post=${selectedJob.legacyId}&action=edit&classic-editor&classic-editor__forget`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-sm font-medium text-amber-700 hover:text-amber-900 hover:underline"
@@ -931,7 +930,7 @@ export default function AdminStandardJobsPage() {
                       </span>
                     </div>
                     <a
-                      href={`https://archive.hiremymom.com/wp-admin/edit.php?s&post_status=all&post_type=job_application&_job_listing=${selectedJob.legacyId}`}
+                      href={`https://archive.ampertalent.com/wp-admin/edit.php?s&post_status=all&post_type=job_application&_job_listing=${selectedJob.legacyId}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-sm font-medium text-amber-700 hover:text-amber-900 hover:underline"

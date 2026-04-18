@@ -67,7 +67,7 @@ export default function ReportsPage() {
         ReportingService.getScheduledReports(),
         ReportingService.getReportTemplates()
       ])
-      
+
       setScheduledReports(scheduled)
       setReportTemplates(templates)
     } catch (error) {
@@ -78,7 +78,7 @@ export default function ReportsPage() {
   const handleGenerateReport = async () => {
     try {
       setIsGenerating(true)
-      
+
       const validation = ReportingService.validateReportConfig(reportConfig as ReportConfig)
       if (!validation.isValid) {
         alert('Please fix the following errors:\n' + validation.errors.join('\n'))
@@ -87,7 +87,7 @@ export default function ReportsPage() {
 
       const report = await ReportingService.generateReport(reportConfig as ReportConfig)
       setGeneratedReports(prev => [report, ...prev])
-      
+
       alert('Report generated successfully!')
     } catch (error) {
       console.error('Error generating report:', error)
@@ -113,7 +113,7 @@ export default function ReportsPage() {
 
       setScheduledReports(prev => [scheduled, ...prev])
       setScheduleForm({ name: '', schedule: 'weekly', recipients: [''] })
-      
+
       alert('Report scheduled successfully!')
     } catch (error) {
       console.error('Error scheduling report:', error)
@@ -124,7 +124,7 @@ export default function ReportsPage() {
   const handleExportReport = async (report: ReportData, format: string) => {
     try {
       const content = await ReportingService.exportReport(report, format)
-      
+
       // Create download link
       const blob = new Blob([content], { type: 'text/plain' })
       const url = URL.createObjectURL(blob)
@@ -322,8 +322,8 @@ export default function ReportsPage() {
                   </div>
 
                   {/* Generate Button */}
-                  <Button 
-                    onClick={handleGenerateReport} 
+                  <Button
+                    onClick={handleGenerateReport}
                     disabled={isGenerating}
                     className="w-full"
                     size="lg"
@@ -386,7 +386,7 @@ export default function ReportsPage() {
                       <div className="flex justify-between">
                         <span className="text-gray-600">Period:</span>
                         <span className="font-medium">
-                          {reportConfig.dateRange && 
+                          {reportConfig.dateRange &&
                             `${formatDate(reportConfig.dateRange.start)} - ${formatDate(reportConfig.dateRange.end)}`
                           }
                         </span>
@@ -441,11 +441,11 @@ export default function ReportsPage() {
                   <Label htmlFor="recipients">Email Recipients</Label>
                   <Input
                     id="recipients"
-                    placeholder="admin@hiremymom.com"
+                    placeholder="admin@ampertalent.com"
                     value={scheduleForm.recipients[0]}
-                    onChange={(e) => setScheduleForm(prev => ({ 
-                      ...prev, 
-                      recipients: [e.target.value] 
+                    onChange={(e) => setScheduleForm(prev => ({
+                      ...prev,
+                      recipients: [e.target.value]
                     }))}
                   />
                 </div>
@@ -548,16 +548,16 @@ export default function ReportsPage() {
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         size="sm"
                         onClick={() => handleExportReport(report, 'pdf')}
                       >
                         <Download className="h-4 w-4 mr-2" />
                         PDF
                       </Button>
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         size="sm"
                         onClick={() => handleExportReport(report, 'csv')}
                       >
@@ -569,7 +569,7 @@ export default function ReportsPage() {
                       </Button>
                     </div>
                   </div>
-                  
+
                   {/* Key Metrics */}
                   <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
                     {Object.entries(report.summary.keyMetrics).map(([key, value]) => (
@@ -627,7 +627,7 @@ export default function ReportsPage() {
                     <div className="text-sm text-gray-600">
                       Type: {template.config.type?.replace('_', ' ') || 'User Activity'}
                     </div>
-                    <Button 
+                    <Button
                       size="sm"
                       onClick={() => {
                         setReportConfig({ ...reportConfig, ...template.config })

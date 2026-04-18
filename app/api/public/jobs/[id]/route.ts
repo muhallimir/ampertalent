@@ -92,7 +92,7 @@ export async function GET(
       applyUrl: `${process.env.NEXT_PUBLIC_APP_URL}/jobs/${job.id}`,
       // SEO-friendly data
       seo: {
-        title: `${job.title} at ${companyName} - HireMyMom`,
+        title: `${job.title} at ${companyName} - ampertalent`,
         description: job.description.length > 160
           ? job.description.substring(0, 160) + '...'
           : job.description,

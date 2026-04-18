@@ -1446,7 +1446,7 @@ export default function OnboardingPage() {
             <div className="flex justify-between items-center mb-4">
               <div className="flex-1"></div>
               <Image
-                src="/logo/ampertalent.png"
+                src="/logo/logo.png"
                 alt="AmperTalent Logo"
                 width={200}
                 height={0}

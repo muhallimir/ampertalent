@@ -532,90 +532,39 @@ export function MessageThread({ threadId, onBack }: MessageThreadProps) {
     }, [isConnected, thread?.participantDetails, profile?.clerkUserId]); // ✅ Removed requestOnlineStatus
 
     /** =========================
-     * Socket handlers
+     * SSE real-time: new_message
      * ========================= */
-    useEffect(() => {
-        if (!socket) return;
+    useNotificationListener('new_message', (notification: any) => {
+        const data = notification as { threadId: string; message: Message };
+        if (data.threadId !== threadId) return;
 
-        const handleNewMessage = (data: { threadId: string; message: Message }) => {
-            if (data.threadId !== threadId) return;
+        const isMyMessage = data.message.senderId === profile?.id;
+        const wasNearBottom = isNearBottom(listRef.current);
+        const stick = wasNearBottom || isMyMessage;
+        shouldStickToBottomRef.current = stick;
 
-            const isMyMessage = data.message.senderId === profile?.id;
-            const wasNearBottom = isNearBottom(listRef.current);
+        setMessages((prev) => (prev.some((m) => m.id === data.message.id) ? prev : [...prev, data.message]));
 
-            // Auto-scroll if: user sent it OR user was already at bottom
-            const stick = wasNearBottom || isMyMessage;
-            shouldStickToBottomRef.current = stick;
-
-            setMessages((prev) => (prev.some((m) => m.id === data.message.id) ? prev : [...prev, data.message]));
-
-            // Instant scroll for own messages, smooth for others when at bottom
-            if (stick) {
-                requestAnimationFrame(() => {
-                    scrollToBottom(isMyMessage ? 'auto' : 'smooth');
-                });
-            }
-        };
-
-        const handleUserPresence = (data: { userId: string; isOnline: boolean; lastSeenAt: string }) => {
-            const prismaUserId = clerkUserIdToPrismaId.current.get(data.userId);
-            if (!prismaUserId) return;
-            setOnlineUsers((prev) => {
-                const next = new Set(prev);
-                if (data.isOnline) next.add(prismaUserId);
-                else next.delete(prismaUserId);
-                return next;
+        if (stick) {
+            requestAnimationFrame(() => {
+                scrollToBottom(isMyMessage ? 'auto' : 'smooth');
             });
-        };
+        }
+    });
 
-        const handleTypingStart = (data: { threadId: string; userId: string }) => {
-            if (data.threadId === threadId && data.userId !== profile?.id) {
-                setTypingUsers((prev) => new Set(prev).add(data.userId));
-            }
-        };
-
-        const handleTypingStop = (data: { threadId: string; userId: string }) => {
-            if (data.threadId !== threadId) return;
-            setTypingUsers((prev) => {
-                const next = new Set(prev);
-                next.delete(data.userId);
-                return next;
-            });
-        };
-
-        const handleOnlineStatusResponse = (
-            statuses: Array<{ userId: string; isOnline: boolean; lastSeenAt: string }>
-        ) => {
-            setOnlineUsers((prev) => {
-                const next = new Set(prev);
-                statuses.forEach((s) => {
-                    const prismaUserId = clerkUserIdToPrismaId.current.get(s.userId);
-                    if (!prismaUserId) return;
-                    if (s.isOnline) next.add(prismaUserId);
-                    else next.delete(prismaUserId);
-                });
-                return next;
-            });
-        };
-
-        socket.on('new_message', handleNewMessage);
-        socket.on('user_presence', handleUserPresence);
-        socket.on('user_online', handleUserPresence);
-        socket.on('user_offline', handleUserPresence);
-        socket.on('typing_start', handleTypingStart);
-        socket.on('typing_stop', handleTypingStop);
-        socket.on('online_status_response', handleOnlineStatusResponse);
-
-        return () => {
-            socket.off('new_message', handleNewMessage);
-            socket.off('user_presence', handleUserPresence);
-            socket.off('user_online', handleUserPresence);
-            socket.off('user_offline', handleUserPresence);
-            socket.off('typing_start', handleTypingStart);
-            socket.off('typing_stop', handleTypingStop);
-            socket.off('online_status_response', handleOnlineStatusResponse);
-        };
-    }, [socket, threadId, profile?.id]);
+    /** =========================
+     * SSE real-time: presence
+     * ========================= */
+    useNotificationListener('presence', (notification: any) => {
+        const prismaUserId = clerkUserIdToPrismaId.current.get(notification.userId);
+        if (!prismaUserId) return;
+        setOnlineUsers((prev) => {
+            const next = new Set(prev);
+            if (notification.isOnline) next.add(prismaUserId);
+            else next.delete(prismaUserId);
+            return next;
+        });
+    });
 
     /** =========================
      * Employer: fetch applicant list (context)

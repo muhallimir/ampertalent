@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useSocket } from './useSocket'
+import { useState } from 'react'
+import { useNotificationListener } from './useRealTimeNotifications'
 
 interface UserPresence {
     userId: string
@@ -16,45 +16,20 @@ interface UsePresenceReturn {
 }
 
 export function usePresence(): UsePresenceReturn {
-    const { socket } = useSocket()
     const [userPresence, setUserPresence] = useState<Map<string, UserPresence>>(new Map())
 
-    useEffect(() => {
-        if (!socket) return
-
-        const handleUserOnline = (data: { userId: string }) => {
-            setUserPresence(prev => {
-                const newMap = new Map(prev)
-                newMap.set(data.userId, {
-                    userId: data.userId,
-                    isOnline: true,
-                    lastSeenAt: new Date().toISOString()
-                })
-                return newMap
+    // Listen for presence updates via SSE
+    useNotificationListener('presence', (notification: any) => {
+        setUserPresence(prev => {
+            const newMap = new Map(prev)
+            newMap.set(notification.userId, {
+                userId: notification.userId,
+                isOnline: notification.isOnline,
+                lastSeenAt: new Date().toISOString(),
             })
-        }
-
-        const handleUserOffline = (data: { userId: string }) => {
-            setUserPresence(prev => {
-                const newMap = new Map(prev)
-                const existingPresence = prev.get(data.userId)
-                newMap.set(data.userId, {
-                    userId: data.userId,
-                    isOnline: false,
-                    lastSeenAt: existingPresence?.lastSeenAt || new Date().toISOString()
-                })
-                return newMap
-            })
-        }
-
-        socket.on('user_online', handleUserOnline)
-        socket.on('user_offline', handleUserOffline)
-
-        return () => {
-            socket.off('user_online', handleUserOnline)
-            socket.off('user_offline', handleUserOffline)
-        }
-    }, [socket])
+            return newMap
+        })
+    })
 
     const getPresence = (userId: string): UserPresence | null => {
         return userPresence.get(userId) || null

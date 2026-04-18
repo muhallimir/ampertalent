@@ -34,7 +34,7 @@
 - [ ] Copy `lib/error-handler.ts`
 - [ ] Copy `lib/file-validation.ts`
 - [ ] Update `tsconfig.json`, `next.config.mjs`, `tailwind.config.ts`
-- [ ] Move `ampertalent.png` to `public/logo/` (already in repo root)
+- [ ] Move `logo.png` to `public/logo/` (already in repo root)
 - [ ] Create favicon from logo (multiple sizes)
 
 **Branding Adjustments (with Ampertalent Logo Colors):**
@@ -56,7 +56,7 @@ Dark Navy:         #1A2D47 (text, headings)
   - `amper-cyan: #00D9FF`
   - `amper-dark: #1A2D47`
 - [ ] Add CSS variables to `app/globals.css` (primary, secondary, accent, dark)
-- [ ] Copy logo file: `ampertalent.png` → `public/logo/`
+- [ ] Copy logo file: `logo.png` → `public/logo/`
 - [ ] Replace all "HireMyMom" text with "Ampertalent"
 - [ ] Update tagline: "Connect With Flexible Talent" → "Where Flexible Talent Meets Opportunity"
 - [ ] Update domain references: hiremymom.com → ampertalent-demo.vercel.app

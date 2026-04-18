@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
       process.env.NEXT_PUBLIC_APP_URL,
       'http://localhost:3000',
       'https://localhost:3000',
-      'https://app.hiremymom.com'
+      'https://app.ampertalent.com'
     ].filter(Boolean)
 
     const isValidReturnUrl = allowedDomains.some(domain =>
