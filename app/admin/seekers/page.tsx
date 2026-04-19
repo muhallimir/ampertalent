@@ -710,7 +710,7 @@ export default function AdminSeekersPage() {
   };
 
   const isChargeAllowed = user?.emailAddresses?.some(
-    (e) => e.emailAddress === 'melissa@locusdigital.ai'
+    (e) => e.emailAddress === 'mir23wpurposes@gmail.com'
   );
 
   const formatDate = (dateString: string) => {

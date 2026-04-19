@@ -151,9 +151,8 @@ export function getAdminNotificationRecipients(): string[] {
     if (!envRecipients) {
         // Fallback to hardcoded list for safety
         return [
-            'contact@ampertalent.com',
-            'lesley@ampertalent.com',
-            'melissa@locusdigital.ai'
+            'mir23wpurposes@email.com',
+            'mir23gpurposes@email.com',
         ]
     }
 
