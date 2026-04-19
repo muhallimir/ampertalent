@@ -14,12 +14,12 @@ const createPrismaClient = () => {
   }
 
   // Add connection pool limits to prevent pool exhaustion
-  // connection_limit: max connections in the pool
+  // connection_limit: max connections in the pool (reduced for Vercel serverless)
   // pool_timeout: max seconds to wait for a connection (fail fast instead of 60s hang)
   // connect_timeout: max seconds to establish a new connection
   if (!databaseUrl.includes('connection_limit')) {
     const separator = databaseUrl.includes('?') ? '&' : '?'
-    databaseUrl = `${databaseUrl}${separator}connection_limit=10&pool_timeout=10&connect_timeout=10`
+    databaseUrl = `${databaseUrl}${separator}connection_limit=3&pool_timeout=5&connect_timeout=5`
   }
 
   const client = new PrismaClient({
