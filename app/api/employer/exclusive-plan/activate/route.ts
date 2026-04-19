@@ -10,7 +10,7 @@ import { db } from '@/lib/db'
 // import { isPayPalPaymentMethod, extractBillingAgreementId, getPayPalClient } from '@/lib/paypal'
 import { INVITATION_PACKAGE_CONFIG } from '@/lib/employer-package-provisioning'
 import { InAppNotificationService } from '@/lib/in-app-notification-service'
-// import { createGHLService } from '@/lib/ghl-sync-service'
+// CRM sync removed - not configured for ampertalent
 import { NotificationService } from '@/lib/notification-service'
 
 export async function POST(request: NextRequest) {
@@ -213,50 +213,7 @@ export async function POST(request: NextRequest) {
             console.error('⚠️ EXCLUSIVE-PLAN: Failed to write external_payment (non-fatal):', epError)
         }
 
-        // GHL SYNC: Sync exclusive plan activation to GoHighLevel CRM
-        try {
-            console.log('🔄 EXCLUSIVE-PLAN: Syncing exclusive plan activation to GHL...', {
-                employerId: currentUser.profile.id,
-                packageName: packageConfig.packageName,
-                amountCents,
-                transactionId: paymentResult.transactionId
-            });
-
-            const ghlService = await createGHLService();
-
-            if (ghlService) {
-                // Sync user data to GHL
-                const ghlContactId = await ghlService.syncUserToGHL(currentUser.profile.id, 'update');
-                console.log('✅ EXCLUSIVE-PLAN: Exclusive plan activation synced to GHL successfully');
-
-                // Add purchase activity note to GHL for timeline tracking
-                if (ghlContactId) {
-                    const paymentMethodType = paymentMethod.authnetPaymentProfileId &&
-                        isPayPalPaymentMethod(paymentMethod.authnetPaymentProfileId) ? 'PayPal' : 'Credit Card';
-
-                    await ghlService.addPurchaseActivityNote(
-                        currentUser.profile.id,
-                        'subscription_purchase', // Exclusive plan is a recurring subscription purchase
-                        {
-                            amount: amountCents / 100, // Convert cents to dollars
-                            planName: `${packageConfig.packageName} (Exclusive)`,
-                            packageNames: [`${packageConfig.packageName} (Exclusive - ${packageConfig.billingCyclesTotal} months)`],
-                            paymentMethod: paymentMethodType,
-                            duration: `${packageConfig.billingCyclesTotal} months`
-                        },
-                        ghlContactId
-                    );
-                    console.log('✅ EXCLUSIVE-PLAN: Purchase activity note added to GHL');
-                } else {
-                    console.warn('⚠️ EXCLUSIVE-PLAN: No GHL contact ID returned, skipping activity note');
-                }
-            } else {
-                console.log('ℹ️ EXCLUSIVE-PLAN: GHL service not configured, skipping sync');
-            }
-        } catch (ghlError) {
-            console.error('❌ EXCLUSIVE-PLAN: Failed to sync to GHL:', ghlError);
-            // Don't throw - GHL sync failure shouldn't break the activation flow
-        }
+        // CRM sync skipped - not configured for ampertalent
 
         // Send notifications
         const employerName = employer.user.name || employer.companyName

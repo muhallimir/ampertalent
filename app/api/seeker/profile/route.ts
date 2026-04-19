@@ -402,52 +402,7 @@ export async function PUT(request: NextRequest) {
       updatedAt: updatedSeeker.updatedAt.toISOString(),
     };
 
-    // ✅ PHASE 2: Sync profile update to GHL
-    // This ensures all changes (name, email, phone, custom fields) are reflected in GHL contact
-    try {
-      const { createGHLService } = await import('@/lib/ghl-sync-service');
-      const ghlService = await createGHLService();
-
-      if (ghlService) {
-        console.log('[Seeker Profile Update] Syncing updated profile to GHL...', {
-          userId: currentUser.profile.id,
-          email: updatedSeeker.user.email,
-          fieldsUpdated: Object.keys(body)
-        });
-
-        // Fetch full user with all relations needed for field mapping
-        const fullUser = await db.userProfile.findUnique({
-          where: { id: currentUser.profile.id },
-          include: {
-            jobSeeker: {
-              include: {
-                subscriptions: {
-                  orderBy: { createdAt: 'desc' },
-                  take: 1
-                }
-              }
-            }
-          }
-        });
-
-        if (fullUser) {
-          // transformUserToGHLContact() uses field mappings to map all 10 auto-generated fields
-          const ghlContact = await (ghlService as any).transformUserToGHLContact(fullUser);
-          const result = await ghlService.upsertContact(ghlContact);
-
-          console.log('[Seeker Profile Update] GHL sync successful:', {
-            message: result.message,
-            contactId: result.contact.id,
-            email: result.contact.email
-          });
-        }
-      } else {
-        console.warn('[Seeker Profile Update] GHL service not available - skipping sync');
-      }
-    } catch (ghlError) {
-      // Log error but don't fail the profile update
-      console.error('[Seeker Profile Update] GHL sync failed:', ghlError);
-    }
+    // CRM sync skipped - not configured for ampertalent
 
     // Create a response that includes instructions to dispatch the profile update event
     const response = NextResponse.json({

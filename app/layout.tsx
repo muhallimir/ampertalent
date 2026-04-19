@@ -5,7 +5,6 @@ import "./globals.css";
 import { Provider } from "./provider";
 import { ToastProvider } from "@/components/ui/toast";
 import { Toaster } from "@/components/ui/toaster";
-import { BugsnagErrorBoundaryWrapper } from "@/components/bugsnag-error-boundary";
 import { RealTimeNotificationProvider } from "@/components/providers/RealTimeNotificationProvider";
 import { UserProfileProvider } from "@/components/providers/UserProfileProvider";
 import { MessageProvider } from "@/components/providers/MessageProvider";
@@ -34,22 +33,20 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
         <body className={inter.className} suppressHydrationWarning>
-          <BugsnagErrorBoundaryWrapper>
-            <Provider>
-              <UserProfileProvider>
-                <MessageProvider>
-                  <SavedJobsProvider>
-                    <ToastProvider>
-                      <RealTimeNotificationProvider>
-                        {children}
-                        <Toaster />
-                      </RealTimeNotificationProvider>
-                    </ToastProvider>
-                  </SavedJobsProvider>
-                </MessageProvider>
-              </UserProfileProvider>
-            </Provider>
-          </BugsnagErrorBoundaryWrapper>
+          <Provider>
+            <UserProfileProvider>
+              <MessageProvider>
+                <SavedJobsProvider>
+                  <ToastProvider>
+                    <RealTimeNotificationProvider>
+                      {children}
+                      <Toaster />
+                    </RealTimeNotificationProvider>
+                  </ToastProvider>
+                </SavedJobsProvider>
+              </MessageProvider>
+            </UserProfileProvider>
+          </Provider>
         </body>
       </html>
     </ClerkProvider>

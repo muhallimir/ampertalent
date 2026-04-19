@@ -36,7 +36,7 @@ export default function CRMSyncPage() {
             <div className="mb-6">
                 <h1 className="text-3xl font-bold">CRM Sync Configuration</h1>
                 <p className="text-gray-600 mt-2">
-                    Configure GoHighLevel CRM synchronization settings and field mappings
+                    Configure CRM synchronization settings and field mappings
                 </p>
             </div>
 
@@ -44,7 +44,7 @@ export default function CRMSyncPage() {
                 <CardHeader>
                     <CardTitle>CRM Integration</CardTitle>
                     <CardDescription>
-                        Manage your GoHighLevel CRM connection, field mappings, and sync settings
+                        Manage your CRM connection, field mappings, and sync settings
                     </CardDescription>
                 </CardHeader>
                 <CardContent>

@@ -121,29 +121,7 @@ export async function POST(request: NextRequest) {
         })
         console.log('Database email updated successfully')
 
-        // CRM SYNC: Sync email change to GHL
-        // This updates the email field in GHL contact
-        try {
-          const { createGHLService } = await import('@/lib/ghl-sync-service')
-          const ghlService = await createGHLService()
-
-          if (ghlService && currentUser.profile?.id) {
-            console.log('🔄 EMPLOYER EMAIL CHANGE: Syncing updated email to GHL...', {
-              userId: currentUser.profile.id,
-              oldEmail: currentEmail,
-              newEmail: newEmail
-            })
-
-            await ghlService.syncUserToGHL(currentUser.profile.id, 'update')
-
-            console.log('✅ EMPLOYER EMAIL CHANGE: Email synced to GHL successfully')
-          } else {
-            console.log('ℹ️ EMPLOYER EMAIL CHANGE: GHL service not configured, skipping sync')
-          }
-        } catch (ghlError) {
-          console.error('❌ EMPLOYER EMAIL CHANGE: Failed to sync to GHL:', ghlError)
-          // Don't fail the email change if GHL sync fails - it's non-critical
-        }
+        // CRM sync skipped - not configured for ampertalent
       } catch (dbError: any) {
         console.error('Failed to update database email:', dbError)
         // Continue anyway - Clerk update was successful

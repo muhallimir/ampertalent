@@ -145,35 +145,7 @@ export async function POST(request: NextRequest) {
                 }
             })
 
-            // GHL SYNC: Add extension activity note to CRM
-            try {
-                const { createGHLService } = await import('@/lib/ghl-sync-service')
-                const ghlService = await createGHLService()
-
-                if (ghlService) {
-                    // First sync the user (update contact)
-                    const ghlContactId = await ghlService.syncUserToGHL(employerPackage.employerId, 'update')
-
-                    // Then add an extension activity note
-                    if (ghlContactId) {
-                        await ghlService.addPurchaseActivityNote(
-                            employerPackage.employerId,
-                            'plan_extension',
-                            {
-                                planName: `+${requestedMonths} months (${employerPackage.billingCyclesTotal} → ${newBillingCyclesTotal} total)`,
-                                packageNames: ['Employer Request (Approved)'],
-                                duration: `${newBillingCyclesTotal} months`,
-                                action: `Approved by ${authData.profile.email}`
-                            },
-                            ghlContactId
-                        )
-                        console.log(`📊 GHL: Extension request approval note added for ${employerEmail}`)
-                    }
-                }
-            } catch (ghlError) {
-                // Don't fail the request if GHL sync fails
-                console.error('⚠️ GHL sync failed for extension approval (non-blocking):', ghlError)
-            }
+            // CRM sync skipped - not configured for ampertalent
 
             console.log(`✅ Extension request APPROVED for ${employerEmail} by admin ${authData.profile.email}`)
 

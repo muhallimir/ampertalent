@@ -230,45 +230,7 @@ export async function PUT(request: NextRequest) {
       updatedAt: updatedEmployer.updatedAt.toISOString()
     }
 
-    // ✅ PHASE 2: Sync employer profile update to GHL
-    // This ensures all changes (companyName, website, etc.) are reflected in GHL contact
-    try {
-      const { createGHLService } = await import('@/lib/ghl-sync-service');
-      const ghlService = await createGHLService();
-
-      if (ghlService) {
-        console.log('[Employer Profile Update] Syncing updated profile to GHL...', {
-          userId: employerId,
-          companyName: updatedEmployer.companyName,
-          fieldsUpdated: Object.keys(data)
-        });
-
-        // Fetch full user with employer relations needed for field mapping
-        const fullUser = await db.userProfile.findUnique({
-          where: { id: employerId },
-          include: {
-            employer: true
-          }
-        });
-
-        if (fullUser) {
-          // transformUserToGHLContact() uses field mappings to map all 10 auto-generated fields
-          const ghlContact = await (ghlService as any).transformUserToGHLContact(fullUser);
-          const result = await ghlService.upsertContact(ghlContact);
-
-          console.log('[Employer Profile Update] GHL sync successful:', {
-            message: result.message,
-            contactId: result.contact.id,
-            email: result.contact.email
-          });
-        }
-      } else {
-        console.warn('[Employer Profile Update] GHL service not available - skipping sync');
-      }
-    } catch (ghlError) {
-      // Log error but don't fail the profile update
-      console.error('[Employer Profile Update] GHL sync failed:', ghlError);
-    }
+    // CRM sync skipped - not configured for ampertalent
 
     return NextResponse.json({
       success: true,

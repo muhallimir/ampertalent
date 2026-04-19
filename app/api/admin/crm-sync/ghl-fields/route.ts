@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { checkSuperAdminAuth } from '@/lib/crm-sync-auth'
 import { db } from '@/lib/db'
-import { createGHLService } from '@/lib/ghl-sync-service'
 
 /**
  * GET /api/admin/crm-sync/ghl-fields
- * Fetch cached GHL custom fields
+ * Fetch cached CRM custom fields
  * Super admin only
  */
 export async function GET(req: NextRequest) {
@@ -19,12 +18,11 @@ export async function GET(req: NextRequest) {
         // Fetch cached GHL fields from database
         const ghlFields = await db.ghlField.findMany({
             orderBy: [
-                { isSystemField: 'desc' }, // System fields first
+                { isSystemField: 'desc' },
                 { name: 'asc' }
             ]
         })
 
-        // Group by field type (system vs custom) for UI grouping
         const groupedByType = {
             'System Fields': ghlFields.filter(f => f.isSystemField),
             'Custom Fields': ghlFields.filter(f => !f.isSystemField)
@@ -40,10 +38,9 @@ export async function GET(req: NextRequest) {
         })
 
     } catch (error: any) {
-        console.error('Failed to fetch GHL fields:', error)
-
+        console.error('Failed to fetch CRM fields:', error)
         return NextResponse.json(
-            { error: 'Failed to fetch GHL fields' },
+            { error: 'Failed to fetch CRM fields' },
             { status: 500 }
         )
     }
