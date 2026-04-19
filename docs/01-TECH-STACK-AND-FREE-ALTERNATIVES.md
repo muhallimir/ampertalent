@@ -211,7 +211,7 @@
 | --------------------- | ---------------------- | ------------------------------- | ---------------------------------- |
 | **External Webhooks** | Custom webhook service | **Same custom webhook service** | ✅ Self-built, no external service |
 
-> **Note:** WordPress integration from the original project is **removed** in Ampertalent. It was a legacy integration for the original client's WordPress site and is not relevant to the portfolio clone.
+> **Note:** marketing integration from the original project is **removed** in Ampertalent. It was a legacy integration for the original client's marketing site and is not relevant to the portfolio clone.
 
 ---
 

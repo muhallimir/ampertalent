@@ -43,12 +43,12 @@ export async function GET(request: NextRequest) {
       take: 100 // Limit to prevent huge feeds
     });
 
-    // Generate WordPress-compatible slugs (matches WordPress plugin logic)
+    // Generate marketing-compatible slugs (matches marketing plugin logic)
     const generateSlug = (jobId: string, title: string): string => {
-      // Use first 8 characters of job ID for shorter, cleaner slugs (matches WordPress plugin)
+      // Use first 8 characters of job ID for shorter, cleaner slugs (matches marketing plugin)
       const idPart = jobId.substring(0, 8);
 
-      // Sanitize title for URL (matches WordPress sanitize_title function)
+      // Sanitize title for URL (matches marketing sanitize_title function)
       const titleSlug = title
         .toLowerCase()
         .replace(/[^a-z0-9\s-]/g, '') // Remove special chars

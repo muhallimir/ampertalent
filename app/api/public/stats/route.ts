@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
       })
     ]);
 
-    // Get job categories for WordPress display
+    // Get job categories for marketing display
     const jobCategories = await db.job.groupBy({
       by: ['category'],
       _count: { category: true },
@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
         totalJobs,
         totalApplications,
         activeJobs,
-        yearsInBusiness: 18, // Static value as mentioned on WordPress site
+        yearsInBusiness: 18, // Static value as mentioned on marketing site
         successfulPlacements: Math.floor(totalApplications * 0.15) // Estimated conversion rate
       },
       activity: {
@@ -90,7 +90,7 @@ export async function GET(request: NextRequest) {
         percentage: totalJobs > 0 ? Math.round((cat._count.category / totalJobs) * 100) : 0
       })),
       trustIndicators: {
-        // These match the WordPress site claims
+        // These match the marketing site claims
         jobSeekers: "50,000+", // Rounded up for marketing
         yearsInBusiness: "18 Years",
         smallBusinesses: "30,000+", // Rounded up for marketing

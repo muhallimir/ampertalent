@@ -1,18 +1,18 @@
-export interface WordpressSlugResult {
+export interface marketingSlugResult {
   slug: string;
-  wordpressUrl: string;
+  marketingUrl: string;
   title: string;
 }
 
-// Fetch the public WordPress URL for a job id, throwing on failure
-export async function getWordpressJobUrl(jobId: string): Promise<string> {
-  const response = await fetch(`/api/jobs/${jobId}/wordpress-slug`);
+// Fetch the public marketing URL for a job id, throwing on failure
+export async function getmarketingJobUrl(jobId: string): Promise<string> {
+  const response = await fetch(`/api/jobs/${jobId}/marketing-slug`);
   if (!response.ok) {
-    throw new Error(`Failed to resolve WordPress slug for job ${jobId}`);
+    throw new Error(`Failed to resolve marketing slug for job ${jobId}`);
   }
-  const data = (await response.json()) as WordpressSlugResult;
-  if (!data?.wordpressUrl) {
-    throw new Error('Missing WordPress URL in slug response');
+  const data = (await response.json()) as marketingSlugResult;
+  if (!data?.marketingUrl) {
+    throw new Error('Missing marketing URL in slug response');
   }
-  return data.wordpressUrl;
+  return data.marketingUrl;
 }

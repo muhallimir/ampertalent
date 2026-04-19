@@ -110,7 +110,7 @@ const isPublicRoute = createRouteMatcher([
   '/api/ghl(.*)',
   '/api/health(.*)',
   '/api/webhooks(.*)',
-  '/checkout/authnet(.*)', // Allow public access to checkout for WordPress integration
+  '/checkout/authnet(.*)', // Allow public access to checkout for marketing integration
 ]);
 
 export default clerkMiddleware(async (auth, request: NextRequest) => {

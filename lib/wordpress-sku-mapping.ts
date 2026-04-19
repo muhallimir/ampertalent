@@ -1,7 +1,7 @@
 /**
- * WordPress SKU to Internal Plan Mapping
+ * marketing SKU to Internal Plan Mapping
  *
- * This file maps WordPress product SKUs to internal plan IDs and user types.
+ * This file maps marketing product SKUs to internal plan IDs and user types.
  * SKUs are the primary identifier used in marketing site URLs.
  */
 
@@ -222,7 +222,7 @@ const SKU_LOOKUP_MAP = new Map<string, SkuMapping>(
 
 /**
  * Look up a SKU and return its mapping
- * @param sku WordPress product SKU
+ * @param sku marketing product SKU
  * @returns SkuMapping or null if not found
  */
 export function getSkuMapping(sku: string): SkuMapping | null {
@@ -231,7 +231,7 @@ export function getSkuMapping(sku: string): SkuMapping | null {
 
 /**
  * Check if a SKU is valid
- * @param sku WordPress product SKU
+ * @param sku marketing product SKU
  */
 export function isValidSku(sku: string): boolean {
     return SKU_LOOKUP_MAP.has(sku)
@@ -239,7 +239,7 @@ export function isValidSku(sku: string): boolean {
 
 /**
  * Get user type from SKU
- * @param sku WordPress product SKU
+ * @param sku marketing product SKU
  */
 export function getUserTypeFromSku(sku: string): 'seeker' | 'employer' | null {
     const mapping = getSkuMapping(sku)
@@ -248,7 +248,7 @@ export function getUserTypeFromSku(sku: string): 'seeker' | 'employer' | null {
 
 /**
  * Get internal plan ID from SKU
- * @param sku WordPress product SKU
+ * @param sku marketing product SKU
  */
 export function getPlanIdFromSku(sku: string): string | null {
     const mapping = getSkuMapping(sku)
@@ -325,7 +325,7 @@ export function getServiceInfoById(serviceId: string): { name: string; price: nu
 /**
  * Get the internal service ID from a SKU
  * Used to map SKU → service ID for the services page after PayPal redirect
- * @param sku WordPress product SKU
+ * @param sku marketing product SKU
  * @returns The internal service ID (planId) or null if not a service SKU
  */
 export function getServiceIdFromSku(sku: string): string | null {

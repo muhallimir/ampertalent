@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/select'
 import { PackageSelectionCard } from '@/components/onboarding/PackageSelectionCard'
 import { SEEKER_SUBSCRIPTION_PLANS } from '@/lib/subscription-plans'
-import { getServiceInfoById } from '@/lib/wordpress-sku-mapping'
+import { getServiceInfoById } from '@/lib/marketing-sku-mapping'
 import { Sparkles, ArrowRight } from 'lucide-react'
 
 const CLEAR_SELECT_VALUE = '__clear__'
@@ -93,7 +93,7 @@ export function PackageCompanyStep({
   // Seeker: Show Package Selection
   return (
     <div className="space-y-8">
-      {/* Premium Service Banner - shows when user clicked a service link from WordPress */}
+      {/* Premium Service Banner - shows when user clicked a service link from marketing */}
       {pendingServiceInfo && (
         <div className="bg-gradient-to-r from-brand-teal/10 via-brand-coral/10 to-brand-teal/10 border border-brand-teal/30 rounded-xl p-5 mb-6">
           <div className="flex items-start gap-4">

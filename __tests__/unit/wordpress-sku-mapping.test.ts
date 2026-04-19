@@ -1,5 +1,5 @@
 /**
- * WordPress SKU Mapping Unit Tests
+ * marketing SKU Mapping Unit Tests
  *
  * These are PURE UNIT TESTS - no database, no API calls, no side effects.
  * Tests only pure functions that map SKU strings to plan configuration objects.
@@ -21,9 +21,9 @@ import {
     getPurchaseTypeFromSku,
     getServiceIdFromSku,
     ALL_SKU_MAPPINGS,
-} from '@/lib/wordpress-sku-mapping'
+} from '@/lib/marketing-sku-mapping'
 
-describe('WordPress SKU Mapping', () => {
+describe('marketing SKU Mapping', () => {
     // No setup needed - pure functions with no state
 
     afterAll(() => {

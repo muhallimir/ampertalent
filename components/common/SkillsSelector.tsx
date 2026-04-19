@@ -18,7 +18,7 @@ const SUGGESTED_SKILLS = [
   'Document Preparation',
   'Research',
   'Scheduling',
-  
+
   // Technical
   'Microsoft Office',
   'Google Workspace',
@@ -28,9 +28,9 @@ const SUGGESTED_SKILLS = [
   'Spreadsheets',
   'CRM Software',
   'Social Media Management',
-  'WordPress',
+  'marketing',
   'Basic HTML/CSS',
-  
+
   // Creative
   'Graphic Design',
   'Content Writing',
@@ -42,7 +42,7 @@ const SUGGESTED_SKILLS = [
   'Canva',
   'Adobe Creative Suite',
   'Marketing Materials',
-  
+
   // Communication
   'Written Communication',
   'Phone Support',
@@ -54,7 +54,7 @@ const SUGGESTED_SKILLS = [
   'Translation',
   'Proofreading',
   'Editing',
-  
+
   // Business
   'Bookkeeping',
   'QuickBooks',
@@ -66,7 +66,7 @@ const SUGGESTED_SKILLS = [
   'Market Research',
   'Business Development',
   'Event Planning',
-  
+
   // Specialized
   'Real Estate Support',
   'Healthcare Administration',
@@ -86,10 +86,10 @@ interface SkillsSelectorProps {
   maxSkills?: number
 }
 
-export function SkillsSelector({ 
-  selectedSkills, 
-  onSkillsChange, 
-  maxSkills = 20 
+export function SkillsSelector({
+  selectedSkills,
+  onSkillsChange,
+  maxSkills = 20
 }: SkillsSelectorProps) {
   const [customSkill, setCustomSkill] = useState('')
   const [showSuggestions, setShowSuggestions] = useState(false)
@@ -97,8 +97,8 @@ export function SkillsSelector({
   const addSkill = (skill: string) => {
     const trimmedSkill = skill.trim()
     if (
-      trimmedSkill && 
-      !selectedSkills.includes(trimmedSkill) && 
+      trimmedSkill &&
+      !selectedSkills.includes(trimmedSkill) &&
       selectedSkills.length < maxSkills
     ) {
       onSkillsChange([...selectedSkills, trimmedSkill])
@@ -118,7 +118,7 @@ export function SkillsSelector({
   }
 
   const filteredSuggestions = SUGGESTED_SKILLS.filter(
-    skill => 
+    skill =>
       !selectedSkills.includes(skill) &&
       skill.toLowerCase().includes(customSkill.toLowerCase())
   ).slice(0, 10)

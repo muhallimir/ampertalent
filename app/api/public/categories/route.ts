@@ -3,7 +3,7 @@ import { db } from '@/lib/db';
 
 export async function GET(request: NextRequest) {
   try {
-    // Get job categories with counts for WordPress display
+    // Get job categories with counts for marketing display
     const categories = await db.job.groupBy({
       by: ['category'],
       _count: { category: true },
@@ -78,7 +78,7 @@ function getCategoryDescription(category: string): string {
     'Education': 'Online tutoring, curriculum development, and educational roles',
     'Healthcare': 'Remote healthcare administration and telehealth positions'
   };
-  
+
   return descriptions[category] || `Remote ${category.toLowerCase()} opportunities`;
 }
 
@@ -89,6 +89,6 @@ function formatJobTypeLabel(type: string): string {
     'part_time': 'Part-Time',
     'project': 'Project-Based'
   };
-  
+
   return labels[type] || type;
 }

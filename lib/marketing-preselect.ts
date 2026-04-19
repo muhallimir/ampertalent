@@ -5,10 +5,10 @@
  * sign-up/sign-in flow using cookies.
  */
 
-import { getSkuMapping, PurchaseType } from './wordpress-sku-mapping'
+import { getSkuMapping, PurchaseType } from './marketing-sku-mapping'
 
 export interface MarketingPreselect {
-    sku: string // Original WordPress SKU
+    sku: string // Original marketing SKU
     userType: 'seeker' | 'employer'
     planId: string // Internal plan ID (resolved from SKU) - for services, this is the serviceId
     purchaseType: PurchaseType // 'subscription', 'package', or 'service'
@@ -20,7 +20,7 @@ const COOKIE_MAX_AGE = 60 * 60 * 24 // 24 hours in seconds
 
 /**
  * Set marketing preselection cookie from SKU
- * @param sku WordPress product SKU
+ * @param sku marketing product SKU
  * @returns true if valid SKU and cookie was set, false otherwise
  */
 export function setMarketingPreselectFromSku(sku: string): boolean {

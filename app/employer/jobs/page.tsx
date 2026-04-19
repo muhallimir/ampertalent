@@ -41,7 +41,7 @@ import {
   Pause,
   AlertTriangle,
 } from "lucide-react";
-import { getWordpressJobUrl } from "@/app/data-access/jobs";
+import { getmarketingJobUrl } from "@/app/data-access/jobs";
 
 interface JobPosting {
   id: string;
@@ -586,7 +586,7 @@ export default function EmployerJobsPage() {
 
   const handleShareJob = async (jobId: string) => {
     try {
-      const shareUrl: string = await getWordpressJobUrl(jobId);
+      const shareUrl: string = await getmarketingJobUrl(jobId);
       await navigator.clipboard.writeText(shareUrl);
       addToast({
         title: "Success!",
@@ -1406,10 +1406,10 @@ export default function EmployerJobsPage() {
               <Card
                 key={job.id}
                 className={`hover:shadow-md transition-shadow ${job.isArchived
-                    ? "opacity-75 bg-gray-50 border-gray-200"
-                    : job.isPaused
-                      ? "bg-amber-50 border-amber-200"
-                      : ""
+                  ? "opacity-75 bg-gray-50 border-gray-200"
+                  : job.isPaused
+                    ? "bg-amber-50 border-amber-200"
+                    : ""
                   }`}
               >
                 <CardContent className="p-6">

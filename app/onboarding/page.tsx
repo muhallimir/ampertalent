@@ -209,7 +209,7 @@ export default function OnboardingPage() {
   const [userInvitation, setUserInvitation] = useState<UserInvitation | null>(null)
   const [invitationChecked, setInvitationChecked] = useState(false)
   const [hasAutoRestored, setHasAutoRestored] = useState(false)
-  // Marketing preselection from WordPress site (via cookie)
+  // Marketing preselection from marketing site (via cookie)
   const [marketingPreselect, setMarketingPreselect] = useState<MarketingPreselect | null>(null)
   const [marketingPreselectChecked, setMarketingPreselectChecked] = useState(false)
   // Service-only flow: User came via a service SKU link and doesn't need a subscription
@@ -434,7 +434,7 @@ export default function OnboardingPage() {
       return
     }
 
-    // Check for marketing preselection cookie (from WordPress site)
+    // Check for marketing preselection cookie (from marketing site)
     // Also check URL params as fallback (in case user bookmarked sign-up URL with SKU)
     const checkMarketingPreselect = () => {
       // First try cookie
@@ -597,7 +597,7 @@ export default function OnboardingPage() {
 
         console.log('ℹ️ ONBOARDING: No existing pending signup found')
 
-        // Priority 1: Marketing preselection from WordPress site (via cookie)
+        // Priority 1: Marketing preselection from marketing site (via cookie)
         // NOTE: Service preselect is already handled at the top of this function (takes priority over drafts)
         // This handles regular subscription/package preselection when no draft exists
         // Use currentPreselect (read from cookie at start of function) since React state might not be updated

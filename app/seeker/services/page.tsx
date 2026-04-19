@@ -12,7 +12,7 @@ import { LoadingSpinner } from '@/components/common/LoadingSpinner'
 import { AlertCircle, Briefcase } from 'lucide-react'
 import { getActiveServicesByUserType, AdditionalServiceConfig } from '@/lib/additional-services'
 import { useToast } from '@/components/ui/toast'
-import { getServiceIdFromSku } from '@/lib/wordpress-sku-mapping'
+import { getServiceIdFromSku } from '@/lib/marketing-sku-mapping'
 
 interface ServicePurchase {
   id: string

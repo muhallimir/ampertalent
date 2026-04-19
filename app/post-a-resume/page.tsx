@@ -146,7 +146,7 @@ function PostResumeForm() {
         resumeUrl: fileUrl,
         jobId: jobInfo.id,
         jobTitle: jobInfo.title,
-        source: 'wordpress_referral'
+        source: 'marketing_referral'
       }
 
       const submitResponse = await fetch('/api/public/applications/submit', {

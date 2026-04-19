@@ -13,7 +13,7 @@ const applicationSchema = z.object({
   portfolioUrl: z.string().url().optional().or(z.literal('')),
   jobId: z.string().optional(),
   jobTitle: z.string().optional(),
-  source: z.string().default('wordpress_referral')
+  source: z.string().default('marketing_referral')
 })
 
 export async function POST(request: NextRequest) {
