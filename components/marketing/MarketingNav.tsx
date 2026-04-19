@@ -45,10 +45,16 @@ export default function MarketingNav() {
               Log In
             </Link>
             <Link
-              href="/sign-up"
+              href="/sign-up?sku=2164544"
               className="text-sm font-semibold text-white bg-[#0066FF] hover:bg-blue-700 transition-colors px-5 py-2 rounded-lg"
             >
-              Get Started
+              Post a Job
+            </Link>
+            <Link
+              href="/sign-up?sku=2231035"
+              className="text-sm font-semibold text-[#00BB88] border border-[#00BB88] hover:bg-teal-50 transition-colors px-5 py-2 rounded-lg"
+            >
+              Find a Job
             </Link>
           </div>
 
@@ -73,8 +79,11 @@ export default function MarketingNav() {
             <Link href="/sign-in" className="w-full text-center py-2.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-lg">
               Log In
             </Link>
-            <Link href="/sign-up" className="w-full text-center py-2.5 text-sm font-semibold text-white bg-[#0066FF] rounded-lg">
-              Get Started Free
+            <Link href="/sign-up?sku=2164544" className="w-full text-center py-2.5 text-sm font-semibold text-white bg-[#0066FF] rounded-lg">
+              Post a Job
+            </Link>
+            <Link href="/sign-up?sku=2231035" className="w-full text-center py-2.5 text-sm font-semibold text-[#00BB88] border border-[#00BB88] rounded-lg">
+              Find a Job
             </Link>
           </div>
         </div>

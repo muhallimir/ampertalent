@@ -8,7 +8,7 @@ const services = [
     description:
       'Hiring the wrong person costs you time, money, and productivity. Let our HR specialists handle the entire search — from screening to shortlisting — so you can focus on growing your business.',
     cta: 'Learn More',
-    href: '/sign-up?role=employer',
+    href: '/sign-up?sku=2164534',
     color: 'blue',
   },
   {
@@ -17,7 +17,7 @@ const services = [
     description:
       'Post unlimited job listings and browse a curated pool of pre-vetted remote professionals. Our platform surfaces the best candidates for your role — no fluff, no spam.',
     cta: 'Post a Job',
-    href: '/sign-up?role=employer',
+    href: '/sign-up?sku=2164544',
     color: 'teal',
   },
   {
@@ -26,7 +26,7 @@ const services = [
     description:
       'Feeling overwhelmed by the remote work transition? Unlock your full potential with expert-led training, resources, and personalized support to fast-track your remote career.',
     cta: 'Explore Courses',
-    href: '/sign-up?role=seeker',
+    href: '/sign-up?sku=2231035',
     color: 'cyan',
   },
 ]

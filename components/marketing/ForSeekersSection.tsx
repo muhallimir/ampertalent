@@ -63,7 +63,7 @@ export default function ForSeekersSection() {
 
           <div className="text-center">
             <Link
-              href="/sign-up?role=seeker"
+              href="/sign-up?sku=2231035"
               className="inline-flex items-center gap-2 bg-[#00BB88] hover:bg-teal-600 text-white font-semibold px-8 py-3.5 rounded-xl transition-all shadow-lg shadow-teal-100"
             >
               Find Your Dream Job Today

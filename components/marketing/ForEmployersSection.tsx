@@ -47,7 +47,7 @@ export default function ForEmployersSection() {
             </ul>
             <div className="mt-8">
               <Link
-                href="/sign-up?role=employer"
+                href="/sign-up?sku=2164544"
                 className="inline-flex items-center gap-2 bg-[#0066FF] hover:bg-blue-700 text-white font-semibold px-7 py-3.5 rounded-xl transition-all shadow-lg shadow-blue-100"
               >
                 Post a Job Now

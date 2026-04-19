@@ -43,14 +43,14 @@ export default function HeroSection() {
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
-              href="/sign-up?role=employer"
+              href="/sign-up?sku=2164544"
               className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#0066FF] hover:bg-blue-700 text-white font-semibold text-base px-8 py-4 rounded-xl transition-all shadow-lg shadow-blue-900/40 hover:shadow-blue-800/60"
             >
               Post a Job
               <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
             </Link>
             <Link
-              href="/sign-up?role=seeker"
+              href="/sign-up?sku=2231035"
               className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold text-base px-8 py-4 rounded-xl transition-all backdrop-blur-sm"
             >
               Find a Job

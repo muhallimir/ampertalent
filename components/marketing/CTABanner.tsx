@@ -19,17 +19,17 @@ export default function CTABanner() {
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link
-            href="/sign-up?role=employer"
+            href="/sign-up?sku=2164544"
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white text-[#0066FF] font-bold px-8 py-4 rounded-xl hover:bg-blue-50 transition-colors shadow-xl"
           >
-            Post a Job Free
+            Post a Job — $97
             <ArrowRight size={16} />
           </Link>
           <Link
-            href="/sign-up?role=seeker"
+            href="/sign-up?sku=2231035"
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2 border-2 border-white/40 text-white font-semibold px-8 py-4 rounded-xl hover:bg-white/10 transition-colors"
           >
-            Find Remote Work
+            Start Free Trial
             <ArrowRight size={16} />
           </Link>
         </div>
