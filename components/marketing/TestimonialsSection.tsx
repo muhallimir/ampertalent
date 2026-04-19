@@ -98,7 +98,7 @@ export default function TestimonialsSection() {
 
                             {/* Author */}
                             <div className="flex items-center gap-3">
-                                <div className={`w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold ${t.type === 'employer' ? 'bg-[#0066FF]' : 'bg-[#00BB88]'}`}>
+                                <div className={`w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold ${t.type === 'employer' ? 'bg-[#0066FF]' : 'bg-[#00C5A5]'}`}>
                                     {t.name.charAt(0)}
                                 </div>
                                 <div>

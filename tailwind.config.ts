@@ -45,7 +45,7 @@ const config = {
         },
         // Ampertalent Brand Colors
         'amper-blue': '#0066FF',
-        'amper-teal': '#00BB88',
+        'amper-teal': '#00C5A5',
         'amper-cyan': '#00D9FF',
         'amper-dark': '#1A2D47',
         'brand-blue': 'hsl(204 100% 50%)',

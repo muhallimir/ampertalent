@@ -37,7 +37,7 @@ const services = [
 
 const colorMap: Record<string, { bg: string; icon: string; cta: string }> = {
     blue: { bg: 'bg-blue-50', icon: 'text-[#0066FF]', cta: 'bg-[#0066FF] hover:bg-blue-700' },
-    teal: { bg: 'bg-teal-50', icon: 'text-[#00BB88]', cta: 'bg-[#00BB88] hover:bg-teal-600' },
+    teal: { bg: 'bg-teal-50', icon: 'text-[#00C5A5]', cta: 'bg-[#00C5A5] hover:bg-teal-600' },
     cyan: { bg: 'bg-cyan-50', icon: 'text-[#00D9FF]', cta: 'bg-[#00D9FF] hover:bg-cyan-500 text-[#1A2D47]' },
 }
 

@@ -183,7 +183,7 @@ export default function PricingSection() {
                                 <ul className="space-y-2.5 mb-8">
                                     {plan.features.map((f) => (
                                         <li key={f} className="flex items-start gap-2.5 text-sm text-gray-600">
-                                            <CheckCircle2 size={15} className="text-[#00BB88] mt-0.5 flex-shrink-0" />
+                                            <CheckCircle2 size={15} className="text-[#00C5A5] mt-0.5 flex-shrink-0" />
                                             {f}
                                         </li>
                                     ))}
@@ -251,7 +251,7 @@ export default function PricingSection() {
                                 <ul className="space-y-2 mb-6">
                                     {plan.features.map((f) => (
                                         <li key={f} className="flex items-start gap-2 text-sm text-gray-300">
-                                            <CheckCircle2 size={14} className="text-[#00BB88] mt-0.5 flex-shrink-0" />
+                                            <CheckCircle2 size={14} className="text-[#00C5A5] mt-0.5 flex-shrink-0" />
                                             {f}
                                         </li>
                                     ))}
@@ -295,19 +295,19 @@ export default function PricingSection() {
                                 transition={defaultTransition}
                                 whileHover={{ y: -6, boxShadow: plan.highlighted ? '0 20px 40px -8px rgba(0,187,136,0.2)' : '0 12px 30px -8px rgba(0,0,0,0.1)' }}
                                 className={`rounded-2xl p-8 border ${plan.highlighted
-                                    ? 'border-[#00BB88] bg-gradient-to-b from-teal-50 to-white shadow-xl shadow-teal-100 relative'
+                                    ? 'border-[#00C5A5] bg-gradient-to-b from-teal-50 to-white shadow-xl shadow-teal-100 relative'
                                     : 'border-gray-200 bg-white'
                                     }`}
                             >
                                 {plan.highlighted && (
-                                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#00BB88] text-white text-xs font-bold px-4 py-1 rounded-full">
+                                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#00C5A5] text-white text-xs font-bold px-4 py-1 rounded-full">
                                         BEST VALUE
                                     </div>
                                 )}
                                 <h4 className="text-lg font-bold text-[#1A2D47] mb-1">{plan.name}</h4>
                                 <p className="text-sm text-gray-500 mb-4">{plan.description}</p>
                                 <div className="flex items-baseline gap-1 mb-6">
-                                    <span className={`text-4xl font-extrabold ${plan.highlighted ? 'text-[#00BB88]' : 'text-[#1A2D47]'}`}>
+                                    <span className={`text-4xl font-extrabold ${plan.highlighted ? 'text-[#00C5A5]' : 'text-[#1A2D47]'}`}>
                                         {plan.price}
                                     </span>
                                     <span className="text-gray-400 text-sm">{plan.period}</span>
@@ -315,7 +315,7 @@ export default function PricingSection() {
                                 <ul className="space-y-2.5 mb-8">
                                     {plan.features.map((f) => (
                                         <li key={f} className="flex items-start gap-2.5 text-sm text-gray-600">
-                                            <CheckCircle2 size={15} className="text-[#00BB88] mt-0.5 flex-shrink-0" />
+                                            <CheckCircle2 size={15} className="text-[#00C5A5] mt-0.5 flex-shrink-0" />
                                             {f}
                                         </li>
                                     ))}
@@ -324,7 +324,7 @@ export default function PricingSection() {
                                     <Link
                                         href={`/sign-up?sku=${plan.sku}`}
                                         className={`w-full inline-flex items-center justify-center gap-1.5 py-3 rounded-xl font-semibold text-sm transition-colors ${plan.highlighted
-                                            ? 'bg-[#00BB88] hover:bg-teal-600 text-white'
+                                            ? 'bg-[#00C5A5] hover:bg-teal-600 text-white'
                                             : 'bg-gray-100 hover:bg-gray-200 text-[#1A2D47]'
                                             }`}
                                     >

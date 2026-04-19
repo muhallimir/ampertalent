@@ -62,7 +62,7 @@ export default function ForEmployersSection() {
                         >
                             {benefits.map((b) => (
                                 <motion.li key={b} variants={fadeUp} transition={defaultTransition} className="flex items-start gap-3">
-                                    <CheckCircle2 size={18} className="text-[#00BB88] mt-0.5 flex-shrink-0" />
+                                    <CheckCircle2 size={18} className="text-[#00C5A5] mt-0.5 flex-shrink-0" />
                                     <span className="text-gray-600">{b}</span>
                                 </motion.li>
                             ))}

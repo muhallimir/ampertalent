@@ -28,8 +28,8 @@ export async function handleUserLogout(
       console.log('✅ AUTH: Cleared hmm_preselect cookie')
     }
 
-    // Clerk sign out with redirect
-    const redirectUrl = options?.redirectUrl || '/sign-in'
+    // Clerk sign out with redirect — always go to marketing home
+    const redirectUrl = options?.redirectUrl || '/'
     await signOut({ redirectUrl })
 
     console.log('✅ AUTH: User logged out successfully')
@@ -41,9 +41,9 @@ export async function handleUserLogout(
       options.onError(error)
     }
 
-    // Force redirect to sign-in page
+    // Force redirect to marketing home
     if (typeof window !== 'undefined') {
-      window.location.href = options?.redirectUrl || '/sign-in'
+      window.location.href = options?.redirectUrl || '/'
     }
   }
 }

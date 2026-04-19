@@ -30,7 +30,7 @@ export default function ForSeekersSection() {
                     whileInView="show"
                     viewport={{ once: true, amount: 0.3 }}
                 >
-                    <motion.div variants={fadeUp} transition={defaultTransition} className="inline-flex items-center gap-2 bg-teal-50 text-[#00BB88] px-4 py-1.5 rounded-full text-sm font-semibold mb-4">
+                    <motion.div variants={fadeUp} transition={defaultTransition} className="inline-flex items-center gap-2 bg-teal-50 text-[#00C5A5] px-4 py-1.5 rounded-full text-sm font-semibold mb-4">
                         For Job Seekers
                     </motion.div>
                     <motion.h2 variants={fadeUp} transition={defaultTransition} className="text-3xl md:text-4xl font-extrabold text-[#1A2D47] mb-4">
@@ -58,7 +58,7 @@ export default function ForSeekersSection() {
                             className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100"
                         >
                             <div className="w-12 h-12 rounded-xl bg-teal-50 flex items-center justify-center mb-4">
-                                <perk.icon size={22} className="text-[#00BB88]" />
+                                <perk.icon size={22} className="text-[#00C5A5]" />
                             </div>
                             <h4 className="font-bold text-[#1A2D47] mb-2">{perk.title}</h4>
                             <p className="text-sm text-gray-500 leading-relaxed">{perk.desc}</p>
@@ -108,7 +108,7 @@ export default function ForSeekersSection() {
                         <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }} className="inline-block">
                             <Link
                                 href="/sign-up?sku=2231035"
-                                className="inline-flex items-center gap-2 bg-[#00BB88] hover:bg-teal-600 text-white font-semibold px-8 py-3.5 rounded-xl transition-all shadow-lg shadow-teal-100"
+                                className="inline-flex items-center gap-2 bg-[#00C5A5] hover:bg-teal-600 text-white font-semibold px-8 py-3.5 rounded-xl transition-all shadow-lg shadow-teal-100"
                             >
                                 Find Your Dream Job Today
                                 <ArrowRight size={16} />

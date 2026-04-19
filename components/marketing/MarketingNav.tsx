@@ -20,10 +20,14 @@ export default function MarketingNav() {
                 <div className="flex items-center justify-between h-16">
                     {/* Logo */}
                     <Link href="/" className="flex items-center gap-2 flex-shrink-0">
-                        <div className="w-8 h-8 rounded-lg bg-[#0066FF] flex items-center justify-center">
-                            <span className="text-white font-bold text-sm">A</span>
-                        </div>
-                        <span className="text-xl font-bold text-[#1A2D47]">Ampertalent</span>
+                        <Image
+                            src="/logo/logo.png"
+                            alt="Ampertalent"
+                            width={160}
+                            height={40}
+                            className="h-9 w-auto"
+                            priority
+                        />
                     </Link>
 
                     {/* Desktop Nav */}
@@ -66,7 +70,7 @@ export default function MarketingNav() {
                             whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
                             <Link
                                 href="/sign-up?sku=2231035"
-                                className="text-sm font-semibold text-[#00BB88] border border-[#00BB88] hover:bg-teal-50 transition-colors px-5 py-2 rounded-lg"
+                                className="text-sm font-semibold text-[#00C5A5] border border-[#00C5A5] hover:bg-teal-50 transition-colors px-5 py-2 rounded-lg"
                             >
                                 Find a Job
                             </Link>
@@ -116,7 +120,7 @@ export default function MarketingNav() {
                                 <Link href="/sign-up?sku=2164544" className="w-full text-center py-2.5 text-sm font-semibold text-white bg-[#0066FF] rounded-lg">
                                     Post a Job
                                 </Link>
-                                <Link href="/sign-up?sku=2231035" className="w-full text-center py-2.5 text-sm font-semibold text-[#00BB88] border border-[#00BB88] rounded-lg">
+                                <Link href="/sign-up?sku=2231035" className="w-full text-center py-2.5 text-sm font-semibold text-[#00C5A5] border border-[#00C5A5] rounded-lg">
                                     Find a Job
                                 </Link>
                             </div>

@@ -18,7 +18,7 @@ export default function HeroSection() {
                 <motion.div
                     animate={{ scale: [1, 1.2, 1], opacity: [0.08, 0.15, 0.08] }}
                     transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
-                    className="absolute top-1/2 -left-40 w-80 h-80 rounded-full bg-[#00BB88] blur-3xl"
+                    className="absolute top-1/2 -left-40 w-80 h-80 rounded-full bg-[#00C5A5] blur-3xl"
                 />
                 <motion.div
                     animate={{ scale: [1, 1.3, 1], opacity: [0.04, 0.1, 0.04] }}
@@ -40,7 +40,7 @@ export default function HeroSection() {
                         transition={defaultTransition}
                         className="inline-flex items-center gap-2 bg-[#0066FF]/15 border border-[#0066FF]/30 text-[#60A5FA] px-4 py-1.5 rounded-full text-sm font-medium mb-6"
                     >
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#00BB88] animate-pulse" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#00C5A5] animate-pulse" />
                         Trusted by 50,000+ professionals
                     </motion.div>
 
@@ -71,10 +71,10 @@ export default function HeroSection() {
                         transition={defaultTransition}
                         className="flex flex-wrap justify-center gap-x-6 gap-y-2 mb-10 text-sm text-gray-400"
                     >
-                        <span className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-[#00BB88]" /> No commission ever</span>
-                        <span className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-[#00BB88]" /> US-based talent</span>
-                        <span className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-[#00BB88]" /> Scam-free listings</span>
-                        <span className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-[#00BB88]" /> Cancel anytime</span>
+                        <span className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-[#00C5A5]" /> No commission ever</span>
+                        <span className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-[#00C5A5]" /> US-based talent</span>
+                        <span className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-[#00C5A5]" /> Scam-free listings</span>
+                        <span className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-[#00C5A5]" /> Cancel anytime</span>
                     </motion.div>
 
                     {/* CTAs */}
