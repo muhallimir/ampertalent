@@ -14,18 +14,18 @@ export default function MarketingNav() {
             initial={{ y: -24, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }}
-            className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100 shadow-sm"
+            className="fixed top-0 left-0 right-0 z-50 bg-white backdrop-blur-sm border-b border-gray-100 shadow-sm"
         >
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex items-center justify-between h-[72px]">
+                <div className="flex items-center justify-between h-[84px]">
                     {/* Logo */}
                     <Link href="/" className="flex items-center flex-shrink-0">
                         <Image
-                            src="/logo/ampertalent_logo_flat.png"
+                            src="/logo/ampertalent_logo.png"
                             alt="Ampertalent"
                             width={200}
                             height={52}
-                            className="h-12 w-auto"
+                            className="h-20 w-auto"
                             priority
                         />
                     </Link>

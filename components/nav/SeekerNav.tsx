@@ -136,13 +136,23 @@ export function SeekerNav() {
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-24 py-4">
           {/* Logo */}
-          <Link href="/seeker/dashboard" className="flex items-center">
+          {/* <Link href="/seeker/dashboard" className="flex items-center">
             <Image
               src="/logo/logo.png"
               alt="AmperTalent"
               width={150}
               height={50}
               className="rounded-lg lg:w-[180px] lg:h-[60px]"
+            />
+          </Link> */}
+          <Link href="/" className="flex items-center flex-shrink-0">
+            <Image
+              src="/logo/ampertalent_logo.png"
+              alt="Ampertalent"
+              width={200}
+              height={52}
+              className="h-20 w-auto"
+              priority
             />
           </Link>
 

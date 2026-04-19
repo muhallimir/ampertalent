@@ -266,13 +266,17 @@ export function AdminNav() {
         <div className="max-w-screen-2xl mx-auto flex justify-between items-center h-24 py-4">
           {/* Logo */}
           <Link href="/admin/dashboard" className="flex items-center space-x-2 shrink-0">
-            <Image src="/logo/logo.png" alt="AmperTalent" width={180} height={60} className="rounded-lg" />
+            <Image src="/logo/logo.png"
+              alt="AmperTalent"
+              width={180}
+              height={60}
+              className="h-20 w-auto"
+            />
             <span className="text-sm text-white bg-gray-800 px-2 py-1 rounded flex items-center space-x-1">
               <Shield className="h-3 w-3" />
               <span>{effectiveRole === 'super_admin' ? 'Super Admin' : 'Admin'}</span>
             </span>
           </Link>
-
           {/* Navigation Links */}
           <div className="hidden lg:flex flex-1 items-center justify-center space-x-1">
             {filteredNavigation.map((item) => {
