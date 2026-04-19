@@ -56,14 +56,17 @@ describe('Seeker Onboarding to Checkout Flow E2E', () => {
             data: {
                 clerkUserId,
                 email: testEmail,
-                firstName: 'Test',
-                lastName: 'User',
-                location: 'Remote',
-                experience: 'entry_level',
-                skills: ['JavaScript'],
-                professionalSummary: 'Test',
+                onboardingData: JSON.stringify({
+                    firstName: 'Test',
+                    lastName: 'User',
+                    location: 'Remote',
+                    experience: 'entry_level',
+                    skills: ['JavaScript'],
+                    professionalSummary: 'Test'
+                }),
                 selectedPlan: 'trial',
                 sessionToken: 'TEST_TOKEN_' + Date.now(),
+                returnUrl: '/seeker/dashboard',
                 expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
             }
         })

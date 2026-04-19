@@ -133,7 +133,7 @@ export default function JobsPage() {
         // Process applications
         if (applicationsRes.ok) {
           const data = await applicationsRes.json()
-          const mappedApplications = (data.applications || []).map((app: any) => ({
+          const mappedApplications = (data.applications || [])?.map((app: any) => ({
             jobId: app.job.id,
             jobTitle: app.job.title,
             companyName: app.job.company,
@@ -238,12 +238,16 @@ export default function JobsPage() {
     }
   }
 
+  console.log({ myApplications })
+
   // Memoize active applications to avoid recalculating on every render
   const activeApplications = useMemo(() =>
     myApplications.filter(app =>
       app.status === 'pending' || app.status === 'reviewed' || app.status === 'interview' || app.status === 'hired'
     ), [myApplications]
   )
+
+  console.log({ activeApplications })
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
@@ -275,7 +279,7 @@ export default function JobsPage() {
                   <p className="text-gray-500 text-sm">No active applications</p>
                 ) : (
                   <div className="space-y-3">
-                    {activeApplications.slice(0, 5).map((application) => (
+                    {activeApplications?.slice(0, 5)?.map((application) => (
                       <div
                         key={application.jobId}
                         className="p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
@@ -390,7 +394,7 @@ export default function JobsPage() {
                 </Card>
               ) : (
                 <div className="space-y-4">
-                  {featuredJobs.map((job) => {
+                  {featuredJobs?.map((job) => {
                     // Check if user has applied to this job and get the status
                     const application = myApplications.find(app => app.jobId === job.id)
                     const hasApplied = !!application
@@ -505,7 +509,7 @@ export default function JobsPage() {
                       </Card>
                     ) : (
                       <div className="space-y-4">
-                        {recentlyFilledJobs.map((job) => (
+                        {recentlyFilledJobs?.map((job) => (
                           <div key={job.id} className="relative">
                             <JobCard
                               job={job}

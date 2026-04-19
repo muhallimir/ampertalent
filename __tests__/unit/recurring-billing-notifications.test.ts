@@ -167,7 +167,7 @@ describe('RecurringBillingService - In-App Notifications', () => {
             // Assert
             const notificationCall = (inAppNotificationService.notifySeekerSubscriptionRenewal as jest.Mock)
                 .mock.calls[0];
-            expect(notificationCall[1]).toContain('Gold Mom Professional');
+            expect(notificationCall[1]).toContain('Flex Gold');
             expect(notificationCall[2]).toBe(49.99); // Gold plan amount
         });
 
@@ -197,7 +197,7 @@ describe('RecurringBillingService - In-App Notifications', () => {
             // Assert
             const notificationCall = (inAppNotificationService.notifySeekerSubscriptionRenewal as jest.Mock)
                 .mock.calls[0];
-            expect(notificationCall[1]).toContain('VIP Platinum Mom Professional');
+            expect(notificationCall[1]).toContain('Flex VIP');
             expect(notificationCall[2]).toBe(79.99); // VIP plan amount
         });
 
@@ -227,7 +227,7 @@ describe('RecurringBillingService - In-App Notifications', () => {
             // Assert
             const notificationCall = (inAppNotificationService.notifySeekerSubscriptionRenewal as jest.Mock)
                 .mock.calls[0];
-            expect(notificationCall[1]).toContain('Annual Platinum Mom Professional');
+            expect(notificationCall[1]).toContain('Flex Annual');
             expect(notificationCall[2]).toBe(299.0); // Annual plan amount
         });
 
@@ -288,7 +288,7 @@ describe('RecurringBillingService - In-App Notifications', () => {
             // Assert
             const notificationCall = (inAppNotificationService.notifySeekerSubscriptionRenewal as jest.Mock)
                 .mock.calls[0];
-            expect(notificationCall[1]).toBe('VIP Platinum Mom Professional');
+            expect(notificationCall[1]).toBe('Flex VIP');
         });
 
         it('should update membership expiration correctly for gold_bimonthly (60 days)', async () => {
@@ -433,10 +433,10 @@ describe('RecurringBillingService - In-App Notifications', () => {
         it('should handle all four subscription plan types', async () => {
             // Arrange
             const testPlans = [
-                { plan: 'trial_monthly', amount: 34.99, planId: 'trial', planName: '3 Day Free Trial Subscription' },
-                { plan: 'gold_bimonthly', amount: 49.99, planId: 'gold', planName: 'Gold Mom Professional' },
-                { plan: 'vip_quarterly', amount: 79.99, planId: 'vip-platinum', planName: 'VIP Platinum Mom Professional' },
-                { plan: 'annual_platinum', amount: 299.0, planId: 'annual-platinum', planName: 'Annual Platinum Mom Professional' },
+                { plan: 'trial_monthly', amount: 34.99, planId: 'trial', planName: 'Flex Trial' },
+                { plan: 'gold_bimonthly', amount: 49.99, planId: 'gold', planName: 'Flex Gold' },
+                { plan: 'vip_quarterly', amount: 79.99, planId: 'vip-platinum', planName: 'Flex VIP' },
+                { plan: 'annual_platinum', amount: 299.0, planId: 'annual-platinum', planName: 'Flex Annual' },
             ];
 
             for (const { plan, amount, planId, planName } of testPlans) {
@@ -506,7 +506,7 @@ describe('RecurringBillingService - In-App Notifications', () => {
             // Assert - Should trigger subscription renewal notification
             expect(inAppNotificationService.notifySeekerSubscriptionRenewal).toHaveBeenCalledWith(
                 seekerId,
-                'Gold Mom Professional',
+                'Flex Gold',
                 49.99,
                 expect.any(Date)
             );
@@ -543,7 +543,7 @@ describe('RecurringBillingService - In-App Notifications', () => {
             // Assert - Should trigger subscription renewal notification
             expect(inAppNotificationService.notifySeekerSubscriptionRenewal).toHaveBeenCalledWith(
                 seekerId,
-                'VIP Platinum Mom Professional',
+                'Flex VIP',
                 79.99,
                 expect.any(Date)
             );

@@ -9,7 +9,7 @@
  * test data persists between test runs.
  */
 
-import { db } from '../lib/db';
+import { db, forceDisconnect } from '../lib/db';
 
 export default async function globalTeardown() {
     console.log('\n🧹 Global Teardown: Cleaning up test data...');
@@ -66,11 +66,16 @@ export default async function globalTeardown() {
 
         console.log(`   ✅ Deleted ${deletedEmployers} orphaned employers`);
 
-        // Disconnect Prisma
-        await db.$disconnect();
+        // Force disconnect to ensure all connections are closed
+        await forceDisconnect();
         console.log('✅ Global Teardown: Complete\n');
     } catch (error) {
         console.error('❌ Global Teardown Error:', error);
-        await db.$disconnect();
+        // Still try to force disconnect even if cleanup failed
+        try {
+            await forceDisconnect();
+        } catch (disconnectError) {
+            console.error('❌ Force disconnect also failed:', disconnectError);
+        }
     }
 }

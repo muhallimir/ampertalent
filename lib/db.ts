@@ -14,12 +14,14 @@ const createPrismaClient = () => {
   }
 
   // Add connection pool limits for Supabase
-  // connection_limit: max connections in the pool (higher for Supabase pooled connections)
+  // connection_limit: max connections in the pool (lower for tests to avoid exhaustion)
   // pool_timeout: max seconds to wait for a connection
   // connect_timeout: max seconds to establish a new connection
+  const isTest = process.env.NODE_ENV === 'test'
   if (!databaseUrl.includes('connection_limit')) {
     const separator = databaseUrl.includes('?') ? '&' : '?'
-    databaseUrl = `${databaseUrl}${separator}connection_limit=8&pool_timeout=20&connect_timeout=10`
+    const connectionLimit = isTest ? 5 : 8  // Increased limit for tests
+    databaseUrl = `${databaseUrl}${separator}connection_limit=${connectionLimit}&pool_timeout=20&connect_timeout=10`
   }
 
   const client = new PrismaClient({
@@ -39,7 +41,7 @@ const createPrismaClient = () => {
   // Only log critical slow queries (>1000ms) in production
   client.$on('query', (e: Prisma.QueryEvent) => {
     const duration = e.duration
-    
+
     if (duration > 1000) {
       console.error(`🚨 CRITICAL SLOW QUERY (${duration}ms):`, {
         query: e.query.substring(0, 200),
@@ -54,6 +56,14 @@ const createPrismaClient = () => {
   })
 
   return client
+}
+
+// Force disconnect method for tests
+export const forceDisconnect = async () => {
+  if (globalForPrisma.prisma) {
+    await globalForPrisma.prisma.$disconnect()
+    globalForPrisma.prisma = undefined
+  }
 }
 
 export const db =

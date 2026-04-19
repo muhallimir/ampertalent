@@ -24,6 +24,16 @@ const customJestConfig = {
         '!**/node_modules/**',
         '!**/.next/**',
     ],
+    // Run tests sequentially to avoid database connection pool exhaustion
+    maxWorkers: 1,
+    // Configure global teardown for comprehensive test data cleanup
+    globalTeardown: '<rootDir>/__tests__/globalTeardown.ts',
+    // Handle ES modules and other transformation issues
+    transformIgnorePatterns: [
+        'node_modules/(?!(uncrypto|@upstash|axios)/)',
+    ],
+    // Increase timeout for database tests
+    testTimeout: 30000,
 }
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async

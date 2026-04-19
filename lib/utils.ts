@@ -248,10 +248,10 @@ export function formatDate(
 
   const replacements: Record<string, string> = {
     YYYY: String(year),
+    MMM: month,  // Process longer patterns first
     YY: String(year).slice(-2),
     MM: monthNum,
     DD: dayNum,
-    MMM: month,
   };
 
   let result = format;
