@@ -429,7 +429,7 @@ export default function JobsPage() {
                             postedDate: job.createdAt,
                             expiresAt: job.expiresAt,
                             applicationCount: job.applicationCount,
-                            isRemote: job.location.toLowerCase().includes('remote'),
+                            isRemote: job.location?.toLowerCase().includes('remote'),
                             isFlexible: true, // Assume featured jobs are flexible
                             isFeatured: job.isFeatured || job.isEmailBlast
                           }

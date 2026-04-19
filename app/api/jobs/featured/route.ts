@@ -80,10 +80,10 @@ export async function GET(request: NextRequest) {
         payRangeMax: job.payRangeMax,
         payRangeText: job.payRangeText,
         salaryType: job.salaryType,
-        locationText: job.locationText,
+        location: job.locationText,
         remoteSchedule: job.remoteSchedule,
         description: job.description,
-        skillsRequired: job.skillsRequired,
+        skills: job.skillsRequired,
         company: job.employer?.companyName || "Unknown",
         companyLogo: job.employer?.companyLogoUrl,
         companyWebsite: job.employer?.companyWebsite,
@@ -91,6 +91,8 @@ export async function GET(request: NextRequest) {
         isEmailBlast: job.isEmailBlast,
         createdAt: job.createdAt.toISOString(),
         viewsCount: job.viewsCount,
+        applicationCount: 0, // TODO: Add proper count
+        expiresAt: job.expiresAt?.toISOString(),
       })),
       pagination: {
         page,
