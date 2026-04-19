@@ -947,17 +947,17 @@ export default function FindSeekersPage() {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {/* Skills */}
-                  {seeker.skills.length > 0 && (
+                  {(seeker.skills || []).length > 0 && (
                     <div>
                       <div className="flex flex-wrap gap-1 max-h-16 overflow-hidden">
-                        {seeker.skills.slice(0, 4).map((skill, index) => (
+                        {(seeker.skills || []).slice(0, 4).map((skill, index) => (
                           <Badge key={index} variant="secondary" className="text-xs">
                             {skill}
                           </Badge>
                         ))}
-                        {seeker.skills.length > 4 && (
+                        {(seeker.skills || []).length > 4 && (
                           <Badge variant="secondary" className="text-xs">
-                            +{seeker.skills.length - 4} more
+                            +{(seeker.skills || []).length - 4} more
                           </Badge>
                         )}
                       </div>

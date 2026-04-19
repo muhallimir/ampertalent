@@ -1455,7 +1455,7 @@ export default function AdminJobPostsPage() {
                   <div className="mt-4">
                     <span className="font-medium">Skills Required:</span>
                     <div className="flex flex-wrap gap-1 mt-1">
-                      {selectedJob.skillsRequired.map((skill, index) => (
+                      {(selectedJob.skillsRequired || []).map((skill, index) => (
                         <Badge key={index} variant="outline" className="text-xs">
                           {skill}
                         </Badge>

@@ -242,7 +242,7 @@ export default function JobsPage() {
 
   // Memoize active applications to avoid recalculating on every render
   const activeApplications = useMemo(() =>
-    myApplications.filter(app =>
+    (myApplications || []).filter(app =>
       app.status === 'pending' || app.status === 'reviewed' || app.status === 'interview' || app.status === 'hired'
     ), [myApplications]
   )

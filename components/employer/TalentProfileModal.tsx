@@ -320,7 +320,7 @@ export function TalentProfileModal({ isOpen, onClose, talentId, onInvite, isInvi
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-3">Skills & Expertise</h3>
                   <div className="flex flex-wrap gap-2">
-                    {talent.skills.map((skill, index) => (
+                    {(talent.skills || []).map((skill, index) => (
                       <Badge key={index} variant="secondary">
                         {skill}
                       </Badge>

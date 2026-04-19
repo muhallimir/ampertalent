@@ -345,11 +345,11 @@ export default function JobDetailPage() {
               )}
 
               {/* Required Skills */}
-              {job.skillsRequired.length > 0 && (
+              {(job.skillsRequired || []).length > 0 && (
                 <div className="mb-8">
                   <h3 className="text-lg font-semibold mb-4">Required Skills</h3>
                   <div className="flex flex-wrap gap-2">
-                    {job.skillsRequired.map((skill, index) => (
+                    {(job.skillsRequired || []).map((skill, index) => (
                       <Badge key={index} variant="outline">
                         {skill}
                       </Badge>

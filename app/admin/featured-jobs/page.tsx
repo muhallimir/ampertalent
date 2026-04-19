@@ -884,11 +884,11 @@ export default function AdminFeaturedJobsPage() {
                   <div>
                     <h4 className="font-semibold mb-3 flex items-center gap-2">
                       <Users className="h-4 w-4" />
-                      Applicants ({selectedRequest.job.applications.length})
+                      Applicants ({(selectedRequest.job.applications || []).length})
                     </h4>
                     <div className="bg-gray-50 p-4 rounded-lg max-h-60 overflow-y-auto">
                       <div className="space-y-3">
-                        {selectedRequest.job.applications.map(
+                        {(selectedRequest.job.applications || []).map(
                           (application: any) => (
                             <div
                               key={application.id}

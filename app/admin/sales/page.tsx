@@ -1169,7 +1169,7 @@ export default function AdminSalesPage() {
                 </ResponsiveContainer>
               </div>
               <div className="mt-6 space-y-3">
-                {salesData.topPlans.slice(0, 5).map((plan, index) => (
+                {(salesData.topPlans || []).slice(0, 5).map((plan, index) => (
                   <div key={plan.planId} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                     <div className="flex items-center space-x-3">
                       <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">

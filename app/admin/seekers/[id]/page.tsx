@@ -733,7 +733,7 @@ export default function SeekerDetailPage() {
                   <div>
                     <Label className="text-sm font-medium text-gray-700 mb-2 block">Skills</Label>
                     <div className="flex flex-wrap gap-2">
-                      {seeker.skills.map((skill, index) => (
+                      {(seeker.skills || []).map((skill, index) => (
                         <Badge key={index} variant="secondary">
                           {skill}
                         </Badge>

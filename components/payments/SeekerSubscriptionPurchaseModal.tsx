@@ -298,7 +298,7 @@ export function SeekerSubscriptionPurchaseModal({
               <div className="mt-4">
                 <p className="text-sm text-gray-600 mb-2">Included Features:</p>
                 <div className="grid grid-cols-1 gap-1">
-                  {planInfo.features.slice(0, 3).map((feature, index) => (
+                  {(planInfo.features || []).slice(0, 3).map((feature, index) => (
                     <div key={index} className="flex items-center space-x-2">
                       <CheckCircle className="h-3 w-3 text-green-500" />
                       <span className="text-xs text-gray-700">{feature}</span>

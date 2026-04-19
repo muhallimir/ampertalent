@@ -353,7 +353,7 @@ export default function JobDetailPage() {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
-                  {job.skillsRequired.map((skill) => (
+                  {(job.skillsRequired || []).map((skill) => (
                     <Badge key={skill} variant="outline">
                       {skill}
                     </Badge>

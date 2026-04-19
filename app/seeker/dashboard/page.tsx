@@ -792,7 +792,7 @@ export default function SeekerDashboard() {
               </div>
             ) : (
               <div className="space-y-4">
-                {stats.recentActivities.map((activity) => (
+                {(stats.recentActivities || []).map((activity) => (
                   <div key={activity.id} className="flex items-start space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                     <div className="flex-shrink-0 mt-1">
                       {activity.companyName ? (
@@ -876,7 +876,7 @@ export default function SeekerDashboard() {
             </div>
           ) : (
             <div className="space-y-4">
-              {stats.recommendedJobs.slice(0, 3).map((job) => (
+              {(stats.recommendedJobs || []).slice(0, 3).map((job) => (
                 <JobCard
                   key={job.id}
                   job={transformJobToSearchItem(job)}
@@ -884,7 +884,7 @@ export default function SeekerDashboard() {
                   isSaved={savedJobs.has(job.id)}
                 />
               ))}
-              {stats.recommendedJobs.length > 3 && (
+              {(stats.recommendedJobs || []).length > 3 && (
                 <div className="text-center pt-4">
                   <Button asChild className="bg-brand-teal hover:bg-brand-teal/90">
                     <Link href="/seeker/jobs">View All Recommended Jobs</Link>

@@ -1496,7 +1496,7 @@ export default function EmployerJobsPage() {
                       </div>
 
                       <div className="flex flex-wrap gap-2 mb-4">
-                        {job.skills.slice(0, 4).map((skill) => (
+                        {(job.skills || []).slice(0, 4).map((skill) => (
                           <span
                             key={skill}
                             className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs"
@@ -1504,9 +1504,9 @@ export default function EmployerJobsPage() {
                             {skill}
                           </span>
                         ))}
-                        {job.skills.length > 4 && (
+                        {(job.skills || []).length > 4 && (
                           <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
-                            +{job.skills.length - 4} more
+                            +{(job.skills || []).length - 4} more
                           </span>
                         )}
                       </div>

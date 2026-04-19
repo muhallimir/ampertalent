@@ -274,7 +274,7 @@ export function FeaturedJobCard({ job, onJobSelect, onSave, isSaved = false, has
         />
 
         <div className="flex flex-wrap gap-1 mb-2">
-          {job.skills.slice(0, 4).map((skill) => (
+          {(job.skills || []).slice(0, 4).map((skill) => (
             <span
               key={skill}
               className="px-1.5 py-0.5 bg-purple-50 text-purple-700 rounded text-xs font-medium"
@@ -282,9 +282,9 @@ export function FeaturedJobCard({ job, onJobSelect, onSave, isSaved = false, has
               {skill}
             </span>
           ))}
-          {job.skills.length > 4 && (
+          {(job.skills || []).length > 4 && (
             <span className="px-1.5 py-0.5 bg-gray-100 text-gray-700 rounded text-xs">
-              +{job.skills.length - 4} more
+              +{(job.skills || []).length - 4} more
             </span>
           )}
         </div>

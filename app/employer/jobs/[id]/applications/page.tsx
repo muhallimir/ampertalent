@@ -1109,8 +1109,8 @@ export default function JobApplicationsPage() {
                               {application.experience}
                             </div>
                             <div className="text-sm text-gray-500">
-                              {application.skills.slice(0, 3).join(', ')}
-                              {application.skills.length > 3 && ` +${application.skills.length - 3} more`}
+                              {(application.skills || []).slice(0, 3).join(', ')}
+                              {(application.skills || []).length > 3 && ` +${(application.skills || []).length - 3} more`}
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">

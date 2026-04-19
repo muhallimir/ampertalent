@@ -514,14 +514,14 @@ export function AdvancedJobSearch({ onJobSelect, initialFilters = {} }: Advanced
                       </p>
 
                       <div className="flex flex-wrap gap-2 mb-3">
-                        {job.skills.slice(0, 5).map((skill) => (
+                        {(job.skills || []).slice(0, 5).map((skill) => (
                           <Badge key={skill} variant="outline" className="text-xs">
                             {skill}
                           </Badge>
                         ))}
-                        {job.skills.length > 5 && (
+                        {(job.skills || []).length > 5 && (
                           <Badge variant="outline" className="text-xs">
-                            +{job.skills.length - 5} more
+                            +{(job.skills || []).length - 5} more
                           </Badge>
                         )}
                       </div>

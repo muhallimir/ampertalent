@@ -41,7 +41,7 @@ export function SavedJobsProvider({ children }: { children: ReactNode }) {
       const response = await fetch('/api/seeker/saved-jobs', { headers })
       if (response.ok) {
         const data = await response.json()
-        const savedJobIds = new Set<string>(data.savedJobs.map((job: any) => job.id as string))
+        const savedJobIds = new Set<string>((data?.savedJobs || []).map((job: any) => job?.id as string))
         setSavedJobs(savedJobIds)
       }
     } catch (error) {

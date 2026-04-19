@@ -82,7 +82,7 @@ export function VirtualizedTalentGrid({
 
   // Memoize visible talents to prevent unnecessary re-renders
   const visibleTalents = useMemo(() => {
-    return talents.slice(0, visibleItems)
+    return (talents || []).slice(0, visibleItems)
   }, [talents, visibleItems])
 
   // Compact loading skeletons for 100k+ profiles
@@ -305,9 +305,9 @@ export function useMemoryOptimization<T>(
   maxItems: number = 1000
 ) {
   return useMemo(() => {
-    if (data.length <= maxItems) return data
+    if ((data || []).length <= maxItems) return data || []
     
     // Keep only the most recent items to prevent memory issues
-    return data.slice(-maxItems)
+    return (data || []).slice(-maxItems)
   }, [data, maxItems])
 }

@@ -522,7 +522,7 @@ export function JobVettingCard({ job, onStatusChange, onFlag, initialExpanded = 
           <div>
             <h4 className="font-semibold mb-2">Required Skills</h4>
             <div className="flex flex-wrap gap-2">
-              {job.skills.map((skill) => (
+              {(job.skills || []).map((skill) => (
                 <Badge key={skill} variant="outline">
                   {skill}
                 </Badge>

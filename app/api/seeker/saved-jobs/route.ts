@@ -16,42 +16,110 @@ export async function GET(request: NextRequest) {
     }
 
     const seekerId = currentUser.profile.jobSeeker.id
-    const searchParams = request.nextUrl.searchParams
-    const page = parseInt(searchParams.get('page') || '1')
-    const limit = parseInt(searchParams.get('limit') || '20')
-    const skip = (page - 1) * limit
 
-    // Get saved jobs with pagination
+    // Get saved jobs with job details and application status (including archived jobs)
     const savedJobs = await db.savedJob.findMany({
-      where: { seekerId },
-      include: {
+      where: {
+        seekerId,
         job: {
-          include: {
+          isPaused: false // Exclude paused jobs
+        }
+      },
+      select: {
+        id: true,
+        savedAt: true,
+        job: {
+          select: {
+            id: true,
+            title: true,
+            category: true,
+            type: true,
+            payRangeMin: true,
+            payRangeMax: true,
+            payRangeText: true,
+            description: true,
+            skillsRequired: true,
+            isFlexibleHours: true,
+            locationText: true,
+            createdAt: true,
+            employerId: true,
+            isCompanyPrivate: true, // Critical field for privacy functionality
+            // Include archive fields for completeness
+            isArchived: true,
+            archivedAt: true,
             employer: {
-              include: {
-                user: true,
-              },
+              select: {
+                companyName: true,
+                companyLogoUrl: true,
+                user: {
+                  select: {
+                    id: true
+                  }
+                }
+              }
             },
-          },
+            applications: {
+              where: {
+                seekerId: currentUser.profile.id
+              },
+              select: {
+                id: true,
+                status: true,
+                appliedAt: true
+              }
+            }
+          }
+        }
+      },
+      orderBy: { savedAt: 'desc' }
+    })
+
+    // Transform the data to match JobSearchItem format with application status
+    const transformedJobs = savedJobs.map((savedJob: any) => {
+      const application = savedJob.job.applications?.[0] // Get the first (and should be only) application
+
+      // Check if company information should be private
+      const isCompanyPrivate = savedJob.job.isCompanyPrivate || false;
+
+      // Apply privacy settings to company information
+      const displayCompanyName = isCompanyPrivate ? 'Private Company' : savedJob.job.employer.companyName;
+      const displayCompanyLogoUrl = isCompanyPrivate ? null : savedJob.job.employer.companyLogoUrl;
+
+      return {
+        id: savedJob.job.id,
+        title: savedJob.job.title,
+        company: displayCompanyName,
+        companyLogoUrl: displayCompanyLogoUrl,
+        employerId: savedJob.job.employerId,
+        location: savedJob.job.locationText || 'Remote',
+        type: savedJob.job.type.replace('_', '-') as 'full-time' | 'part-time' | 'project',
+        category: savedJob.job.category,
+        description: savedJob.job.description,
+        skills: savedJob.job.skillsRequired,
+        payRange: {
+          min: savedJob.job.payRangeMin ? Number(savedJob.job.payRangeMin) : undefined,
+          max: savedJob.job.payRangeMax ? Number(savedJob.job.payRangeMax) : undefined,
+          text: savedJob.job.payRangeText
         },
-      },
-      skip,
-      take: limit,
-      orderBy: { savedAt: 'desc' },
+        isFlexible: savedJob.job.isFlexibleHours,
+        isRemote: savedJob.job.locationText === 'Remote' || savedJob.job.locationText === null,
+        isFeatured: false, // Default to false for saved jobs
+        applicationCount: 0, // We don't track this for saved jobs view
+        postedDate: savedJob.job.createdAt.toISOString(),
+        savedAt: savedJob.savedAt.toISOString(),
+        isArchived: savedJob.job.isArchived,
+        archivedAt: savedJob.job.archivedAt?.toISOString(),
+        applicationStatus: application ? {
+          hasApplied: true,
+          status: application.status,
+          appliedAt: application.appliedAt.toISOString()
+        } : {
+          hasApplied: false
+        }
+      }
     })
 
-    // Get total count
-    const total = await db.savedJob.count({ where: { seekerId } })
-
-    return Response.json({
-      data: savedJobs,
-      pagination: {
-        page,
-        limit,
-        total,
-        pages: Math.ceil(total / limit),
-      },
-    })
+    return Response.json({ savedJobs: transformedJobs })
   } catch (error) {
     console.error('[GET /api/seeker/saved-jobs]:', error)
     return Response.json({ error: 'Internal server error' }, { status: 500 })

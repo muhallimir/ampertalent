@@ -204,9 +204,9 @@ export function TalentCard({ talent, onViewProfile, onInvite, isInvited = false 
 
           {/* Skills - More compact with consistent height */}
           <div className="min-h-[32px] flex items-start">
-            {talent.skills.length > 0 ? (
+            {(talent.skills || []).length > 0 ? (
               <div className="flex flex-wrap gap-1">
-                {talent.skills.slice(0, 3).map((skill, index) => (
+                {(talent.skills || []).slice(0, 3).map((skill, index) => (
                   <Badge
                     key={index}
                     variant="secondary"
@@ -215,9 +215,9 @@ export function TalentCard({ talent, onViewProfile, onInvite, isInvited = false 
                     {skill}
                   </Badge>
                 ))}
-                {talent.skills.length > 3 && (
+                {(talent.skills || []).length > 3 && (
                   <Badge variant="outline" className="text-xs text-gray-500 px-2 py-0.5">
-                    +{talent.skills.length - 3}
+                    +{(talent.skills || []).length - 3}
                   </Badge>
                 )}
               </div>

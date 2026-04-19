@@ -57,7 +57,7 @@ export function PackageSelectionCard({ plan, selected, onSelect }: PackageSelect
       <CardContent className="p-4 space-y-3">
         <div className="space-y-2">
 
-          {plan.features.slice(0, 3).map((feature, index) => (
+          {(plan.features || []).slice(0, 3).map((feature, index) => (
             <div key={index} className="flex items-start space-x-2">
               <Check className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
               <span className="text-sm text-gray-700">{feature}</span>

@@ -883,7 +883,7 @@ export default function AdminStandardJobsPage() {
                   <div className="mt-4">
                     <span className="font-medium">Skills Required:</span>
                     <div className="flex flex-wrap gap-1 mt-1">
-                      {selectedJob.skillsRequired.map((skill, index) => (
+                      {(selectedJob.skillsRequired || []).map((skill, index) => (
                         <Badge key={index} variant="outline" className="text-xs">
                           {skill}
                         </Badge>
@@ -942,7 +942,7 @@ export default function AdminStandardJobsPage() {
 
                 {selectedJob.applications && selectedJob.applications.length > 0 ? (
                   <div className="space-y-3 max-h-60 overflow-y-auto">
-                    {selectedJob.applications.map((application) => (
+                    {(selectedJob.applications || []).map((application) => (
                       <div key={application.id} className="flex items-center justify-between p-3 bg-white rounded-lg border">
                         <div className="flex items-center space-x-3">
                           <UserProfilePicture

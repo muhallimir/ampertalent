@@ -165,7 +165,7 @@ export default function AdvancedJobSearch({ onJobSelect }: AdvancedJobSearchProp
   const transformSearchResults = (data: any): SearchResults => {
     return {
       ...data,
-      jobs: data.jobs.map((job: any): JobSearchItem & { companyLogoUrl?: string; employerId?: string; applicationStatus?: any } => {
+      jobs: (data.jobs || []).map((job: any): JobSearchItem & { companyLogoUrl?: string; employerId?: string; applicationStatus?: any } => {
         // Generate proper salary text based on salary type
         const salaryType = job.salaryType || 'yearly'
         const salaryTypeText = salaryType === 'yearly' ? '/yr' :

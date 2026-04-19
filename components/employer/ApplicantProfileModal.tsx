@@ -508,7 +508,7 @@ export function ApplicantProfileModal({
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-wrap gap-2">
-                    {profile.skills.map((skill, index) => (
+                    {(profile.skills || []).map((skill, index) => (
                       <Badge key={index} variant="secondary" className="bg-blue-100 text-blue-800">
                         {skill}
                       </Badge>

@@ -258,7 +258,7 @@ export function ApplicationCard({
           <div>
             <span className="text-sm font-medium text-gray-700">Skills: </span>
             <div className="flex flex-wrap gap-1 mt-1">
-              {application.skills.slice(0, 5).map((skill) => (
+              {(application.skills || []).slice(0, 5).map((skill) => (
                 <span
                   key={skill}
                   className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs"
@@ -266,9 +266,9 @@ export function ApplicationCard({
                   {skill}
                 </span>
               ))}
-              {application.skills.length > 5 && (
+              {(application.skills || []).length > 5 && (
                 <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
-                  +{application.skills.length - 5} more
+                  +{(application.skills || []).length - 5} more
                 </span>
               )}
             </div>
