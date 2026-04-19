@@ -1,23 +1,4 @@
 {
-    "buildCommand": "npm run build",
-    "devCommand": "npm run dev",
-    "installCommand": "npm install",
-    "framework": "nextjs",
-    "env": {
-        "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY": "@NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
-        "CLERK_SECRET_KEY": "@CLERK_SECRET_KEY",
-        "DATABASE_URL": "@DATABASE_URL",
-        "NEXT_PUBLIC_SUPABASE_URL": "@NEXT_PUBLIC_SUPABASE_URL",
-        "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@NEXT_PUBLIC_SUPABASE_ANON_KEY",
-        "STRIPE_SECRET_KEY": "@STRIPE_SECRET_KEY",
-        "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY": "@NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY",
-        "STRIPE_WEBHOOK_SECRET": "@STRIPE_WEBHOOK_SECRET",
-        "SENTRY_DSN": "@SENTRY_DSN",
-        "RESEND_API_KEY": "@RESEND_API_KEY",
-        "SUPABASE_SERVICE_ROLE_KEY": "@SUPABASE_SERVICE_ROLE_KEY",
-        "SUPABASE_STORAGE_BUCKET": "@SUPABASE_STORAGE_BUCKET",
-        "NEXT_PUBLIC_APP_URL": "@NEXT_PUBLIC_APP_URL"
-    },
     "crons": [
         {
             "path": "/api/cron/employer-recurring-billing",
