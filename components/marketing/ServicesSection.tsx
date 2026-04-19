@@ -1,5 +1,9 @@
+'use client'
+
 import { UserCog, Layers, GraduationCap } from 'lucide-react'
 import Link from 'next/link'
+import { motion } from 'framer-motion'
+import { fadeUp, scaleIn, staggerContainer, defaultTransition } from './animations'
 
 const services = [
     {
@@ -41,26 +45,48 @@ export default function ServicesSection() {
     return (
         <section id="how-it-works" className="py-20 bg-white">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="text-center mb-14">
-                    <div className="inline-flex items-center gap-2 bg-gray-100 text-gray-600 px-4 py-1.5 rounded-full text-sm font-semibold mb-4">
+                <motion.div
+                    className="text-center mb-14"
+                    variants={staggerContainer(0.1)}
+                    initial="hidden"
+                    whileInView="show"
+                    viewport={{ once: true, amount: 0.3 }}
+                >
+                    <motion.div variants={fadeUp} transition={defaultTransition} className="inline-flex items-center gap-2 bg-gray-100 text-gray-600 px-4 py-1.5 rounded-full text-sm font-semibold mb-4">
                         Our Services
-                    </div>
-                    <h2 className="text-3xl md:text-4xl font-extrabold text-[#1A2D47] mb-4">
+                    </motion.div>
+                    <motion.h2 variants={fadeUp} transition={defaultTransition} className="text-3xl md:text-4xl font-extrabold text-[#1A2D47] mb-4">
                         Everything You Need in One Place
-                    </h2>
-                    <p className="text-lg text-gray-500 max-w-xl mx-auto">
+                    </motion.h2>
+                    <motion.p variants={fadeUp} transition={defaultTransition} className="text-lg text-gray-500 max-w-xl mx-auto">
                         Whether you&apos;re hiring or job searching, Ampertalent has the tools, talent, and support to help you succeed.
-                    </p>
-                </div>
+                    </motion.p>
+                </motion.div>
 
-                <div className="grid md:grid-cols-3 gap-8">
+                <motion.div
+                    className="grid md:grid-cols-3 gap-8"
+                    variants={staggerContainer(0.15)}
+                    initial="hidden"
+                    whileInView="show"
+                    viewport={{ once: true, amount: 0.2 }}
+                >
                     {services.map((s) => {
                         const c = colorMap[s.color]
                         return (
-                            <div key={s.title} className="group rounded-2xl border border-gray-100 p-8 hover:shadow-xl transition-all hover:-translate-y-1 bg-white">
-                                <div className={`w-14 h-14 rounded-2xl ${c.bg} flex items-center justify-center mb-5`}>
+                            <motion.div
+                                key={s.title}
+                                variants={scaleIn}
+                                transition={defaultTransition}
+                                whileHover={{ y: -8, boxShadow: '0 24px 48px rgba(0,0,0,0.1)' }}
+                                className="group rounded-2xl border border-gray-100 p-8 bg-white cursor-default"
+                            >
+                                <motion.div
+                                    whileHover={{ rotate: 8, scale: 1.12 }}
+                                    transition={{ type: 'spring', stiffness: 300, damping: 15 }}
+                                    className={`w-14 h-14 rounded-2xl ${c.bg} flex items-center justify-center mb-5`}
+                                >
                                     <s.icon size={26} className={c.icon} />
-                                </div>
+                                </motion.div>
                                 <h3 className="text-xl font-bold text-[#1A2D47] mb-3">{s.title}</h3>
                                 <p className="text-gray-500 text-sm leading-relaxed mb-6">{s.description}</p>
                                 <Link
@@ -69,10 +95,10 @@ export default function ServicesSection() {
                                 >
                                     {s.cta} →
                                 </Link>
-                            </div>
+                            </motion.div>
                         )
                     })}
-                </div>
+                </motion.div>
             </div>
         </section>
     )

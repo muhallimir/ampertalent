@@ -1,5 +1,9 @@
+'use client'
+
 import Link from 'next/link'
 import { CheckCircle2, ArrowRight } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { fadeUp, scaleIn, staggerContainer, defaultTransition } from './animations'
 
 // Real employer job posting packages (from marketing-sku-mapping.ts)
 const employerJobPlans = [
@@ -110,30 +114,57 @@ export default function PricingSection() {
     return (
         <section id="pricing" className="py-20 bg-white">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="text-center mb-14">
-                    <div className="inline-flex items-center gap-2 bg-blue-50 text-[#0066FF] px-4 py-1.5 rounded-full text-sm font-semibold mb-4">
+
+                {/* Header */}
+                <motion.div
+                    className="text-center mb-14"
+                    variants={staggerContainer(0.12)}
+                    initial="hidden"
+                    whileInView="show"
+                    viewport={{ once: true, amount: 0.4 }}
+                >
+                    <motion.div variants={fadeUp} transition={defaultTransition}
+                        className="inline-flex items-center gap-2 bg-blue-50 text-[#0066FF] px-4 py-1.5 rounded-full text-sm font-semibold mb-4">
                         Pricing
-                    </div>
-                    <h2 className="text-3xl md:text-4xl font-extrabold text-[#1A2D47] mb-4">
+                    </motion.div>
+                    <motion.h2 variants={fadeUp} transition={defaultTransition}
+                        className="text-3xl md:text-4xl font-extrabold text-[#1A2D47] mb-4">
                         Simple, Transparent Pricing
-                    </h2>
-                    <p className="text-lg text-gray-500 max-w-xl mx-auto">
+                    </motion.h2>
+                    <motion.p variants={fadeUp} transition={defaultTransition}
+                        className="text-lg text-gray-500 max-w-xl mx-auto">
                         No hidden fees. No commissions. Cancel anytime.
-                    </p>
-                </div>
+                    </motion.p>
+                </motion.div>
 
                 {/* === EMPLOYER: Job Posting Plans === */}
                 <div className="mb-16">
-                    <h3 className="text-center text-sm font-semibold text-gray-400 uppercase tracking-wider mb-8">
+                    <motion.h3
+                        variants={fadeUp}
+                        initial="hidden"
+                        whileInView="show"
+                        viewport={{ once: true }}
+                        transition={defaultTransition}
+                        className="text-center text-sm font-semibold text-gray-400 uppercase tracking-wider mb-8"
+                    >
                         Employer — Job Postings
-                    </h3>
-                    <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+                    </motion.h3>
+                    <motion.div
+                        className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto"
+                        variants={staggerContainer(0.12)}
+                        initial="hidden"
+                        whileInView="show"
+                        viewport={{ once: true, amount: 0.2 }}
+                    >
                         {employerJobPlans.map((plan) => (
-                            <div
+                            <motion.div
                                 key={plan.name}
+                                variants={scaleIn}
+                                transition={defaultTransition}
+                                whileHover={{ y: -6, boxShadow: plan.highlighted ? '0 20px 40px -8px rgba(0,102,255,0.2)' : '0 12px 30px -8px rgba(0,0,0,0.1)' }}
                                 className={`rounded-2xl p-8 border ${plan.highlighted
                                     ? 'border-[#0066FF] bg-gradient-to-b from-blue-50 to-white shadow-xl shadow-blue-100 relative'
-                                    : 'border-gray-200 bg-white hover:shadow-md transition-shadow'
+                                    : 'border-gray-200 bg-white'
                                     }`}
                             >
                                 {plan.highlighted && (
@@ -157,34 +188,63 @@ export default function PricingSection() {
                                         </li>
                                     ))}
                                 </ul>
-                                <Link
-                                    href={`/sign-up?sku=${plan.sku}`}
-                                    className={`w-full inline-flex items-center justify-center gap-1.5 py-3 rounded-xl font-semibold text-sm transition-colors ${plan.highlighted
-                                        ? 'bg-[#0066FF] hover:bg-blue-700 text-white'
-                                        : 'bg-gray-100 hover:bg-gray-200 text-[#1A2D47]'
-                                        }`}
-                                >
-                                    {plan.cta} <ArrowRight size={14} />
-                                </Link>
-                            </div>
+                                <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+                                    <Link
+                                        href={`/sign-up?sku=${plan.sku}`}
+                                        className={`w-full inline-flex items-center justify-center gap-1.5 py-3 rounded-xl font-semibold text-sm transition-colors ${plan.highlighted
+                                            ? 'bg-[#0066FF] hover:bg-blue-700 text-white'
+                                            : 'bg-gray-100 hover:bg-gray-200 text-[#1A2D47]'
+                                            }`}
+                                    >
+                                        {plan.cta} <ArrowRight size={14} />
+                                    </Link>
+                                </motion.div>
+                            </motion.div>
                         ))}
-                    </div>
+                    </motion.div>
                 </div>
 
                 {/* === EMPLOYER: Concierge Plans === */}
-                <div className="mb-16 bg-gradient-to-br from-[#1A2D47] to-[#0d1f36] rounded-3xl p-8 md:p-12">
-                    <div className="text-center mb-10">
-                        <span className="inline-flex items-center gap-2 bg-white/10 text-white px-4 py-1.5 rounded-full text-sm font-semibold mb-4">
+                <motion.div
+                    className="mb-16 bg-gradient-to-br from-[#1A2D47] to-[#0d1f36] rounded-3xl p-8 md:p-12"
+                    initial={{ opacity: 0, y: 40 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.2 }}
+                    transition={defaultTransition}
+                >
+                    <motion.div
+                        className="text-center mb-10"
+                        variants={staggerContainer(0.1)}
+                        initial="hidden"
+                        whileInView="show"
+                        viewport={{ once: true }}
+                    >
+                        <motion.span variants={fadeUp} transition={defaultTransition}
+                            className="inline-flex items-center gap-2 bg-white/10 text-white px-4 py-1.5 rounded-full text-sm font-semibold mb-4">
                             White-Glove Service
-                        </span>
-                        <h3 className="text-2xl font-bold text-white mb-3">Concierge Hiring Plans</h3>
-                        <p className="text-gray-400 max-w-xl mx-auto text-sm">
+                        </motion.span>
+                        <motion.h3 variants={fadeUp} transition={defaultTransition}
+                            className="text-2xl font-bold text-white mb-3">Concierge Hiring Plans</motion.h3>
+                        <motion.p variants={fadeUp} transition={defaultTransition}
+                            className="text-gray-400 max-w-xl mx-auto text-sm">
                             Let our HR specialists handle the entire search — screening, shortlisting, and delivering the right candidates to you.
-                        </p>
-                    </div>
-                    <div className="grid md:grid-cols-3 gap-6">
+                        </motion.p>
+                    </motion.div>
+                    <motion.div
+                        className="grid md:grid-cols-3 gap-6"
+                        variants={staggerContainer(0.12)}
+                        initial="hidden"
+                        whileInView="show"
+                        viewport={{ once: true, amount: 0.2 }}
+                    >
                         {conciergeItems.map((plan) => (
-                            <div key={plan.name} className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-colors">
+                            <motion.div
+                                key={plan.name}
+                                variants={scaleIn}
+                                transition={defaultTransition}
+                                whileHover={{ y: -6, backgroundColor: 'rgba(255,255,255,0.12)' }}
+                                className="bg-white/5 border border-white/10 rounded-2xl p-6 transition-colors"
+                            >
                                 <h4 className="text-white font-bold mb-1">{plan.name}</h4>
                                 <p className="text-gray-400 text-sm mb-4">{plan.description}</p>
                                 <div className="text-3xl font-extrabold text-[#00D9FF] mb-5">{plan.price}</div>
@@ -196,29 +256,47 @@ export default function PricingSection() {
                                         </li>
                                     ))}
                                 </ul>
-                                <Link
-                                    href={`/sign-up?sku=${plan.sku}`}
-                                    className="w-full inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-semibold text-sm bg-white/10 hover:bg-white/20 text-white transition-colors"
-                                >
-                                    Get Started <ArrowRight size={14} />
-                                </Link>
-                            </div>
+                                <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+                                    <Link
+                                        href={`/sign-up?sku=${plan.sku}`}
+                                        className="w-full inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-semibold text-sm bg-white/10 hover:bg-white/20 text-white transition-colors"
+                                    >
+                                        Get Started <ArrowRight size={14} />
+                                    </Link>
+                                </motion.div>
+                            </motion.div>
                         ))}
-                    </div>
-                </div>
+                    </motion.div>
+                </motion.div>
 
                 {/* === SEEKER: Subscription Plans === */}
                 <div>
-                    <h3 className="text-center text-sm font-semibold text-gray-400 uppercase tracking-wider mb-8">
+                    <motion.h3
+                        variants={fadeUp}
+                        initial="hidden"
+                        whileInView="show"
+                        viewport={{ once: true }}
+                        transition={defaultTransition}
+                        className="text-center text-sm font-semibold text-gray-400 uppercase tracking-wider mb-8"
+                    >
                         Job Seekers — Subscription Plans
-                    </h3>
-                    <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+                    </motion.h3>
+                    <motion.div
+                        className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto"
+                        variants={staggerContainer(0.12)}
+                        initial="hidden"
+                        whileInView="show"
+                        viewport={{ once: true, amount: 0.2 }}
+                    >
                         {seekerPlans.map((plan) => (
-                            <div
+                            <motion.div
                                 key={plan.name}
+                                variants={scaleIn}
+                                transition={defaultTransition}
+                                whileHover={{ y: -6, boxShadow: plan.highlighted ? '0 20px 40px -8px rgba(0,187,136,0.2)' : '0 12px 30px -8px rgba(0,0,0,0.1)' }}
                                 className={`rounded-2xl p-8 border ${plan.highlighted
                                     ? 'border-[#00BB88] bg-gradient-to-b from-teal-50 to-white shadow-xl shadow-teal-100 relative'
-                                    : 'border-gray-200 bg-white hover:shadow-md transition-shadow'
+                                    : 'border-gray-200 bg-white'
                                     }`}
                             >
                                 {plan.highlighted && (
@@ -242,21 +320,29 @@ export default function PricingSection() {
                                         </li>
                                     ))}
                                 </ul>
-                                <Link
-                                    href={`/sign-up?sku=${plan.sku}`}
-                                    className={`w-full inline-flex items-center justify-center gap-1.5 py-3 rounded-xl font-semibold text-sm transition-colors ${plan.highlighted
-                                        ? 'bg-[#00BB88] hover:bg-teal-600 text-white'
-                                        : 'bg-gray-100 hover:bg-gray-200 text-[#1A2D47]'
-                                        }`}
-                                >
-                                    Get Started <ArrowRight size={14} />
-                                </Link>
-                            </div>
+                                <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+                                    <Link
+                                        href={`/sign-up?sku=${plan.sku}`}
+                                        className={`w-full inline-flex items-center justify-center gap-1.5 py-3 rounded-xl font-semibold text-sm transition-colors ${plan.highlighted
+                                            ? 'bg-[#00BB88] hover:bg-teal-600 text-white'
+                                            : 'bg-gray-100 hover:bg-gray-200 text-[#1A2D47]'
+                                            }`}
+                                    >
+                                        Get Started <ArrowRight size={14} />
+                                    </Link>
+                                </motion.div>
+                            </motion.div>
                         ))}
-                    </div>
-                    <p className="text-center text-xs text-gray-400 mt-6">
+                    </motion.div>
+                    <motion.p
+                        initial={{ opacity: 0 }}
+                        whileInView={{ opacity: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.4, duration: 0.5 }}
+                        className="text-center text-xs text-gray-400 mt-6"
+                    >
                         VIP Platinum ($79.99/3 months) also available · All plans include full job board access · Cancel anytime
-                    </p>
+                    </motion.p>
                 </div>
             </div>
         </section>
