@@ -13,13 +13,13 @@ const createPrismaClient = () => {
     databaseUrl = `${databaseUrl}${separator}pgbouncer=true`
   }
 
-  // Add connection pool limits to prevent pool exhaustion
-  // connection_limit: max connections in the pool (reduced for Vercel serverless)
-  // pool_timeout: max seconds to wait for a connection (fail fast instead of 60s hang)
+  // Add connection pool limits for Supabase
+  // connection_limit: max connections in the pool (higher for Supabase pooled connections)
+  // pool_timeout: max seconds to wait for a connection
   // connect_timeout: max seconds to establish a new connection
   if (!databaseUrl.includes('connection_limit')) {
     const separator = databaseUrl.includes('?') ? '&' : '?'
-    databaseUrl = `${databaseUrl}${separator}connection_limit=3&pool_timeout=5&connect_timeout=5`
+    databaseUrl = `${databaseUrl}${separator}connection_limit=8&pool_timeout=20&connect_timeout=10`
   }
 
   const client = new PrismaClient({
