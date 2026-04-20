@@ -97,7 +97,7 @@ Total Changes:
 ### Step 1: Configure in Vercel (5 minutes)
 
 1. Go to https://vercel.com/dashboard
-2. Add GitHub repo: `amirlocus/ampertalent`
+2. Add GitHub repo: `/ampertalent`
 3. Add environment variables (see `.env.example`):
    ```
    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY

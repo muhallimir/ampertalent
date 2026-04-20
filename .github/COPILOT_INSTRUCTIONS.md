@@ -459,4 +459,3 @@ Technical details and context
 ---
 
 _This document is the master guide for Ampertalent development. All work must align with these requirements and standards. Last updated: April 11, 2026_</content>
-<parameter name="filePath">/Users/amirlocus/Documents/Projects/Locus/ampertalent/.github/COPILOT_INSTRUCTIONS.md

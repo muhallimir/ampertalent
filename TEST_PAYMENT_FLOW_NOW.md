@@ -10,16 +10,16 @@ The database foreign key constraint error is now resolved. The fix creates an `E
 
 ### Step 1: Rebuild & Start Server
 
-```bash
-cd /Users/amirlocus/Documents/Projects/Locus/ampertalent
-
 # Kill any running servers first
 
 # Rebuild
+
 npm run build
 
 # Start dev server
+
 npm run dev
+
 ```
 
 ### Step 2: Test the Payment Flow
@@ -47,11 +47,13 @@ npm run dev
 You should see in **server console**:
 
 ```
+
 ✅ PROCESS-PAYMENT: Stripe session retrieved: { ... paid ... }
 💳 PROCESS-PAYMENT: Creating external payment record for Stripe session
 ✅ PROCESS-PAYMENT: External payment created: { id: 'cmn...', amount: 49.99 }
 ✅ PROCESS-PAYMENT: Subscription created: { ... }
 🎉 ONBOARDING: Payment complete, redirecting to dashboard
+
 ```
 
 Then browser should redirect to: `/seeker/dashboard?welcome=true`
@@ -84,6 +86,7 @@ Check these tables for new records:
 When everything works:
 
 ```
+
 Console Logs (Server):
 ✅ STRIPE-CHECKOUT: Created checkout session
 🔄 STRIPE-SUCCESS: Received request
@@ -99,10 +102,12 @@ Console Logs (Server):
 🎉 ONBOARDING: Payment complete, redirecting to dashboard
 
 Browser Result:
+
 - Redirected to /seeker/dashboard?welcome=true
 - See welcome banner
 - See subscription info
 - No errors in console
+
 ```
 
 ---
@@ -135,6 +140,7 @@ Open DevTools → Console → Look for error messages
 ## The Complete Flow (Now Working)
 
 ```
+
 1. Stripe Payment ✓
 2. Stripe redirects to /api/payments/stripe-success ✓
 3. Verifies payment_status === 'paid' ✓
@@ -146,6 +152,7 @@ Open DevTools → Console → Look for error messages
 9. Creates ExternalPayment ← CRITICAL FIX
 10. Creates Subscription (linked to ExternalPayment) ← CRITICAL FIX
 11. Redirects to /seeker/dashboard?welcome=true ✓
+
 ```
 
 All foreign key constraints satisfied! ✅
@@ -160,3 +167,4 @@ All foreign key constraints satisfied! ✅
 4. If successful, the payment flow is completely fixed!
 
 Good luck! 🚀
+```

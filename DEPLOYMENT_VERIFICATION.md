@@ -77,7 +77,7 @@ git push origin main
 
 1. Go to https://vercel.com/dashboard
 2. Click "Add New..." → "Project"
-3. Import GitHub repository: `amirlocus/ampertalent`
+3. Import GitHub repository: `/ampertalent`
 4. Configure:
    - Framework: Next.js
    - Build Command: npm run build

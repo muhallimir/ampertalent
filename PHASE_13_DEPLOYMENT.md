@@ -87,7 +87,7 @@ git push origin main
 
 1. Go to [Vercel Dashboard](https://vercel.com/dashboard)
 2. Click "Add New..." → "Project"
-3. Select GitHub repo: `amirlocus/ampertalent`
+3. Select GitHub repo: `/ampertalent`
 4. Configure:
    - **Framework**: Next.js (auto-detected)
    - **Root Directory**: `.` (default)
