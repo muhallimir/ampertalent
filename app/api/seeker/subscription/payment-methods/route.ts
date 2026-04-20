@@ -32,8 +32,23 @@ export async function GET(request: NextRequest) {
 
         let paymentMethods: any[] = []
 
-        // Fetch from Stripe if customer ID is available (stored in authnetCustomerId field)
-        if (latestSubscription?.authnetCustomerId) {
+        // First, check DB payment_methods table (saved after first purchase)
+        const dbMethods = await db.paymentMethod.findMany({
+            where: { seekerId: userProfile.id },
+            orderBy: { createdAt: 'desc' },
+        })
+
+        if (dbMethods.length > 0) {
+            paymentMethods = dbMethods.map(pm => ({
+                id: pm.id,
+                type: pm.type || 'credit_card',
+                last4: pm.last4 || '',
+                brand: pm.brand || '',
+                expiryMonth: pm.expiryMonth || 0,
+                expiryYear: pm.expiryYear || 0,
+                isDefault: pm.isDefault,
+            }))
+        } else if (latestSubscription?.authnetCustomerId) {
             try {
                 const stripeMethods = await stripe.paymentMethods.list({
                     customer: latestSubscription.authnetCustomerId,

@@ -223,7 +223,7 @@ export function planResumeCredits(planIdOrEnum: string): number {
 
 /**
  * Human-readable plan name from either a public ID or Prisma enum value.
- * e.g. 'vip_quarterly' → 'VIP Platinum Mom Professional'
+ * e.g. 'vip_quarterly' → 'Flex VIP Platinum Professional'
  */
 export function planDisplayName(planIdOrEnum: string): string {
   const plan = getPlanById(planIdOrEnum) ?? getPlanByMembershipPlan(planIdOrEnum)

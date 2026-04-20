@@ -52,7 +52,7 @@ export class EmailTemplates {
             <div class="content">
               <h2>Hi ${firstName}!</h2>
               
-              <p>We're thrilled to have you join our community of talented moms seeking flexible, remote work opportunities!</p>
+              <p>We're thrilled to have you join our community of talented professionals seeking flexible, remote work opportunities!</p>
               
               <div class="highlight">
                 <h3>🚀 What's Next?</h3>
@@ -92,7 +92,7 @@ export class EmailTemplates {
       text: `
         Welcome to AmperTalent, ${firstName}!
         
-        We're thrilled to have you join our community of talented moms seeking flexible, remote work opportunities!
+        We're thrilled to have you join our community of talented professionals seeking flexible, remote work opportunities!
         
         What's Next?
         - Complete your profile - Add your skills, experience, and availability
@@ -150,7 +150,7 @@ export class EmailTemplates {
           <div class="container">
             <div class="header">
               <h1>Welcome to AmperTalent! 🏢</h1>
-              <p>Connect with talented moms ready for remote work</p>
+              <p>Connect with talented professionals ready for remote work</p>
             </div>
             <div class="content">
               <h2>Hi ${firstName}!</h2>

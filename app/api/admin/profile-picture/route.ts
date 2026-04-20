@@ -35,12 +35,12 @@ export async function POST(request: NextRequest) {
     console.log('🖼️ Profile picture presigned URL request:', {
       userId: currentUser.profile.id,
       profilePictureUrl,
-      isS3Url: profilePictureUrl.includes('hire-my-mom-files.s3.') || profilePictureUrl.includes('.amazonaws.com')
+      isS3Url: profilePictureUrl.includes('ampertalent-files.s3.') || profilePictureUrl.includes('.amazonaws.com')
     })
 
     // If it's already a complete non-S3 URL, return it as-is
     if ((profilePictureUrl.startsWith('http://') || profilePictureUrl.startsWith('https://')) &&
-      !profilePictureUrl.includes('hire-my-mom-files.s3.') &&
+      !profilePictureUrl.includes('ampertalent-files.s3.') &&
       !profilePictureUrl.includes('.amazonaws.com')) {
       return NextResponse.json({ presignedUrl: profilePictureUrl })
     }
@@ -49,8 +49,8 @@ export async function POST(request: NextRequest) {
     let s3Key = profilePictureUrl
 
     // If it's a full S3 URL, extract the key
-    if (profilePictureUrl.includes('hire-my-mom-files.s3.')) {
-      const urlParts = profilePictureUrl.split('hire-my-mom-files.s3.amazonaws.com/')
+    if (profilePictureUrl.includes('ampertalent-files.s3.')) {
+      const urlParts = profilePictureUrl.split('ampertalent-files.s3.amazonaws.com/')
       if (urlParts.length > 1) {
         s3Key = urlParts[1].split('?')[0] // Remove any existing query parameters
       }

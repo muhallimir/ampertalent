@@ -237,7 +237,7 @@ __tests__/unit/file-validation.test.ts
 - [x] Copy logo to `public/logo/logo.png` (already in repo root, move if needed)
 - [ ] Create favicon from logo (multiple sizes: 16x16, 32x32, 64x64, 192x192)
 - [ ] Update `next.config.mjs` favicon references
-- [x] Replace all "HireMyMom" text with "Ampertalent"
+- [x] Replace all "OriginalRepo" text with "Ampertalent"
 - [x] Update tagline: "Connect With Flexible Talent" → "Where Flexible Talent Meets Opportunity"
 - [x] Verify button colors:
   - Primary buttons: `#0066FF` (Electric Blue)

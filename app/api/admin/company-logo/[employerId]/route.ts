@@ -4,7 +4,7 @@ import { S3Service } from '@/lib/s3'
 import { db } from '@/lib/db'
 import { GetObjectCommand } from '@aws-sdk/client-s3'
 
-const BUCKET_NAME = process.env.AWS_S3_BUCKET || 'hire-my-mom-files'
+const BUCKET_NAME = process.env.AWS_S3_BUCKET
 
 export async function GET(
   request: NextRequest,

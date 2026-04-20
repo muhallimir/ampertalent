@@ -2,7 +2,7 @@
 // Note: ampertalent supports both Stripe AND PayPal payments
 // - Stripe handles recurring billing via webhooks
 // - PayPal handles one-time payments and recurring via cron jobs
-// - Original hiremymom was Authorize.net + PayPal, migrated Auth.net to Stripe
+// - Original OriginalRepo was Authorize.net + PayPal, migrated Auth.net to Stripe
 
 export const isPayPalPaymentMethod = (paymentMethodId: string | null | undefined): boolean => {
     if (!paymentMethodId || paymentMethodId === '') {

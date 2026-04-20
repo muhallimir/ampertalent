@@ -49,13 +49,13 @@ describe('marketing SKU Mapping', () => {
                 })
             })
 
-            it('should return correct mapping for SKU 2215562 (Gold Mom Professional)', () => {
+            it('should return correct mapping for SKU 2215562 (Flex Gold Professional)', () => {
                 const result = getSkuMapping('2215562')
                 expect(result).toEqual({
                     sku: '2215562',
                     userType: 'seeker',
                     planId: 'gold',
-                    name: 'Gold Mom Professional',
+                    name: 'Flex Gold Professional',
                     price: 49.99,
                     priceDescription: '$49.99 every 2 months',
                     purchaseType: 'subscription',
@@ -68,7 +68,7 @@ describe('marketing SKU Mapping', () => {
                     sku: '2236043',
                     userType: 'seeker',
                     planId: 'vip-platinum',
-                    name: 'VIP Platinum Mom Professional',
+                    name: 'Flex VIP Platinum Professional',
                     price: 79.99,
                     priceDescription: '$79.99 every 3 months',
                     purchaseType: 'subscription',
@@ -81,7 +81,7 @@ describe('marketing SKU Mapping', () => {
                     sku: '2307158',
                     userType: 'seeker',
                     planId: 'annual-platinum',
-                    name: 'Annual Platinum Mom Professional',
+                    name: 'Flex Annual Platinum Professional',
                     price: 299.0,
                     priceDescription: '$299.00/year',
                     purchaseType: 'subscription',

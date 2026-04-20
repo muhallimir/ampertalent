@@ -438,9 +438,9 @@ export function getPlanName(planId: string): string {
   const names: Record<string, string> = {
     // Current seeker plans (matching subscription-plans.ts)
     'trial': '3 Day Free Trial Subscription',
-    'gold': 'Gold Mom Professional',
-    'vip-platinum': 'VIP Platinum Mom Professional',
-    'annual-platinum': 'Annual Platinum Mom Professional',
+    'gold': 'Flex Gold Professional',
+    'vip-platinum': 'Flex VIP Platinum Professional',
+    'annual-platinum': 'Flex Annual Platinum Professional',
 
     // Employer job posting packages (matching PackageCard.tsx)
     'standard': 'Standard Job Post',
@@ -461,9 +461,9 @@ export function getPlanName(planId: string): string {
 
     // Alternative naming support
     'trial_monthly': '3 Day Free Trial Subscription',
-    'gold_bimonthly': 'Gold Mom Professional',
-    'vip_quarterly': 'VIP Platinum Mom Professional',
-    'annual_platinum': 'Annual Platinum Mom Professional'
+    'gold_bimonthly': 'Flex Gold Professional',
+    'vip_quarterly': 'Flex VIP Platinum Professional',
+    'annual_platinum': 'Flex Annual Platinum Professional'
   }
   return names[planId] || 'Unknown Plan'
 }

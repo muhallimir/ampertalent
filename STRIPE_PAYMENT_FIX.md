@@ -16,9 +16,9 @@ The payment flow was incomplete. When a user paid with Stripe:
 6. ✗ **Result:** No UserProfile created → No JobSeeker created → No Subscription created
 7. ✗ User got stuck on onboarding page because profile wasn't complete
 
-### Why hire_my_mom_saas Works Correctly
+### Why original_repo Works Correctly
 
-In `hire_my_mom_saas/app/onboarding/page.tsx`, the flow is:
+In ` original_repo/app/onboarding/page.tsx`, the flow is:
 
 1. User completes onboarding form
 2. Clicks "Continue to Checkout"
@@ -40,7 +40,7 @@ The KEY difference: **onboarding/complete is ALWAYS called before redirecting to
 #### Commit 1: `fix: redirect Stripe checkout success back to onboarding page`
 
 - Changed Stripe `success_url` to redirect to `/onboarding?payment_status=success&sessionId=...&pendingSignupId=...` instead of `/seeker/dashboard`
-- This ensures the flow goes through the onboarding page (like hire_my_mom_saas)
+- This ensures the flow goes through the onboarding page (like original_repo)
 
 **File:** `app/api/payments/stripe-checkout/route.ts`
 
@@ -106,7 +106,7 @@ useEffect(() => {
 
 ---
 
-## Complete Flow Now Works Like hire_my_mom_saas
+## Complete Flow Now Works Like original_repo
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -274,7 +274,7 @@ Go to: http://localhost:3000/onboarding
 - Enter skills: "JavaScript, React"
 - Enter summary: "Experienced developer"
 - Click "Next" through all steps
-- Select: "Gold Mom Professional"
+- Select: "Flex Gold Professional"
 - Click "Continue to Checkout"
 ```
 
@@ -328,9 +328,9 @@ Browser DevTools Console should show:
 
 ---
 
-## Comparison: hire_my_mom_saas vs ampertalent
+## Comparison: original_repo vs ampertalent
 
-| Aspect                        | hire_my_mom_saas                            | ampertalent |
+| Aspect                        | original_repo                               | ampertalent |
 | ----------------------------- | ------------------------------------------- | ----------- |
 | **Checkout Provider**         | Authorize.net                               | Stripe      |
 | **Payment Type**              | Billing Agreement                           | One-time    |
@@ -342,11 +342,11 @@ Browser DevTools Console should show:
 | **Creates subscription**      | ✅ YES                                      | ✅ YES      |
 | **Redirects to dashboard**    | ✅ YES                                      | ✅ YES      |
 
-**Result:** ampertalent now has identical payment flow architecture to hire_my_mom_saas
+**Result:** ampertalent now has identical payment flow architecture to original_repo
 
 ---
 
-## No Changes to hire_my_mom_saas
+## No Changes to original_repo
 
 ✅ Parent application completely untouched  
 ✅ Only ampertalent clone was modified  

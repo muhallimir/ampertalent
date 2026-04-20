@@ -57,9 +57,9 @@ Dark Navy:         #1A2D47 (text, headings)
   - `amper-dark: #1A2D47`
 - [ ] Add CSS variables to `app/globals.css` (primary, secondary, accent, dark)
 - [ ] Copy logo file: `logo.png` → `public/logo/`
-- [ ] Replace all "HireMyMom" text with "Ampertalent"
+- [ ] Replace all "OriginalRepo" text with "Ampertalent"
 - [ ] Update tagline: "Connect With Flexible Talent" → "Where Flexible Talent Meets Opportunity"
-- [ ] Update domain references: hiremymom.com → ampertalent-demo.vercel.app
+- [ ] Update domain references: originalrepo.com → ampertalent-demo.vercel.app
 - [ ] Update button colors:
   - Primary buttons: use `#0066FF` (Electric Blue)
   - Secondary buttons: use `#00BB88` (Teal)
@@ -124,7 +124,7 @@ Dark Navy:         #1A2D47 (text, headings)
 **Email Templates:**
 
 - [ ] Update Clerk email templates with Ampertalent branding
-- [ ] Update sender: support@hiremymom.com → support@ampertalent-demo.vercel.app
+- [ ] Update sender: support@originalrepo.com → support@ampertalent-demo.vercel.app
 - [ ] Update brand colors in email HTML
 
 **Tests:**
@@ -833,7 +833,7 @@ Sentry.captureException(error, { level: "error" });
 
 Ready to begin? Let's start with Phase 1!
 
-Key files to copy from hire_my_mom_saas:
+Key files to copy from original_repo:
 
 1. Prisma schema
 2. Root layout + providers

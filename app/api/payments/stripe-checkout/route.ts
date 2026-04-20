@@ -41,6 +41,10 @@ export async function POST(request: NextRequest) {
                 }
             ],
             mode: 'payment',
+            payment_intent_data: {
+                setup_future_usage: 'off_session'
+            },
+            customer_creation: 'always',
             success_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/payments/stripe-success?session_id={CHECKOUT_SESSION_ID}&pendingSignupId=${pendingSignupId}`,
             cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/paypal?planId=${planId}&pendingSignupId=${pendingSignupId}`,
             customer_email: email,

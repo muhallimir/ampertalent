@@ -6,7 +6,7 @@ import { inAppNotificationService } from '@/lib/in-app-notification-service'
 import { decodeHtmlEntities } from '@/lib/utils'
 import { externalWebhookService } from '@/lib/external-webhook-service'
 
-const BUCKET_NAME = process.env.AWS_S3_BUCKET || 'hire-my-mom-files'
+const BUCKET_NAME = process.env.AWS_S3_BUCKET || 'ampertalent-files'
 
 // Helper function to generate presigned URL for company logo
 async function generatePresignedLogoUrl(companyLogoUrl: string | null): Promise<string | null> {

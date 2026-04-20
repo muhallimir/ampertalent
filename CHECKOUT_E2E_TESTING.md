@@ -166,7 +166,7 @@ All required credentials are configured in `.env`:
 
 3. PACKAGE SELECTION PHASE
    - Select "Flex Trial" ($34.99)
-   - Verify plan name displays correctly (not "Mom Professional")
+   - Verify plan name displays correctly
    - Click "Continue to Checkout"
    - Endpoint called: /api/seeker/subscription/checkout
    - Endpoint returns checkout URL with all params
@@ -359,7 +359,7 @@ Subscription:
 
 - [ ] No 404 errors
 - [ ] No console errors
-- [ ] Plan names correct (Flex Trial, not Mom Professional)
+- [ ] Plan names correct
 - [ ] Pricing displays correctly ($34.99 → $0.00 for trial)
 - [ ] Trial messaging clear and visible
 - [ ] Both payment methods functional

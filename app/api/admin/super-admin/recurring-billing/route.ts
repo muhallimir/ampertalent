@@ -126,15 +126,15 @@ export async function GET(request: NextRequest) {
                 amount: 34.99,
             },
             gold_bimonthly: {
-                name: "Gold Mom Professional",
+                name: "Flex Gold Professional",
                 amount: 49.99,
             },
             vip_quarterly: {
-                name: "VIP Platinum Mom Professional",
+                name: "Flex VIP Platinum Professional",
                 amount: 79.99,
             },
             annual_platinum: {
-                name: "Annual Platinum Mom Professional",
+                name: "Flex Annual Platinum Professional",
                 amount: 299.0,
             },
             // Fallback for old plan IDs that might be in the database
@@ -143,15 +143,15 @@ export async function GET(request: NextRequest) {
                 amount: 34.99,
             },
             gold: {
-                name: "Gold Mom Professional",
+                name: "Flex Gold Professional",
                 amount: 49.99,
             },
             vip: {
-                name: "VIP Platinum Mom Professional",
+                name: "Flex VIP Platinum Professional",
                 amount: 79.99,
             },
             annual: {
-                name: "Annual Platinum Mom Professional",
+                name: "Flex Annual Platinum Professional",
                 amount: 299.0,
             },
             none: {

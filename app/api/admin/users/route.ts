@@ -3,7 +3,7 @@ import { db } from '@/lib/db'
 import { getCurrentUser } from '@/lib/auth'
 import { S3Service } from '@/lib/s3'
 
-const BUCKET_NAME = process.env.AWS_S3_BUCKET || 'hire-my-mom-files'
+const BUCKET_NAME = process.env.AWS_S3_BUCKET || 'ampertalent-files'
 
 // Helper function to generate presigned URL for company logo
 async function generatePresignedLogoUrl(companyLogoUrl: string | null): Promise<string | null> {
@@ -262,7 +262,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Protect owner account from suspension or deletion
-    if (targetUser.email === 'lesley@ampertalent.com') {
+    if (targetUser.email === 'mir23wpurposes@gmail.com') {
       if (action === 'updateStatus' && value !== 'active') {
         return NextResponse.json({
           error: 'Owner account cannot be suspended or banned'

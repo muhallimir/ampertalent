@@ -147,9 +147,9 @@
 
 ---
 
-## Comparison: hire_my_mom_saas vs ampertalent
+## Comparison: original_repo vs ampertalent
 
-### hire_my_mom_saas (Using Authorize.net)
+### original_repo (Using Authorize.net)
 
 ```
 Payment (Authorize.net)

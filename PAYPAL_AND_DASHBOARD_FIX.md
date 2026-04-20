@@ -38,7 +38,7 @@ Completes profile → processes payment → creates subscription → redirects t
 
 **Problem:** After successful payment, dashboard showed error instead of loading user data.
 
-**Root Cause:** Missing `/api/seeker/dashboard/stats` endpoint. Dashboard was calling this endpoint but it didn't exist in ampertalent (exists in hire_my_mom_saas).
+**Root Cause:** Missing `/api/seeker/dashboard/stats` endpoint. Dashboard was calling this endpoint but it didn't exist in ampertalent .
 
 **Solution Implemented:**
 
@@ -244,6 +244,6 @@ Example logs:
 
 ## Related Files
 
-- Original implementation in hire_my_mom_saas: `/app/api/seeker/dashboard/stats/route.ts`
+- Original implementation in original_repo: `/app/api/seeker/dashboard/stats/route.ts`
 - Payment success handler pattern from: `/app/api/payments/stripe-success/route.ts`
 - Checkout logic reference: `/app/api/seeker/subscription/checkout/route.ts`

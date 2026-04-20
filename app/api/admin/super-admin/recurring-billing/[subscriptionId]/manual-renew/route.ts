@@ -126,15 +126,15 @@ export async function POST(
                 amount: 34.99,
             },
             gold_bimonthly: {
-                name: "Gold Mom Professional",
+                name: "Flex Gold Professional",
                 amount: 49.99,
             },
             vip_quarterly: {
-                name: "VIP Platinum Mom Professional",
+                name: "Flex VIP Platinum Professional",
                 amount: 79.99,
             },
             annual_platinum: {
-                name: "Annual Platinum Mom Professional",
+                name: "Flex Annual Platinum Professional",
                 amount: 299.0,
             },
         }

@@ -6,7 +6,7 @@
 
 ## Overview
 
-The database schema is **identical** to the original HireMyMom SaaS. We use the same Prisma schema with PostgreSQL on Supabase free tier. The only differences are branding-related comments.
+The database schema is **identical** to the original OriginalRepo SaaS. We use the same Prisma schema with PostgreSQL on Supabase free tier. The only differences are branding-related comments.
 
 ---
 

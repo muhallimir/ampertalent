@@ -44,19 +44,19 @@ export async function POST(request: NextRequest) {
         trialDays: 3
       },
       'gold': {
-        name: 'Gold Mom Professional',
+        name: 'Flex Gold Professional',
         price: 4999, // $49.99 in cents
         billing: '2 months',
         duration: 60
       },
       'vip-platinum': {
-        name: 'VIP Platinum Mom Professional',
+        name: 'Flex VIP Platinum Professional',
         price: 7999, // $79.99 in cents
         billing: '3 months',
         duration: 90
       },
       'annual-platinum': {
-        name: 'Annual Platinum Mom Professional',
+        name: 'Flex Annual Platinum Professional',
         price: 29900, // $299.00 in cents
         billing: 'year',
         duration: 365

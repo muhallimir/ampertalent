@@ -66,7 +66,7 @@ export async function GET(
         const fileKey = pathParts.slice(-3).join('/') // Get avatars/userId/filename
 
         profilePictureUrl = await S3Service.generatePresignedDownloadUrl(
-          process.env.AWS_S3_BUCKET || 'hire-my-mom-files',
+          process.env.AWS_S3_BUCKET || 'ampertalent-files',
           fileKey,
           24 * 60 * 60 // 24 hours
         )

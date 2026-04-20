@@ -433,7 +433,7 @@ export default function AdminSettings() {
               Webhook Configuration
             </h4>
             <div className="text-sm text-gray-700 space-y-1">
-              <p><strong>Endpoint:</strong> <code className="bg-gray-200 px-2 py-1 rounded">https://hmm-automation.locusapp.io/webhook/[unique-id]</code></p>
+              <p><strong>Endpoint:</strong> <code className="bg-gray-200 px-2 py-1 rounded">{""}</code></p>
               <p><strong>Authentication:</strong> Basic Auth with HMAC-SHA256 signatures</p>
               <p><strong>Timeout:</strong> 5 seconds</p>
               <p><strong>Retry Policy:</strong> Automatic error notifications on failure</p>

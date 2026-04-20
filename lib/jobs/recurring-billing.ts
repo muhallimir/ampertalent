@@ -1499,13 +1499,13 @@ export class RecurringBillingService {
           case '3 Day Free Trial Subscription':
             nextPaymentDate.setMonth(nextPaymentDate.getMonth() + 1);
             break;
-          case 'Gold Mom Professional':
+          case 'Flex Gold Professional':
             nextPaymentDate.setMonth(nextPaymentDate.getMonth() + 2);
             break;
-          case 'VIP Platinum Mom Professional':
+          case 'Flex VIP Platinum Professional':
             nextPaymentDate.setMonth(nextPaymentDate.getMonth() + 3);
             break;
-          case 'Annual Platinum Mom Professional':
+          case 'Flex Annual Platinum Professional':
             nextPaymentDate.setFullYear(nextPaymentDate.getFullYear() + 1);
             break;
           default:

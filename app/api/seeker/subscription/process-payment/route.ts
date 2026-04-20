@@ -3,6 +3,7 @@ import { getCurrentUser } from '@/lib/auth'
 import { db } from '@/lib/db'
 import Stripe from 'stripe'
 import { Decimal } from '@prisma/client/runtime/library'
+import { NotificationService } from '@/lib/notification-service'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
     apiVersion: '2023-10-16' as any
@@ -175,6 +176,103 @@ export async function POST(request: NextRequest) {
                     plan: subscription.plan,
                     seekerId: subscription.seekerId
                 })
+
+                // ====== SAVE STRIPE PAYMENT METHOD ======
+                try {
+                    const stripeCustomerId = typeof session.customer === 'string' ? session.customer : null
+                    const paymentIntentId = typeof session.payment_intent === 'string' ? session.payment_intent : null
+
+                    if (stripeCustomerId) {
+                        // Store Stripe customer ID so the subscription page can fetch payment methods
+                        await db.subscription.update({
+                            where: { id: subscription.id },
+                            data: { authnetCustomerId: stripeCustomerId }
+                        })
+                        console.log('✅ PROCESS-PAYMENT: Saved Stripe customer ID to subscription:', stripeCustomerId)
+                    }
+
+                    if (paymentIntentId) {
+                        const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId, {
+                            expand: ['payment_method']
+                        })
+                        const pm = paymentIntent.payment_method as Stripe.PaymentMethod | null
+                        if (pm?.card) {
+                            // Check for existing card payment method for this seeker
+                            const existing = await db.$queryRaw<Array<{ id: string }>>`
+                                SELECT id FROM payment_methods WHERE seeker_id = ${userProfile.id} LIMIT 1
+                            `
+                            if (existing.length > 0) {
+                                await db.$executeRaw`
+                                    UPDATE payment_methods
+                                    SET type = 'credit_card', last4 = ${pm.card.last4}, brand = ${pm.card.brand},
+                                        expiry_month = ${pm.card.exp_month}, expiry_year = ${pm.card.exp_year},
+                                        is_default = true, updated_at = NOW()
+                                    WHERE id = ${existing[0].id}
+                                `
+                            } else {
+                                await db.paymentMethod.create({
+                                    data: {
+                                        seekerId: userProfile.id,
+                                        type: 'credit_card',
+                                        last4: pm.card.last4,
+                                        brand: pm.card.brand,
+                                        expiryMonth: pm.card.exp_month,
+                                        expiryYear: pm.card.exp_year,
+                                        isDefault: true,
+                                    }
+                                })
+                            }
+                            console.log('✅ PROCESS-PAYMENT: Saved Stripe card payment method:', pm.card.brand, '****' + pm.card.last4)
+                        }
+                    }
+                } catch (pmError) {
+                    console.error('⚠️ PROCESS-PAYMENT: Payment method save failed (non-blocking):', pmError)
+                }
+
+                // ====== SEND ADMIN + CUSTOMER PAYMENT EMAILS ======
+                try {
+                    const isTrial = planId === 'trial'
+                    const displayPrice = isTrial ? 0 : (session.amount_total || 0) / 100
+                    const planName = membershipPlan.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())
+                    const productDescription = isTrial ? `${planName} (Free Trial - No Charge Today)` : planName
+                    const orderDate = new Date()
+                    const orderNumber = `ORD-${orderDate.toISOString().slice(0, 10).replace(/-/g, '')}-${subscription.id.slice(-4)}`
+                    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+
+                    await NotificationService.sendAdminPaymentNotification({
+                        orderNumber,
+                        orderDate: orderDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+                        customerName: userProfile.name || 'Seeker',
+                        customerType: 'Seeker',
+                        customerId: userProfile.id,
+                        customerEmail: userProfile.email || '',
+                        productDescription,
+                        quantity: 1,
+                        price: displayPrice,
+                        lineItems: [{ name: productDescription, quantity: 1, price: displayPrice }],
+                        subscriptionStartDate: orderDate.toLocaleDateString('en-US'),
+                        paymentType: 'card',
+                        isRenewal: false,
+                        transactionId: typeof session.payment_intent === 'string' ? session.payment_intent : sessionId,
+                    })
+
+                    await NotificationService.sendCustomerPaymentConfirmationEmail({
+                        email: userProfile.email || '',
+                        firstName: userProfile.firstName || userProfile.name?.split(' ')[0] || 'Valued Customer',
+                        lastName: userProfile.lastName || undefined,
+                        amount: displayPrice,
+                        description: productDescription,
+                        transactionId: typeof session.payment_intent === 'string' ? session.payment_intent : sessionId,
+                        lineItems: [{ name: productDescription, amount: displayPrice }],
+                        isTrial,
+                        isRecurring: false,
+                        paymentType: 'card',
+                    })
+
+                    console.log('✅ PROCESS-PAYMENT: Admin and customer emails sent')
+                } catch (emailError) {
+                    console.error('⚠️ PROCESS-PAYMENT: Email sending failed (non-blocking):', emailError)
+                }
 
                 return NextResponse.json({
                     success: true,

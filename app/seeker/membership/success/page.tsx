@@ -38,7 +38,7 @@ const planDetails: Record<string, PlanDetails> = {
   },
   'gold': {
     id: 'gold',
-    name: 'Gold Mom Professional',
+    name: 'Flex Gold Professional',
     price: 49.99,
     billing: '2 months',
     duration: '60 days',
@@ -50,7 +50,7 @@ const planDetails: Record<string, PlanDetails> = {
   },
   'vip-platinum': {
     id: 'vip-platinum',
-    name: 'VIP Platinum Mom Professional',
+    name: 'Flex VIP Platinum Professional',
     price: 79.99,
     billing: '3 months',
     duration: '90 days',
@@ -63,7 +63,7 @@ const planDetails: Record<string, PlanDetails> = {
   },
   'annual-platinum': {
     id: 'annual-platinum',
-    name: 'Annual Platinum Mom Professional',
+    name: 'Flex Annual Platinum Professional',
     price: 299.00,
     billing: 'year',
     duration: '365 days',
@@ -86,11 +86,11 @@ export default function MembershipSuccessPage() {
   useEffect(() => {
     const planId = searchParams.get('plan')
     const mockParam = searchParams.get('mock')
-    
+
     if (planId && planDetails[planId]) {
       setPlan(planDetails[planId])
     }
-    
+
     if (mockParam === 'true') {
       setIsMock(true)
     }
@@ -157,7 +157,7 @@ export default function MembershipSuccessPage() {
                   ${plan.price} / {plan.billing}
                 </p>
               </div>
-              
+
               <div className="space-y-3">
                 <h4 className="font-medium text-gray-900">Your Benefits:</h4>
                 {plan.features.map((feature, index) => (
@@ -255,7 +255,7 @@ export default function MembershipSuccessPage() {
                   </p>
                 </div>
               </div>
-              
+
               <div className="flex items-start space-x-3">
                 <Calendar className="h-5 w-5 text-blue-500 mt-1" />
                 <div>

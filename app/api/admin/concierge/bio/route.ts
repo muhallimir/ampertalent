@@ -3,7 +3,7 @@ import { getCurrentUser } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { S3Service } from '@/lib/s3';
 
-const BUCKET_NAME = process.env.AWS_S3_BUCKET || 'hire-my-mom-files';
+const BUCKET_NAME = process.env.AWS_S3_BUCKET || 'ampertalent-files';
 
 export async function GET(request: NextRequest) {
   try {
@@ -47,13 +47,13 @@ export async function GET(request: NextRequest) {
     if (userProfile.profilePictureUrl) {
       try {
         // Check if it's an S3 URL that needs a presigned URL
-        if (userProfile.profilePictureUrl.includes('hire-my-mom-files.s3.') ||
+        if (userProfile.profilePictureUrl.includes('ampertalent-files.s3.') ||
           userProfile.profilePictureUrl.includes('.amazonaws.com')) {
 
           // Extract S3 key from URL
           let s3Key = userProfile.profilePictureUrl;
-          if (userProfile.profilePictureUrl.includes('hire-my-mom-files.s3.')) {
-            const urlParts = userProfile.profilePictureUrl.split('hire-my-mom-files.s3.amazonaws.com/');
+          if (userProfile.profilePictureUrl.includes('ampertalent-files.s3.')) {
+            const urlParts = userProfile.profilePictureUrl.split('ampertalent-files.s3.amazonaws.com/');
             if (urlParts.length > 1) {
               s3Key = urlParts[1].split('?')[0]; // Remove any existing query parameters
             }

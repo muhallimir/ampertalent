@@ -152,9 +152,9 @@ success_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/payments/stripe-success?ses
 
 ---
 
-## Now Matches hire_my_mom_saas
+## Now Matches original_repo
 
-Your parent app (`hire_my_mom_saas`) uses this pattern:
+Your parent app (` original_repo`) uses this pattern:
 
 ```
 Payment (Authorize.net) → /api/auth/external-return → Verify → Create profile
@@ -212,7 +212,7 @@ Follow the complete E2E testing guide in `STRIPE_E2E_TESTING_COMPLETE.md`:
 
 ## Key Benefits
 
-✅ **Matches hire_my_mom_saas architecture** - Consistent payment flow pattern
+✅ **Matches original_repo architecture** - Consistent payment flow pattern
 ✅ **Handles edge cases** - Uses defaults if onboarding data incomplete
 ✅ **Robust verification** - Confirms payment with Stripe API before creating profile
 ✅ **Better debugging** - Extensive console logging for troubleshooting
@@ -232,4 +232,4 @@ The fix is complete and committed. Now you can:
 4. Test with different plan IDs (trial, gold, vip-platinum, annual)
 5. Test PayPal flow (similar architecture)
 
-All the infrastructure is in place. The payment flow now works exactly like `hire_my_mom_saas`!
+All the infrastructure is in place. The payment flow now works exactly like ` original_repo`!

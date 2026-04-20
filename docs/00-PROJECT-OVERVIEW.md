@@ -1,6 +1,6 @@
 # 🚀 Ampertalent — Portfolio Clone Project Overview
 
-> **A 1:1 feature-accurate clone of the HireMyMom SaaS platform, rebuilt from scratch using 100% free-tier services for portfolio demonstration.**
+> **A 1:1 feature-accurate clone of the OriginalRepo SaaS platform, rebuilt from scratch using 100% free-tier services for portfolio demonstration.**
 
 ---
 

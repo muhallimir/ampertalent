@@ -9,7 +9,7 @@ import {
 import { S3Service } from '@/lib/s3'
 import { presignedUrlCache } from '@/lib/presigned-url-cache'
 
-const BUCKET_NAME = process.env.AWS_S3_BUCKET || 'hire-my-mom-files'
+const BUCKET_NAME = process.env.AWS_S3_BUCKET || 'ampertalent-files'
 
 export async function GET(request: NextRequest) {
   try {
@@ -163,11 +163,11 @@ export async function GET(request: NextRequest) {
 
     const pendingSignups = abandonedCartClerkIds.length > 0
       ? await db.pendingSignup.findMany({
-          where: { clerkUserId: { in: abandonedCartClerkIds } },
-          select: { clerkUserId: true, createdAt: true, selectedPlan: true },
-          orderBy: { createdAt: 'desc' },
-          distinct: ['clerkUserId'],
-        })
+        where: { clerkUserId: { in: abandonedCartClerkIds } },
+        select: { clerkUserId: true, createdAt: true, selectedPlan: true },
+        orderBy: { createdAt: 'desc' },
+        distinct: ['clerkUserId'],
+      })
       : []
 
     const pendingSignupByClerkId = new Map(

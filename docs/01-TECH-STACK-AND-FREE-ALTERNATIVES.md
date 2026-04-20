@@ -250,7 +250,7 @@
 | Error Monitoring (Bugsnag → Sentry)      | **Minor** — swap SDK                   | ~2 hours  |
 | Payments (Authorize.net/PayPal → Stripe) | **Moderate** — new Stripe integration  | ~2 days   |
 | CRM (GoHighLevel → HubSpot)              | **Moderate** — new HubSpot integration | ~1.5 days |
-| Branding (HireMyMom → Ampertalent)       | **Minor** — find/replace branding      | ~2 hours  |
+| Branding (OriginalRepo → Ampertalent)    | **Minor** — find/replace branding      | ~2 hours  |
 
 ---
 
@@ -293,15 +293,15 @@ stripe (Stripe Node SDK — server-side)
 
 ## 🎨 Branding Changes
 
-| Element        | Original                          | Ampertalent                                  |
-| -------------- | --------------------------------- | -------------------------------------------- |
-| App Name       | ampertalent / HireMyMom           | **Ampertalent**                              |
-| Tagline        | "Remote Jobs for Working Parents" | "Where Flexible Talent Meets Opportunity"    |
-| Domain         | hiremymom.com                     | Ampertalent-demo.vercel.app                  |
-| Email From     | team@notifications.hiremymom.com  | team@Ampertalent-demo.vercel.app             |
-| Logo           | hmm_logo.png                      | Custom Ampertalent logo                      |
-| Color Scheme   | Teal/Brand colors                 | Similar but distinct palette                 |
-| Metadata Title | "ampertalent - Remote Jobs..."    | "Ampertalent - Flexible Remote Job Platform" |
+| Element        | Original                            | Ampertalent                                  |
+| -------------- | ----------------------------------- | -------------------------------------------- |
+| App Name       | ampertalent / OriginalRepo          | **Ampertalent**                              |
+| Tagline        | "Remote Jobs for Working Parents"   | "Where Flexible Talent Meets Opportunity"    |
+| Domain         | originalrepo.com                    | Ampertalent-demo.vercel.app                  |
+| Email From     | team@notifications.originalrepo.com | team@Ampertalent-demo.vercel.app             |
+| Logo           | hmm_logo.png                        | Custom Ampertalent logo                      |
+| Color Scheme   | Teal/Brand colors                   | Similar but distinct palette                 |
+| Metadata Title | "ampertalent - Remote Jobs..."      | "Ampertalent - Flexible Remote Job Platform" |
 
 ---
 

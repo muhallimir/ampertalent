@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { NotificationService } from '@/lib/notification-service'
 
 export async function GET(request: NextRequest) {
     try {
@@ -39,6 +40,42 @@ export async function GET(request: NextRequest) {
         if (userProfile) {
             // Payment processed - complete sign-in and redirect
             console.log('✅ PAYPAL-SUCCESS: User profile found, completing sign-in')
+
+            // ====== SEND ADMIN + CUSTOMER PAYMENT EMAILS ======
+            try {
+                const orderDate = new Date()
+                const orderNumber = `ORD-${orderDate.toISOString().slice(0, 10).replace(/-/g, '')}-${(transactionId || '').slice(-4)}`
+                const planId = pendingSignup.selectedPlan || 'subscription'
+                const planLabel = planId.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())
+
+                await NotificationService.sendAdminPaymentNotification({
+                    orderNumber,
+                    orderDate: orderDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+                    customerName: userProfile.name || 'Seeker',
+                    customerType: 'Seeker',
+                    customerId: userProfile.id,
+                    customerEmail: userProfile.email || '',
+                    productDescription: planLabel,
+                    quantity: 1,
+                    price: 0,
+                    paymentType: 'paypal',
+                    isRenewal: false,
+                    transactionId: transactionId || '',
+                })
+
+                await NotificationService.sendCustomerPaymentConfirmationEmail({
+                    email: userProfile.email || '',
+                    firstName: userProfile.firstName || userProfile.name?.split(' ')[0] || 'Valued Customer',
+                    amount: 0,
+                    description: planLabel,
+                    transactionId: transactionId || '',
+                    paymentType: 'paypal',
+                    isRecurring: false,
+                })
+                console.log('✅ PAYPAL-SUCCESS: Admin and customer emails sent')
+            } catch (emailError) {
+                console.error('⚠️ PAYPAL-SUCCESS: Email sending failed (non-blocking):', emailError)
+            }
 
             try {
                 // Clean up pending signup

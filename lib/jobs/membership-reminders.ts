@@ -9,9 +9,9 @@ import { emailTemplates } from '../email-templates';
 // Plan display names and prices — mirrors SEEKER_SUBSCRIPTION_PLANS without importing React icons
 const PLAN_INFO: Record<string, { name: string; price: number; billing: string }> = {
   trial_monthly: { name: '3 Day Free Trial Subscription', price: 34.99, billing: 'month' },
-  gold_bimonthly: { name: 'Gold Mom Professional', price: 49.99, billing: '2 months' },
-  vip_quarterly: { name: 'VIP Platinum Mom Professional', price: 79.99, billing: '3 months' },
-  annual_platinum: { name: 'Annual Platinum Mom Professional', price: 299.00, billing: 'year' },
+  gold_bimonthly: { name: 'Flex Gold Professional', price: 49.99, billing: '2 months' },
+  vip_quarterly: { name: 'Flex VIP Platinum Professional', price: 79.99, billing: '3 months' },
+  annual_platinum: { name: 'Flex Annual Platinum Professional', price: 299.00, billing: 'year' },
 };
 
 /**

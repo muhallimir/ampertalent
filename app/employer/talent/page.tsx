@@ -85,7 +85,7 @@ export default function BrowseTalentPage() {
   // Fetch talents with cursor-based pagination
   const fetchTalents = async (cursor?: string) => {
     const startTime = performance.now()
-    
+
     const params = new URLSearchParams({
       limit: '20', // Increased for better infinite scroll experience
       sortBy,
@@ -180,8 +180,8 @@ export default function BrowseTalentPage() {
 
   // Handle skill filter toggle
   const toggleSkillFilter = (skill: string) => {
-    setSelectedSkills(prev => 
-      prev.includes(skill) 
+    setSelectedSkills(prev =>
+      prev.includes(skill)
         ? prev.filter(s => s !== skill)
         : [...prev, skill]
     )
@@ -203,7 +203,7 @@ export default function BrowseTalentPage() {
     const startTime = performance.now()
     setSelectedTalentId(talentId)
     setShowProfileModal(true)
-    
+
     // Track user interaction
     const duration = performance.now() - startTime
     trackUserInteraction('view_profile', duration)
@@ -231,7 +231,7 @@ export default function BrowseTalentPage() {
         headline: talent.headline
       })
       setShowInviteModal(true)
-      
+
       // Track user interaction
       const duration = performance.now() - startTime
       trackUserInteraction('invite_talent', duration)
@@ -265,7 +265,7 @@ export default function BrowseTalentPage() {
   // Track page load performance
   useEffect(() => {
     const startTime = performance.now()
-    
+
     const handleLoad = () => {
       const loadTime = performance.now() - startTime
       trackPageLoad('talent_browse', loadTime)
@@ -305,17 +305,17 @@ export default function BrowseTalentPage() {
               <div className="h-8 bg-gray-200 rounded w-80 mb-3"></div>
               <div className="h-5 bg-gray-200 rounded w-96"></div>
             </div>
-            
+
             {/* Search skeleton */}
             <div className="h-12 bg-gray-200 rounded"></div>
-            
+
             {/* Filters skeleton */}
             <div className="flex space-x-4">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="h-8 bg-gray-200 rounded w-24"></div>
               ))}
             </div>
-            
+
             {/* Grid skeleton */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {Array.from({ length: 8 }).map((_, i) => (
@@ -345,7 +345,7 @@ export default function BrowseTalentPage() {
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                  Browse 100k+ Mom Professionals
+                  Browse 100k+ Talented Professionals
                 </h1>
                 <p className="text-base text-gray-600 max-w-2xl">
                   Discover talented professionals ready for remote work. Use filters to find your perfect team member.

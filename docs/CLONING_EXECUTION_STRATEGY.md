@@ -1,6 +1,6 @@
 # 🚀 Cloning Execution Strategy — Ampertalent
 
-> **Complete playbook for cloning HireMyMom → Ampertalent with strategic batching, phase-by-phase commits, and systematic third-party integration replacements.**
+> **Complete playbook for cloning OriginalRepo → Ampertalent with strategic batching, phase-by-phase commits, and systematic third-party integration replacements.**
 
 ---
 
@@ -78,7 +78,7 @@
 **Files to Clone:**
 
 ```
-hire_my_mom_saas/
+ original_repo/
 ├── app/
 │   ├── layout.tsx
 │   ├── page.tsx
@@ -126,10 +126,10 @@ UPSTASH_REDIS_REST_URL → from .env ✓
 
 **Theme Changes:**
 
-- Logo: Replace HireMyMom logo with Ampertalent logo (branding folder)
-- Brand name: Search/replace "HireMyMom" → "Ampertalent" (UI, emails)
+- Logo: Replace OriginalRepo logo with Ampertalent logo (branding folder)
+- Brand name: Search/replace "OriginalRepo" → "Ampertalent" (UI, emails)
 - Tagline: Replace "Connect With Flexible Talent" → "Where Flexible Talent Meets Opportunity"
-- Domain: Replace hiremymom.com → ampertalent-demo.vercel.app (in emails, links)
+- Domain: Replace originalrepo.com → ampertalent-demo.vercel.app (in emails, links)
 - Color palette: Keep modern theme, distinct from original (Tailwind CSS vars)
 
 **TDD Tests to Clone:**
@@ -191,7 +191,7 @@ lib/
 <SignIn appearance={AMPERTALENT_THEME} />
 <SignUp appearance={AMPERTALENT_THEME} />
 
-// Emails: Replace HireMyMom template vars
+// Emails: Replace OriginalRepo template vars
 BRAND_NAME = "Ampertalent"
 BRAND_TAGLINE = "Where Flexible Talent Meets Opportunity"
 SUPPORT_EMAIL = "support@ampertalent-demo.vercel.app"

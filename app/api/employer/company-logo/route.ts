@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { S3Service } from '@/lib/s3';
 
-const BUCKET_NAME = process.env.AWS_S3_BUCKET || 'hire-my-mom-files';
+const BUCKET_NAME = process.env.AWS_S3_BUCKET || 'ampertalent-files';
 
 export async function GET(request: NextRequest) {
   try {

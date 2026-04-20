@@ -18,7 +18,7 @@ NOT "File-by-File" (too granular, 200+ commits, chaotic history)
 
 📋 APPROACH BREAKDOWN
 
-1. COPY & PASTE FROM hire_my_mom_saas
+1. COPY & PASTE FROM  original_repo
    ├─ Take entire file structure as-is
    ├─ Copy all TypeScript/React components
    ├─ Copy all database models (Prisma schema)
@@ -41,10 +41,10 @@ NOT "File-by-File" (too granular, 200+ commits, chaotic history)
       └─ Count: 4 services, ~13 files affected
 
 3. BRANDING ADJUSTMENTS
-   ├─ Replace logo: HireMyMom → Ampertalent
+   ├─ Replace logo: OriginalRepo → Ampertalent
    ├─ Replace brand name in all files (global search/replace)
    ├─ Update tagline: "Connect With Flexible Talent" → "Where Flexible Talent Meets Opportunity"
-   ├─ Update domain: hiremymom.com → ampertalent-demo.vercel.app
+   ├─ Update domain: originalrepo.com → ampertalent-demo.vercel.app
    ├─ Update colors: Modern, distinct palette (Tailwind CSS)
    └─ Update emails: Brand all transactional templates
 
@@ -248,7 +248,7 @@ After Phase 13, you have:
   ✅ All 14 phases complete
   ✅ All integrations done
   ✅ Production-ready code
-  ✅ Full feature parity with HireMyMom
+  ✅ Full feature parity with OriginalRepo
 
 Recommended for hiring managers: Full feature showcase.
 
@@ -271,11 +271,11 @@ $ git commit -m "initial commit: Next.js 16 scaffold"
 Step 2: For EACH PHASE
 ────────────────────────────────────────────────────────────────────────────
 
-A. Copy files from hire_my_mom_saas
-   $ cp -r ../hire_my_mom_saas/app/[relevant-folder] ./app/
-   $ cp -r ../hire_my_mom_saas/lib/[relevant-files] ./lib/
-   $ cp -r ../hire_my_mom_saas/components/[relevant-components] ./components/
-   $ cp -r ../hire_my_mom_saas/__tests__/[relevant-tests] ./__tests__/
+A. Copy files from  original_repo
+   $ cp -r ../ original_repo/app/[relevant-folder] ./app/
+   $ cp -r ../ original_repo/lib/[relevant-files] ./lib/
+   $ cp -r ../ original_repo/components/[relevant-components] ./components/
+   $ cp -r ../ original_repo/__tests__/[relevant-tests] ./__tests__/
 
 B. For each file, make replacements:
    $ grep -r "authorize-net\|s3\|bugsnag\|gohighlevel" . --include="*.ts" --include="*.tsx"
@@ -288,8 +288,8 @@ B. For each file, make replacements:
    - GoHighLevel → HubSpot: Change API endpoint mappings
 
 C. Update branding:
-   $ sed -i 's/HireMyMom/Ampertalent/g' $(find . -type f -name "*.ts" -o -name "*.tsx" -o -name "*.css")
-   $ sed -i 's/hiremymom\.com/ampertalent-demo.vercel.app/g' $(find . -type f -name "*.ts" -o -name "*.tsx")
+   $ sed -i 's/OriginalRepo/Ampertalent/g' $(find . -type f -name "*.ts" -o -name "*.tsx" -o -name "*.css")
+   $ sed -i 's/OriginalRepo\.com/ampertalent-demo.vercel.app/g' $(find . -type f -name "*.ts" -o -name "*.tsx")
 
 D. Test:
    $ npm test -- [phase-related-tests]

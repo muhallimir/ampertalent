@@ -3,7 +3,7 @@ import { db } from '@/lib/db'
 import { getCurrentUser } from '@/lib/auth'
 import { S3Service } from '@/lib/s3'
 
-const BUCKET_NAME = process.env.AWS_S3_BUCKET || 'hire-my-mom-files'
+const BUCKET_NAME = process.env.AWS_S3_BUCKET || 'ampertalent-files'
 
 // Helper function to generate presigned URLs for company logos
 async function generatePresignedLogoUrl(companyLogoUrl: string | null): Promise<string | null> {

@@ -4,7 +4,7 @@ import { db } from '@/lib/db'
 import { S3Service } from '@/lib/s3'
 import { activeJobWhereClause, validPackageWhereClause } from '@/lib/employerStatus'
 
-const BUCKET_NAME = process.env.AWS_S3_BUCKET || 'hire-my-mom-files'
+const BUCKET_NAME = process.env.AWS_S3_BUCKET || 'ampertalent-files'
 
 // Helper function to generate presigned URL for company logo
 async function generatePresignedLogoUrl(companyLogoUrl: string | null): Promise<string | null> {

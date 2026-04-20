@@ -3,7 +3,7 @@ import { getCurrentUser } from '@/lib/auth'
 import { createClient } from '@supabase/supabase-js'
 import { randomUUID } from 'crypto'
 
-const BUCKET_NAME = process.env.SUPABASE_STORAGE_BUCKET || 'hire-my-mom-files'
+const BUCKET_NAME = process.env.SUPABASE_STORAGE_BUCKET || 'ampertalent-files'
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 const ALLOWED_FILE_TYPES = {
   'application/pdf': '.pdf',

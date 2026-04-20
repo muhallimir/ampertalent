@@ -3,7 +3,7 @@ import { getCurrentUser } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { S3Service } from '@/lib/s3'
 
-const BUCKET_NAME = process.env.AWS_S3_BUCKET || 'hire-my-mom-files'
+const BUCKET_NAME = process.env.AWS_S3_BUCKET || 'ampertalent-files'
 
 // Helper function to generate presigned URLs for profile pictures
 async function generatePresignedProfileUrl(profilePictureUrl: string | null): Promise<string | null> {

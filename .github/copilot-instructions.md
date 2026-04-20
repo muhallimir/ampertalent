@@ -2,7 +2,7 @@
 
 ## 📋 Project Overview
 
-**Ampertalent** is a comprehensive job matching platform being cloned from `hire_my_mom_saas`. This document serves as the definitive guide for all development work, ensuring systematic implementation, quality assurance, and successful deployment.
+**Ampertalent** is a comprehensive job matching platform being cloned from ` original_repo`. This document serves as the definitive guide for all development work, ensuring systematic implementation, quality assurance, and successful deployment.
 
 ## 🎯 Core Objectives
 
@@ -449,7 +449,7 @@ Technical details and context
 - ✅ Phase 1: Foundation Setup - COMPLETE
 - ✅ Phase 2: Authentication & User Onboarding - COMPLETE
 - ✅ Phase 3: Core Application Features - COMPLETE
-- ✅ All styling cloned except text changes (HireMyMom → Ampertalent)
+- ✅ All styling cloned except text changes (OriginalRepo → Ampertalent)
 - ✅ All free alternative integrations implemented
 - ✅ AuthorizeNet removed (replaced with PayPal)
 - ✅ Database connectivity verified (Supabase pooler working)

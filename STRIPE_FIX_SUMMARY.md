@@ -167,11 +167,11 @@ Stripe redirect → /api/payments/stripe-success
 
 ---
 
-## Matches hire_my_mom_saas Architecture
+## Matches original_repo Architecture
 
-This implementation follows the same pattern as `hire_my_mom_saas`:
+This implementation follows the same pattern as ` original_repo`:
 
-### hire_my_mom_saas Flow:
+### original_repo Flow:
 
 ```
 Authorize.net payment → /api/auth/external-return

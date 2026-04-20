@@ -437,7 +437,7 @@ export async function GET(request: NextRequest) {
       // Generate presigned URLs in batch for better performance
       const batchPresignedUrls = profilePictureKeys.length > 0
         ? await S3Service.generateBatchPresignedDownloadUrls(
-          process.env.AWS_S3_BUCKET || 'hire-my-mom-files',
+          process.env.AWS_S3_BUCKET || 'ampertalent-files',
           profilePictureKeys,
           24 * 60 * 60 // 24 hours
         )
