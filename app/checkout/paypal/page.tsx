@@ -252,7 +252,10 @@ function PayPalCheckoutContent() {
                     Secure payment with buyer protection. Click below to proceed to PayPal.
                   </p>
                   <PayPalButton
-                    amount={checkoutAmount}
+                    planId={planId || ''}
+                    pendingSignupId={pendingSignupId || undefined}
+                    sessionToken={sessionToken || undefined}
+                    userType="seeker"
                     onSuccess={handlePayPalSuccess}
                     onError={handlePayPalError}
                     disabled={isLoading || success}

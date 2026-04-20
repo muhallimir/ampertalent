@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
             await db.$executeRaw`
         UPDATE payment_methods
         SET authnet_payment_profile_id = ${storedId},
-            last_four = ${payerDisplay},
+            last4 = ${payerDisplay},
             updated_at = NOW()
         WHERE id = ${existingPayPalMethods[0].id}
       `

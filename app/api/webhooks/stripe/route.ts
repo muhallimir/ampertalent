@@ -1,93 +1,195 @@
 /**
  * Stripe Webhook Handler
- * Receives and processes webhook events from Stripe
  *
  * Events handled:
- * - payment_intent.succeeded / payment_intent.payment_failed
- * - customer.subscription.created / updated / deleted
- * - invoice.payment_succeeded / invoice.payment_failed
- * - charge.refunded
+ * - checkout.session.completed       → save card payment method to DB
+ * - payment_intent.succeeded         → logging / future hooks
+ * - payment_intent.payment_failed    → logging
+ * - customer.subscription.created/updated/deleted → logging
+ * - invoice.payment_succeeded        → renew subscription period in DB
+ * - invoice.payment_failed           → mark subscription past_due
+ * - charge.refunded                  → logging
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { db } from '@/lib/db';
 import type Stripe from 'stripe';
 
 export const dynamic = 'force-dynamic';
 
-/**
- * Handle payment intent succeeded
- */
+async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) {
+  console.log(`[Stripe] Checkout session completed: ${session.id}`);
+
+  // Save card payment method to DB so billing/subscription pages can display it
+  try {
+    const stripeLib = (await import('@/lib/stripe')).default;
+    const customerId = typeof session.customer === 'string' ? session.customer : null;
+    const paymentIntentId = typeof session.payment_intent === 'string' ? session.payment_intent : null;
+    const planId = session.metadata?.planId;
+    const clerkUserId = session.metadata?.clerkUserId;
+
+    if (!paymentIntentId) return;
+
+    const paymentIntent = await stripeLib.paymentIntents.retrieve(paymentIntentId, {
+      expand: ['payment_method'],
+    });
+    const pm = paymentIntent.payment_method as Stripe.PaymentMethod | null;
+    if (!pm?.card) return;
+
+    // Determine owner (seeker or employer) by looking up profile
+    let userProfile: any = null;
+    if (clerkUserId) {
+      userProfile = await db.userProfile.findUnique({ where: { clerkUserId } });
+    } else if (session.customer_email) {
+      userProfile = await db.userProfile.findFirst({ where: { email: session.customer_email } });
+    }
+
+    if (!userProfile) return;
+
+    const isSeeker = userProfile.role === 'seeker';
+    const ownerId = userProfile.id;
+    const ownerField = isSeeker ? 'seeker_id' : 'employer_id';
+
+    // Check if a card record already exists
+    const existing = await db.$queryRaw<Array<{ id: string }>>`
+      SELECT id FROM payment_methods WHERE ${isSeeker ? db.$queryRaw`seeker_id` : db.$queryRaw`employer_id`} = ${ownerId} AND type != 'paypal' LIMIT 1
+    `.catch(() => []);
+
+    if ((existing as any[]).length > 0) {
+      await db.$executeRawUnsafe(
+        `UPDATE payment_methods SET last4 = $1, brand = $2, expiry_month = $3, expiry_year = $4, is_default = true, updated_at = NOW() WHERE id = $5`,
+        pm.card.last4, pm.card.brand, pm.card.exp_month, pm.card.exp_year, (existing as any[])[0].id
+      );
+    } else {
+      await db.$executeRawUnsafe(
+        `INSERT INTO payment_methods (id, ${ownerField}, type, last4, brand, expiry_month, expiry_year, is_default, created_at, updated_at)
+         VALUES ($1, $2, 'credit_card', $3, $4, $5, $6, true, NOW(), NOW())`,
+        `pm_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+        ownerId, pm.card.last4, pm.card.brand, pm.card.exp_month, pm.card.exp_year
+      );
+    }
+
+    // Store Stripe customer ID on subscription or employer package
+    if (customerId) {
+      if (isSeeker) {
+        const latestSub = await db.subscription.findFirst({
+          where: { seekerId: ownerId },
+          orderBy: { createdAt: 'desc' },
+        });
+        if (latestSub && !latestSub.authnetCustomerId) {
+          await db.subscription.update({ where: { id: latestSub.id }, data: { authnetCustomerId: customerId } });
+        }
+      } else {
+        const latestPkg = await db.employerPackage.findFirst({
+          where: { employerId: ownerId },
+          orderBy: { purchasedAt: 'desc' },
+        });
+        if (latestPkg && !latestPkg.arbSubscriptionId) {
+          await db.employerPackage.update({ where: { id: latestPkg.id }, data: { arbSubscriptionId: customerId } });
+        }
+      }
+    }
+
+    console.log(`✅ [Stripe Webhook] Saved card payment method for user: ${userProfile.id}`);
+  } catch (err) {
+    console.error('[Stripe Webhook] Error saving payment method from checkout.session.completed:', err);
+  }
+}
+
+async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
+  console.log(`[Stripe] Invoice payment succeeded: ${invoice.id}, customer: ${invoice.customer}`);
+
+  // For subscription renewals — extend the subscription period in DB
+  try {
+    const customerId = typeof invoice.customer === 'string' ? invoice.customer : null;
+    if (!customerId) return;
+
+    // Find subscription by stored Stripe customer ID
+    const subscription = await db.subscription.findFirst({
+      where: { authnetCustomerId: customerId, status: 'active' },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (subscription) {
+      const periodEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+      await db.subscription.update({
+        where: { id: subscription.id },
+        data: {
+          status: 'active',
+          currentPeriodStart: new Date(),
+          currentPeriodEnd: periodEnd,
+          nextBillingDate: periodEnd,
+        },
+      });
+      console.log(`✅ [Stripe Webhook] Renewed subscription: ${subscription.id}`);
+    }
+  } catch (err) {
+    console.error('[Stripe Webhook] Error processing invoice.payment_succeeded:', err);
+  }
+}
+
+async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
+  console.log(`[Stripe] Invoice payment failed: ${invoice.id}, customer: ${invoice.customer}`);
+
+  try {
+    const customerId = typeof invoice.customer === 'string' ? invoice.customer : null;
+    if (!customerId) return;
+
+    const subscription = await db.subscription.findFirst({
+      where: { authnetCustomerId: customerId, status: 'active' },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (subscription) {
+      await db.subscription.update({
+        where: { id: subscription.id },
+        data: { status: 'past_due' },
+      });
+      console.log(`⚠️ [Stripe Webhook] Marked subscription past_due: ${subscription.id}`);
+    }
+  } catch (err) {
+    console.error('[Stripe Webhook] Error processing invoice.payment_failed:', err);
+  }
+}
+
 async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent) {
-  console.log(`[Stripe] Payment succeeded: ${paymentIntent.id}`);
-  console.log(`  Amount: ${paymentIntent.amount / 100} ${paymentIntent.currency}`);
-  console.log(`  Customer: ${paymentIntent.customer}`);
+  console.log(`[Stripe] Payment succeeded: ${paymentIntent.id} — ${paymentIntent.amount / 100} ${paymentIntent.currency}`);
 }
 
-/**
- * Handle payment intent failed
- */
 async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent) {
-  console.log(`[Stripe] Payment failed: ${paymentIntent.id}`);
-  console.log(`  Amount: ${paymentIntent.amount / 100} ${paymentIntent.currency}`);
-  console.log(`  Failure message: ${paymentIntent.last_payment_error?.message}`);
+  console.log(`[Stripe] Payment failed: ${paymentIntent.id} — ${paymentIntent.last_payment_error?.message}`);
 }
 
-/**
- * Handle subscription created
- */
 async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
-  console.log(`[Stripe] Subscription created: ${subscription.id}`);
-  console.log(`  Customer: ${subscription.customer}`);
-  console.log(`  Status: ${subscription.status}`);
-  console.log(`  Current period: ${new Date(subscription.current_period_start * 1000).toISOString()} to ${new Date(subscription.current_period_end * 1000).toISOString()}`);
+  console.log(`[Stripe] Subscription created: ${subscription.id}, status: ${subscription.status}`);
 }
 
-/**
- * Handle subscription updated
- */
 async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
-  console.log(`[Stripe] Subscription updated: ${subscription.id}`);
-  console.log(`  Status: ${subscription.status}`);
-  console.log(`  Cancel at period end: ${subscription.cancel_at_period_end}`);
+  console.log(`[Stripe] Subscription updated: ${subscription.id}, status: ${subscription.status}`);
 }
 
-/**
- * Handle subscription deleted
- */
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   console.log(`[Stripe] Subscription deleted: ${subscription.id}`);
-  console.log(`  Customer: ${subscription.customer}`);
+
+  try {
+    const customerId = typeof subscription.customer === 'string' ? subscription.customer : null;
+    if (!customerId) return;
+
+    await db.subscription.updateMany({
+      where: { authnetCustomerId: customerId, status: { in: ['active', 'past_due'] } },
+      data: { status: 'canceled' },
+    });
+  } catch (err) {
+    console.error('[Stripe Webhook] Error processing subscription.deleted:', err);
+  }
 }
 
-/**
- * Handle invoice payment succeeded
- */
-async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
-  console.log(`[Stripe] Invoice payment succeeded: ${invoice.id}`);
-  console.log(`  Amount: ${(invoice.total || 0) / 100} ${invoice.currency}`);
-  console.log(`  Customer: ${invoice.customer}`);
-}
-
-/**
- * Handle invoice payment failed
- */
-async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
-  console.log(`[Stripe] Invoice payment failed: ${invoice.id}`);
-  console.log(`  Amount: ${(invoice.total || 0) / 100} ${invoice.currency}`);
-}
-
-/**
- * Handle charge refunded
- */
 async function handleChargeRefunded(charge: Stripe.Charge) {
-  console.log(`[Stripe] Charge refunded: ${charge.id}`);
-  console.log(`  Amount: ${charge.amount / 100} ${charge.currency}`);
-  console.log(`  Reason: ${charge.refunds.data[0]?.reason || 'unknown'}`);
+  console.log(`[Stripe] Charge refunded: ${charge.id} — ${charge.amount / 100} ${charge.currency}`);
 }
 
 /**
  * POST /api/webhooks/stripe
- * Receive Stripe webhook events
  */
 export async function POST(request: NextRequest) {
   try {
@@ -127,6 +229,11 @@ export async function POST(request: NextRequest) {
 
     // Handle event types
     switch (event.type) {
+      case 'checkout.session.completed': {
+        await handleCheckoutSessionCompleted(event.data.object as Stripe.Checkout.Session);
+        break;
+      }
+
       case 'payment_intent.succeeded': {
         await handlePaymentIntentSucceeded(event.data.object as Stripe.PaymentIntent);
         break;
