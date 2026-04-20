@@ -467,12 +467,12 @@ export default function BillingPage() {
     setIsAddingPayPal(true)
     try {
       const currentUrl = window.location.origin
-      const returnUrl = `${currentUrl}/employer/billing/paypal-setup-return`
+      const returnUrl = `${currentUrl}/employer/billing/paypal-return`
       const cancelUrl = `${currentUrl}/employer/billing?tab=payment-methods`
 
       const response = await postWithImpersonation(
-        '/api/employer/billing/paypal/create-setup',
-        { returnUrl, cancelUrl }
+        '/api/payments/create-billing-agreement',
+        { userType: 'employer', returnUrl, cancelUrl, setupOnly: true }
       )
 
       const result = await response.json()

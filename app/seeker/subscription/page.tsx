@@ -20,6 +20,13 @@ import { PaymentMethodForm } from '@/components/payments/PaymentMethodForm';
 import { SeekerSubscriptionPurchaseModal } from '@/components/payments/SeekerSubscriptionPurchaseModal';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { CancellationSurveyForm } from '@/components/subscription/CancellationSurveyForm';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { clearMarketingPreselect } from '@/lib/marketing-preselect';
 import {
   getWithImpersonation,
@@ -86,6 +93,8 @@ export default function SubscriptionPage() {
   const [activeTab, setActiveTab] = useState('plans');
   const [isManaging, setIsManaging] = useState(false);
   const [showPaymentMethodForm, setShowPaymentMethodForm] = useState(false);
+  const [showPaymentMethodChoice, setShowPaymentMethodChoice] = useState(false);
+  const [isAddingPayPal, setIsAddingPayPal] = useState(false);
   const [paymentMethodFormMode, setPaymentMethodFormMode] = useState<
     'add' | 'update'
   >('add');
@@ -333,7 +342,42 @@ export default function SubscriptionPage() {
     if (selectedPlan) {
       setReturnToPurchaseModal(true);
     }
+    setShowPaymentMethodChoice(true);
+  };
+
+  const handleSeekerAddCard = () => {
+    setShowPaymentMethodChoice(false);
     setShowPaymentMethodForm(true);
+  };
+
+  const handleSeekerAddPayPal = async () => {
+    setIsAddingPayPal(true);
+    try {
+      const currentUrl = window.location.origin;
+      const returnUrl = `${currentUrl}/seeker/subscription/paypal-return`;
+      const cancelUrl = `${currentUrl}/seeker/subscription?tab=payment-methods`;
+
+      const response = await postWithImpersonation(
+        '/api/payments/create-billing-agreement',
+        { userType: 'seeker', returnUrl, cancelUrl, setupOnly: true }
+      );
+
+      const result = await response.json();
+
+      if (response.ok && result.success && result.approvalUrl) {
+        window.location.href = result.approvalUrl;
+      } else {
+        throw new Error(result.error || 'Failed to initiate PayPal setup');
+      }
+    } catch (error) {
+      console.error('PayPal setup error:', error);
+      addToast({
+        title: 'PayPal Setup Failed',
+        description: error instanceof Error ? error.message : 'Failed to add PayPal',
+        variant: 'destructive',
+      });
+      setIsAddingPayPal(false);
+    }
   };
 
   const handlePaymentMethodSuccess = () => {
@@ -1264,6 +1308,53 @@ export default function SubscriptionPage() {
         mode={paymentMethodFormMode}
         paymentMethodId={paymentMethodToUpdate || undefined}
       />
+
+      {/* Payment Method Choice Modal */}
+      <Dialog open={showPaymentMethodChoice} onOpenChange={setShowPaymentMethodChoice}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add Payment Method</DialogTitle>
+            <DialogDescription>
+              Choose how you&apos;d like to pay for your subscription
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <Button
+              variant="outline"
+              className="w-full h-16 flex items-center justify-start gap-4 px-6"
+              onClick={handleSeekerAddCard}
+            >
+              <CreditCard className="h-6 w-6 text-blue-600" />
+              <div className="text-left">
+                <p className="font-medium">Credit or Debit Card</p>
+                <p className="text-sm text-gray-500">Visa, Mastercard, Amex, Discover</p>
+              </div>
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full h-16 flex items-center justify-start gap-4 px-6"
+              onClick={() => {
+                setShowPaymentMethodChoice(false);
+                handleSeekerAddPayPal();
+              }}
+              disabled={isAddingPayPal}
+            >
+              {isAddingPayPal ? (
+                <LoadingSpinner className="h-6 w-6" />
+              ) : (
+                <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M7.076 21.337H2.47a.641.641 0 01-.633-.74L4.944 3.72a.766.766 0 01.757-.643h6.437c2.12 0 3.754.533 4.858 1.585 1.134 1.08 1.47 2.558 1.001 4.39-.628 2.45-2.087 4.165-4.213 4.96-1.013.38-2.126.57-3.306.57h-1.22a.766.766 0 00-.757.643l-.925 5.37a.641.641 0 01-.633.54l-.867.002z" fill="#003087" />
+                  <path d="M19.514 7.612c-.628 2.45-2.087 4.165-4.213 4.96-1.013.38-2.126.57-3.306.57h-1.22a.766.766 0 00-.757.643l-1.355 7.87a.533.533 0 00.526.615h3.377a.638.638 0 00.63-.535l.674-3.923a.766.766 0 01.756-.643h1.22c1.18 0 2.293-.19 3.306-.57 2.126-.795 3.585-2.51 4.213-4.96.422-1.646.152-2.977-.759-3.962a4.85 4.85 0 00-1.092-.865 5.842 5.842 0 01-2 .8z" fill="#0070E0" />
+                </svg>
+              )}
+              <div className="text-left">
+                <p className="font-medium">PayPal</p>
+                <p className="text-sm text-gray-500">Link your PayPal account</p>
+              </div>
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {selectedPlan && (
         <SeekerSubscriptionPurchaseModal

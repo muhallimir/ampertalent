@@ -106,8 +106,15 @@ export default function PayPalReturnPage() {
             }
 
             if (!planId) {
-                setStatus('error');
-                console.error('No plan ID found');
+                // Setup-only flow: just save PayPal as payment method
+                console.log('🅿️ PayPal return - No planId found, using setup-only mode');
+                const result = await stableExecute(token, undefined, true);
+                if (result.success) {
+                    setStatus('success');
+                    setTimeout(() => router.push('/seeker/subscription?tab=payment-methods&paypal=added'), 2000);
+                } else {
+                    setStatus('error');
+                }
                 return;
             }
 

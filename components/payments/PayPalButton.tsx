@@ -139,7 +139,8 @@ export function usePayPalReturn() {
 
     const executePayPalAgreement = async (
         token: string,
-        planId: string
+        planId?: string,
+        setupOnly?: boolean
     ): Promise<{
         success: boolean
         billingAgreementId?: string
@@ -173,7 +174,7 @@ export function usePayPalReturn() {
 
             const response = await postWithImpersonation('/api/payments/paypal/execute-billing-agreement', {
                 token,
-                planId,
+                ...(setupOnly || !planId ? { setupOnly: true } : { planId }),
                 savePaymentMethod: true,
                 addOnIds: addOnIds.length > 0 ? addOnIds : undefined,
                 customAmount,

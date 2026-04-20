@@ -87,24 +87,59 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Access denied' }, { status: 403 })
         }
 
-        const { paymentMethodId } = await request.json()
+        const body = await request.json()
+        const { paymentMethodId, isDefault } = body
         if (!paymentMethodId) {
             return NextResponse.json({ error: 'paymentMethodId is required' }, { status: 400 })
         }
 
         const userProfile = await db.userProfile.findUnique({
             where: { id: currentUser.profile.id },
+            include: { employer: true },
         })
 
+        if (!userProfile?.employer) {
+            return NextResponse.json({ error: 'Employer profile not found' }, { status: 404 })
+        }
+
+        // Create a Stripe customer and attach the payment method
         const customer = await stripe.customers.create({
-            email: userProfile?.email || '',
-            name: userProfile?.name || '',
+            email: userProfile.email || '',
+            name: userProfile.name || '',
             metadata: { userId: currentUser.profile.id, role: 'employer' },
         })
 
-        await stripe.paymentMethods.attach(paymentMethodId, { customer: customer.id })
+        const stripeMethod = await stripe.paymentMethods.attach(paymentMethodId, { customer: customer.id })
 
-        return NextResponse.json({ success: true, message: 'Payment method added successfully', customerId: customer.id })
+        // Determine if this should be default (true if it's the first method)
+        const existingMethodCount = await db.paymentMethod.count({
+            where: { employerId: userProfile.employer.userId },
+        })
+        const shouldBeDefault = isDefault || existingMethodCount === 0
+
+        // If setting as default, unset existing defaults
+        if (shouldBeDefault) {
+            await db.paymentMethod.updateMany({
+                where: { employerId: userProfile.employer.userId, isDefault: true },
+                data: { isDefault: false },
+            })
+        }
+
+        // Save to payment_methods table
+        const savedMethod = await db.paymentMethod.create({
+            data: {
+                employerId: userProfile.employer.userId,
+                type: 'credit_card',
+                last4: stripeMethod.card?.last4 || '',
+                brand: stripeMethod.card?.brand || '',
+                expiryMonth: stripeMethod.card?.exp_month || 0,
+                expiryYear: stripeMethod.card?.exp_year || 0,
+                isDefault: shouldBeDefault,
+                authnetPaymentProfileId: paymentMethodId, // store Stripe PM id here
+            },
+        })
+
+        return NextResponse.json({ success: true, message: 'Payment method added successfully', customerId: customer.id, paymentMethod: savedMethod })
     } catch (error) {
         console.error('Error adding employer payment method:', error)
         return NextResponse.json({ error: 'Failed to add payment method' }, { status: 500 })

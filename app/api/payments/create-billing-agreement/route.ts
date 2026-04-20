@@ -27,6 +27,8 @@ export async function POST(request: NextRequest) {
             addOnIds = [],
             customAmount,
             pendingSignupId,
+            userType,
+            setupOnly = false,
         } = body
 
         const currentUser = await getCurrentUser(request)
@@ -50,9 +52,9 @@ export async function POST(request: NextRequest) {
             }
         }
 
-        if (!planId || !returnUrl || !cancelUrl) {
+        if ((!planId && !setupOnly) || !returnUrl || !cancelUrl) {
             return NextResponse.json(
-                { error: 'Missing required fields: planId, returnUrl, cancelUrl' },
+                { error: 'Missing required fields: planId (or setupOnly=true), returnUrl, cancelUrl' },
                 { status: 400 }
             )
         }
@@ -70,7 +72,9 @@ export async function POST(request: NextRequest) {
         const employerPackage = !membershipPlans[planId] && !service ? getEmployerPackageById(planId) : null
 
         const description =
-            membershipPlans[planId]?.name ||
+            setupOnly
+                ? 'AmperTalent Payment Method'
+                : membershipPlans[planId]?.name ||
             service?.name ||
             employerPackage?.name ||
             'AmperTalent Subscription'

@@ -37,11 +37,12 @@ export async function POST(request: NextRequest) {
             customAmount,
             pendingSignupId,
             sessionToken,
+            setupOnly = false,
         } = body
 
-        if (!token || !planId) {
+        if (!token || (!planId && !setupOnly)) {
             return NextResponse.json(
-                { error: 'Missing required fields: token, planId' },
+                { error: 'Missing required fields: token, planId (or setupOnly=true)' },
                 { status: 400 }
             )
         }
@@ -100,7 +101,7 @@ export async function POST(request: NextRequest) {
         const isPackagePurchase = !!employerPkg && isEmployer
         const isServicePurchase = !!service
 
-        if (!planDetails && !employerPkg && !service) {
+        if (!planDetails && !employerPkg && !service && !setupOnly) {
             return NextResponse.json({ error: 'Invalid plan, package, or service ID' }, { status: 400 })
         }
 
@@ -108,6 +109,38 @@ export async function POST(request: NextRequest) {
         const paypalClient = getPayPalClient()
         const result = await paypalClient.executeBillingAgreement(token)
         console.log(`✅ [${requestId}] PayPal billing agreement executed: ${result.billingAgreementId}`)
+
+        // ─── SETUP-ONLY: just save billing agreement as a payment method ───────
+        if (setupOnly) {
+            const existingMethodCount = await db.paymentMethod.count({
+                where: isSeeker
+                    ? { seekerId: userProfile.jobSeeker!.userId }
+                    : { employerId: userProfile.employer!.userId },
+            })
+            if (existingMethodCount > 0) {
+                await db.paymentMethod.updateMany({
+                    where: isSeeker
+                        ? { seekerId: userProfile.jobSeeker!.userId, isDefault: true }
+                        : { employerId: userProfile.employer!.userId, isDefault: true },
+                    data: { isDefault: false },
+                })
+            }
+            await db.paymentMethod.create({
+                data: {
+                    ...(isSeeker ? { seekerId: userProfile.jobSeeker!.userId } : { employerId: userProfile.employer!.userId }),
+                    type: 'paypal',
+                    last4: userProfile.email?.split('@')[0]?.slice(-4) || 'acct',
+                    brand: 'PayPal',
+                    expiryMonth: 0,
+                    expiryYear: 0,
+                    isDefault: existingMethodCount === 0,
+                    authnetPaymentProfileId: `PAYPAL|${result.billingAgreementId}`,
+                },
+            })
+            console.log(`✅ [${requestId}] PayPal: Saved billing agreement as payment method (setup-only)`)
+            return NextResponse.json({ success: true, setupOnly: true, billingAgreementId: result.billingAgreementId })
+        }
+        // ────────────────────────────────────────────────────────────────────────
 
         // Determine if immediate charge is needed
         const isTrial = planId === 'trial'

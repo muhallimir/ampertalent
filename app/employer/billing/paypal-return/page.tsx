@@ -89,7 +89,7 @@ export default function EmployerPayPalReturnPage() {
                     '/api/payments/paypal/execute-billing-agreement',
                     {
                         token,
-                        planId: planId || 'employer_package',
+                        ...(planId ? { planId } : { setupOnly: true }),
                         userType: 'employer',
                         addOnIds: addOnIds.length > 0 ? addOnIds : undefined,
                         customAmount: customAmount,
