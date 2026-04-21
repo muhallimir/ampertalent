@@ -1,52 +1,47 @@
-import { auth } from '@clerk/nextjs/server'
 import { NextRequest, NextResponse } from 'next/server'
+import { getCurrentUser } from '@/lib/auth'
 import { db } from '@/lib/db'
 import stripe from '@/lib/stripe'
-import { getSeekerPlans } from '@/lib/stripe-products-config'
+import { getPlanById } from '@/lib/subscription-plans'
+import { MembershipPlan } from '@prisma/client'
 
 export const dynamic = 'force-dynamic'
 
-const PLAN_ID_TO_MEMBERSHIP_MAP: Record<string, 'trial_monthly' | 'gold_bimonthly' | 'vip_quarterly' | 'annual_platinum'> = {
-  'seeker-flex-trial': 'trial_monthly',
-  'seeker-flex-gold': 'gold_bimonthly',
-  'seeker-flex-vip': 'vip_quarterly',
-  'seeker-flex-annual': 'annual_platinum',
-}
-
-const PLAN_DETAILS: Record<string, { durationDays: number; resumeCredits: number }> = {
-  trial_monthly: { durationDays: 7, resumeCredits: 1 },
-  gold_bimonthly: { durationDays: 60, resumeCredits: 5 },
-  vip_quarterly: { durationDays: 90, resumeCredits: 10 },
-  annual_platinum: { durationDays: 365, resumeCredits: 20 },
-}
-
 export async function POST(request: NextRequest) {
   try {
-    const { userId } = await auth()
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized - must be logged in' },
-        { status: 401 }
-      )
+    const currentUser = await getCurrentUser(request)
+    if (!currentUser?.clerkUser || !currentUser.profile) {
+      return NextResponse.json({ error: 'Unauthorized - must be logged in' }, { status: 401 })
+    }
+
+    if (currentUser.profile.role !== 'seeker') {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
     const body = await request.json()
-    const { planType, paymentMethodId, billingEmail } = body
+    // Modal sends planId (e.g. 'trial', 'gold', 'vip-platinum')
+    // Legacy route accepted planType — support both
+    const { planId, planType, paymentMethodId } = body
+    const resolvedPlanId = planId || planType
 
-    if (!planType) {
-      return NextResponse.json(
-        { error: 'Plan type is required' },
-        { status: 400 }
-      )
+    if (!resolvedPlanId) {
+      return NextResponse.json({ error: 'Plan ID is required' }, { status: 400 })
+    }
+
+    const planConfig = getPlanById(resolvedPlanId)
+    if (!planConfig) {
+      return NextResponse.json({ error: `Invalid plan: ${resolvedPlanId}` }, { status: 400 })
+    }
+
+    const isTrial = planConfig.membershipPlan === 'trial_monthly'
+
+    if (!isTrial && !paymentMethodId) {
+      return NextResponse.json({ error: 'Payment method is required for paid plans' }, { status: 400 })
     }
 
     const userProfile = await db.userProfile.findUnique({
-      where: { clerkUserId: userId },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-      },
+      where: { clerkUserId: currentUser.clerkUser.id },
+      select: { id: true, email: true, name: true },
     })
 
     if (!userProfile) {
@@ -55,107 +50,107 @@ export async function POST(request: NextRequest) {
 
     let jobSeeker = await db.jobSeeker.findUnique({
       where: { userId: userProfile.id },
-      select: {
-        userId: true,
-        membershipPlan: true,
-      },
+      select: { userId: true, membershipPlan: true },
     })
 
     if (!jobSeeker) {
       jobSeeker = await db.jobSeeker.create({
-        data: {
-          userId: userProfile.id,
-          membershipPlan: 'none',
-        },
+        data: { userId: userProfile.id, membershipPlan: 'none' },
       })
     }
 
-    const plans = getSeekerPlans()
-    const plan = plans.find((p) => p.id === planType)
+    // Resolve the actual Stripe payment method ID from DB record
+    let stripePaymentMethodId: string | undefined
+    if (paymentMethodId && !isTrial) {
+      const dbMethod = await db.paymentMethod.findFirst({
+        where: { id: paymentMethodId, seekerId: jobSeeker.userId },
+      })
 
-    if (!plan) {
-      return NextResponse.json({ error: 'Invalid plan type' }, { status: 400 })
+      if (dbMethod) {
+        if (!dbMethod.authnetPaymentProfileId?.startsWith('pm_')) {
+          return NextResponse.json({ error: 'Invalid Stripe payment method on record. Please re-add your card.' }, { status: 400 })
+        }
+        stripePaymentMethodId = dbMethod.authnetPaymentProfileId
+      } else if (paymentMethodId.startsWith('pm_')) {
+        stripePaymentMethodId = paymentMethodId
+      } else {
+        return NextResponse.json({ error: 'Payment method not found' }, { status: 404 })
+      }
     }
 
-    const membershipEnum = PLAN_ID_TO_MEMBERSHIP_MAP[plan.id]
-    if (!membershipEnum) {
-      return NextResponse.json(
-        { error: 'Plan mapping not found' },
-        { status: 500 }
-      )
-    }
-
-    const planDetail = PLAN_DETAILS[membershipEnum]
-
-    if (membershipEnum !== 'trial_monthly' && !paymentMethodId) {
-      return NextResponse.json(
-        { error: 'Payment method is required for paid plans' },
-        { status: 400 }
-      )
-    }
-
-    let stripeCustomerId: string
+    // Get or create Stripe customer
     const existingSubscription = await db.subscription.findFirst({
-      where: {
-        seekerId: jobSeeker.userId,
-      },
-      select: {
-        authnetCustomerId: true,
-      },
+      where: { seekerId: jobSeeker.userId, authnetCustomerId: { startsWith: 'cus_' } },
+      select: { authnetCustomerId: true },
     })
 
+    let stripeCustomerId: string
     if (existingSubscription?.authnetCustomerId) {
       stripeCustomerId = existingSubscription.authnetCustomerId
     } else {
       const customer = await stripe.customers.create({
-        email: billingEmail || userProfile.email || userId,
-        name: userProfile.name,
-        metadata: {
-          userId,
-          seekerId: jobSeeker.userId,
-        },
+        email: userProfile.email || '',
+        name: userProfile.name || '',
+        metadata: { userId: currentUser.clerkUser.id, seekerId: jobSeeker.userId },
       })
       stripeCustomerId = customer.id
+
+      // Attach the payment method to the customer
+      if (stripePaymentMethodId) {
+        try {
+          await stripe.paymentMethods.attach(stripePaymentMethodId, { customer: stripeCustomerId })
+        } catch (_) { /* already attached */ }
+      }
     }
 
-    console.log(
-      `[Seeker Subscription] Creating ${membershipEnum} subscription for seeker ${jobSeeker.userId}`
-    )
+    console.log(`[Seeker Purchase] Creating ${planConfig.membershipPlan} for seeker ${jobSeeker.userId}`)
 
     let stripeSubscriptionId: string | null = null
 
-    if (membershipEnum !== 'trial_monthly') {
-      const subscriptionParams: any = {
-        customer: stripeCustomerId,
-        items: [
-          {
-            price: plan.priceId,
-          },
-        ],
-        metadata: {
-          planType: membershipEnum,
-          seekerId: jobSeeker.userId,
-          userId,
-        },
+    if (!isTrial && stripePaymentMethodId) {
+      // Look up the Stripe price ID for this plan from environment
+      const PLAN_PRICE_IDS: Record<string, string> = {
+        gold: process.env.STRIPE_FLEX_GOLD_PRICE_ID || '',
+        'vip-platinum': process.env.STRIPE_FLEX_VIP_PRICE_ID || '',
+        'annual-platinum': process.env.STRIPE_FLEX_ANNUAL_PRICE_ID || '',
       }
 
-      if (paymentMethodId) {
-        subscriptionParams.default_payment_method = paymentMethodId
+      const priceId = PLAN_PRICE_IDS[planConfig.id]
+      if (priceId) {
+        const stripeSubscription = await stripe.subscriptions.create({
+          customer: stripeCustomerId,
+          items: [{ price: priceId }],
+          default_payment_method: stripePaymentMethodId,
+          metadata: { planId: planConfig.id, membershipPlan: planConfig.membershipPlan, seekerId: jobSeeker.userId },
+        })
+        stripeSubscriptionId = stripeSubscription.id
+      } else {
+        // No Stripe price configured — do a one-time charge instead
+        const paymentIntent = await stripe.paymentIntents.create({
+          customer: stripeCustomerId,
+          amount: Math.round(planConfig.price * 100),
+          currency: 'usd',
+          payment_method: stripePaymentMethodId,
+          confirm: true,
+          off_session: true,
+          metadata: { planId: planConfig.id, seekerId: jobSeeker.userId },
+        })
+        if (paymentIntent.status !== 'succeeded') {
+          return NextResponse.json({ error: 'Payment failed' }, { status: 400 })
+        }
+        stripeSubscriptionId = paymentIntent.id
       }
-
-      const stripeSubscription = await stripe.subscriptions.create(subscriptionParams)
-      stripeSubscriptionId = stripeSubscription.id
     }
 
     const now = new Date()
-    const expiresAt = new Date(now.getTime() + planDetail.durationDays * 24 * 60 * 60 * 1000)
+    const expiresAt = new Date(now.getTime() + planConfig.duration * 24 * 60 * 60 * 1000)
 
     const subscription = await db.subscription.create({
       data: {
         seekerId: jobSeeker.userId,
         authnetSubscriptionId: stripeSubscriptionId || undefined,
         authnetCustomerId: stripeCustomerId,
-        plan: membershipEnum,
+        plan: planConfig.membershipPlan as MembershipPlan,
         status: 'active',
         currentPeriodStart: now,
         currentPeriodEnd: expiresAt,
@@ -166,45 +161,37 @@ export async function POST(request: NextRequest) {
     await db.jobSeeker.update({
       where: { userId: jobSeeker.userId },
       data: {
-        membershipPlan: membershipEnum,
+        membershipPlan: planConfig.membershipPlan as MembershipPlan,
         membershipExpiresAt: expiresAt,
-        resumeCredits: planDetail.resumeCredits,
-        trialEndsAt: membershipEnum === 'trial_monthly' ? expiresAt : null,
-        isOnTrial: membershipEnum === 'trial_monthly',
+        resumeCredits: planConfig.resumeCredits,
+        trialEndsAt: isTrial ? expiresAt : null,
+        isOnTrial: isTrial,
       },
     })
 
-    console.log(
-      `[Seeker Subscription] Successfully created subscription ${subscription.id}`
-    )
+    console.log(`[Seeker Purchase] Successfully created subscription ${subscription.id}`)
 
     return NextResponse.json(
       {
         success: true,
         subscriptionId: subscription.id,
-        message: `Successfully subscribed to ${plan.name}`,
+        message: `Successfully subscribed to ${planConfig.name}`,
         membership: {
-          plan: membershipEnum,
+          plan: planConfig.membershipPlan,
           expiresAt: expiresAt.toISOString(),
-          status: subscription.status,
-          resumeCredits: planDetail.resumeCredits,
+          status: 'active',
+          resumeCredits: planConfig.resumeCredits,
         },
       },
       { status: 201 }
     )
   } catch (error) {
-    console.error('[Seeker Subscription] Error:', error)
-
-    const errorMessage =
-      error instanceof Error ? error.message : 'Failed to purchase subscription'
-
-    return NextResponse.json({ error: errorMessage }, { status: 500 })
+    console.error('[Seeker Purchase] Error:', error)
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Failed to purchase subscription' }, { status: 500 })
   }
 }
 
 export async function GET(request: NextRequest) {
-  return NextResponse.json(
-    { status: 'ok', endpoint: 'seeker-subscription-purchase' },
-    { status: 200 }
-  )
+  return NextResponse.json({ status: 'ok', endpoint: 'seeker-subscription-purchase' }, { status: 200 })
 }
+

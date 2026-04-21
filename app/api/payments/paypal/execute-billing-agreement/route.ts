@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server' 
+import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth'
 import { getPayPalClient } from '@/lib/paypal'
 import { db } from '@/lib/db'
@@ -92,10 +92,10 @@ export async function POST(request: NextRequest) {
             'annual-platinum': { name: 'Annual Platinum Professional', price: 299.0, duration: 365, plan: 'annual_platinum' },
         }
 
-        const planDetails = membershipPlans[planId]
-        const serviceId = planId.startsWith('service_') ? planId.replace('service_', '') : planId
-        const service = !planDetails ? getServiceById(serviceId) : null
-        const employerPkg = !planDetails && !service ? getEmployerPackageById(planId) : null
+        const planDetails = planId ? membershipPlans[planId] : undefined
+        const serviceId = planId && planId.startsWith('service_') ? planId.replace('service_', '') : (planId || '')
+        const service = planId && !planDetails ? getServiceById(serviceId) : null
+        const employerPkg = planId && !planDetails && !service ? getEmployerPackageById(planId) : null
 
         const isSubscriptionPurchase = !!planDetails && isSeeker
         const isPackagePurchase = !!employerPkg && isEmployer

@@ -67,17 +67,17 @@ export async function POST(request: NextRequest) {
             'annual-platinum': { name: 'Annual Platinum Professional', price: 299.0 },
         }
 
-        const serviceId = planId.startsWith('service_') ? planId.replace('service_', '') : planId
-        const service = !membershipPlans[planId] ? getServiceById(serviceId) : null
-        const employerPackage = !membershipPlans[planId] && !service ? getEmployerPackageById(planId) : null
+        const serviceId = planId && planId.startsWith('service_') ? planId.replace('service_', '') : (planId || '')
+        const service = planId && !membershipPlans[planId] ? getServiceById(serviceId) : null
+        const employerPackage = planId && !membershipPlans[planId] && !service ? getEmployerPackageById(planId) : null
 
         const description =
             setupOnly
                 ? 'AmperTalent Payment Method'
-                : membershipPlans[planId]?.name ||
-            service?.name ||
-            employerPackage?.name ||
-            'AmperTalent Subscription'
+                : membershipPlans[planId!]?.name ||
+                service?.name ||
+                employerPackage?.name ||
+                'AmperTalent Subscription'
 
         // Check PayPal config
         if (!process.env.PAYPAL_CLIENT_ID || !process.env.PAYPAL_CLIENT_SECRET) {
