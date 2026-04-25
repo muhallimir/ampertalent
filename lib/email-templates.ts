@@ -730,7 +730,7 @@ export class EmailTemplates {
           <div class="container">
             <div class="email-wrapper">
               <div class="logo-section">
-                <img src="https://app.ampertalent.com/logo/logo.png" alt="AmperTalent" style="width:280px;height:auto;" />
+                <img src="https://ampertalent.vercel.app/logo/ampertalent_logo.png" alt="AmperTalent" style="width:280px;height:auto;" />
               </div>
               <div class="header">
                 <h1>${isTrial ? '🎉 Free Trial Activated!' : '💳 Payment Confirmed'}</h1>
@@ -980,7 +980,7 @@ The AmperTalent Team
           <div class="container">
             <div class="email-wrapper">
               <div class="logo-section">
-                <img src="https://app.ampertalent.com/logo/logo.png" alt="AmperTalent" style="width:280px;height:auto;" />
+                <img src="https://ampertalent.vercel.app/logo/ampertalent_logo.png" alt="AmperTalent" style="width:280px;height:auto;" />
               </div>
               <div class="header">
                 <h1>🔔 Renewal Reminder</h1>
@@ -1869,7 +1869,7 @@ The AmperTalent Team
           <div class="container">
             <div class="email-wrapper">
               <div style="text-align: center; padding: 20px 30px 0 30px; background: #ffffff;">
-                <img src="https://app.ampertalent.com/logo/logo.png" alt="AmperTalent" style="width:280px;height:auto;" />
+                <img src="https://ampertalent.vercel.app/logo/ampertalent_logo.png" alt="AmperTalent" style="width:280px;height:auto;" />
               </div>
               <div class="header">
                 <h1>New Order: ${orderNumber}</h1>

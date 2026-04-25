@@ -136,7 +136,30 @@ export async function POST(request: NextRequest) {
 
     console.log(`[Employer Purchase] Created package ${empPackage.id}`)
 
-    // Send purchase confirmation emails (best-effort)
+    // ── In-app notification for the employer ──────────────────────────────────
+    try {
+      await db.notification.create({
+        data: {
+          userId: userProfile.id,
+          type: 'employer_payment_confirmation',
+          title: 'Package Purchase Successful',
+          message: `Your ${pkgConfig.name} package has been activated. You have ${pkgConfig.listings} job listing${pkgConfig.listings !== 1 ? 's' : ''} available.`,
+          data: {
+            packageId: empPackage.id,
+            packageType: pkgConfig.id,
+            packageName: pkgConfig.name,
+            amount: chargeAmount,
+            transactionId: paymentIntent.id,
+          },
+          priority: 'high',
+          actionUrl: '/employer/billing',
+        },
+      })
+    } catch (notifErr) {
+      console.error('[Employer Purchase] In-app notification failed:', notifErr)
+    }
+
+    // ── Customer confirmation email (via NotificationService) ─────────────────
     try {
       const { NotificationService } = await import('@/lib/notification-service')
       await NotificationService.sendPaymentConfirmation({
@@ -151,7 +174,32 @@ export async function POST(request: NextRequest) {
         creditsPurchased: pkgConfig.listings,
       })
     } catch (emailErr) {
-      console.error('[Employer Purchase] Email notification failed:', emailErr)
+      console.error('[Employer Purchase] Customer email failed:', emailErr)
+    }
+
+    // ── Admin notification email ───────────────────────────────────────────────
+    try {
+      const { sendEmail, getAdminNotificationRecipients, buildAdminEmailHtml } = await import('@/lib/resend')
+      const adminEmails = getAdminNotificationRecipients()
+      await sendEmail({
+        to: adminEmails,
+        subject: `[AmperTalent Admin] New Employer Package — ${pkgConfig.name}`,
+        html: buildAdminEmailHtml({
+          title: '🏢 New Employer Package Purchase',
+          subtitle: `Purchased on ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`,
+          rows: [
+            { label: 'Employer', value: `${userProfile.name} (${userProfile.email})` },
+            { label: 'Package', value: pkgConfig.name },
+            { label: 'Amount', value: `$${chargeAmount}` },
+            { label: 'Job Listings', value: String(pkgConfig.listings) },
+            { label: 'Transaction ID', value: paymentIntent.id },
+            { label: 'Expires', value: expiresAt.toLocaleDateString() },
+          ],
+          footerNote: 'Review in the AmperTalent admin dashboard.',
+        }),
+      })
+    } catch (adminEmailErr) {
+      console.error('[Employer Purchase] Admin email failed:', adminEmailErr)
     }
 
     return NextResponse.json(

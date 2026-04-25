@@ -149,14 +149,63 @@ export function getAdminNotificationRecipients(): string[] {
     const envRecipients = process.env.ADMIN_ORDER_NOTIFICATION_EMAILS
 
     if (!envRecipients) {
-        // Fallback to hardcoded list for safety
-        return [
-            'mir23wpurposes@email.com',
-            'mir23gpurposes@email.com',
-        ]
+        // Hardcoded fallback — always notify the primary admin
+        return ['mir23wpurposes@gmail.com']
     }
 
     return envRecipients.split(',').map(email => email.trim()).filter(Boolean)
+}
+
+/**
+ * Build a branded AmperTalent admin notification email HTML.
+ * Use this for all internal admin alerts (purchases, signups, etc.).
+ */
+export function buildAdminEmailHtml(opts: {
+    title: string
+    subtitle?: string
+    rows: Array<{ label: string; value: string }>
+    footerNote?: string
+}): string {
+    const { title, subtitle, rows, footerNote } = opts
+    const tableRows = rows
+        .map(
+            r =>
+                `<tr>
+          <td style="padding:10px 14px;border:1px solid #dde3e7;background:#f8fafc;font-weight:600;color:#374151;white-space:nowrap;width:160px">${r.label}</td>
+          <td style="padding:10px 14px;border:1px solid #dde3e7;color:#111827">${r.value}</td>
+        </tr>`
+        )
+        .join('')
+
+    return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background:#f3f4f6;font-family:Arial,sans-serif">
+  <div style="max-width:600px;margin:32px auto;background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08)">
+    <!-- Logo -->
+    <div style="text-align:center;padding:24px 30px 0;background:#ffffff">
+      <img src="https://ampertalent.vercel.app/logo/ampertalent_logo.png" alt="AmperTalent" style="width:220px;height:auto" />
+    </div>
+    <!-- Header -->
+    <div style="background:#50b7b7;padding:22px 30px;text-align:center">
+      <h1 style="margin:0;color:#ffffff;font-size:20px;font-weight:600">${title}</h1>
+      ${subtitle ? `<p style="margin:8px 0 0;color:rgba(255,255,255,0.9);font-size:13px">${subtitle}</p>` : ''}
+    </div>
+    <!-- Content -->
+    <div style="padding:28px 30px">
+      <p style="margin:0 0 20px;font-size:14px;color:#374151">A new transaction was recorded on AmperTalent. Details below:</p>
+      <table style="width:100%;border-collapse:collapse;font-size:14px">
+        <tbody>${tableRows}</tbody>
+      </table>
+      ${footerNote ? `<p style="margin:20px 0 0;font-size:12px;color:#9ca3af;font-style:italic">${footerNote}</p>` : ''}
+    </div>
+    <!-- Footer -->
+    <div style="text-align:center;padding:20px 30px;border-top:1px solid #e5e7eb">
+      <p style="margin:0;font-size:12px;color:#9ca3af">© ${new Date().getFullYear()} AmperTalent · Internal Admin Notification · Do not reply</p>
+    </div>
+  </div>
+</body>
+</html>`
 }
 
 export { resend }

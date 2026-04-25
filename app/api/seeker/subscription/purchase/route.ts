@@ -182,6 +182,72 @@ export async function POST(request: NextRequest) {
 
     console.log(`[Seeker Purchase] Successfully created subscription ${subscription.id}`)
 
+    const purchaseAmount = isTrial ? 0 : planConfig.price
+
+    // ── In-app notification for the seeker ────────────────────────────────────
+    try {
+      await db.notification.create({
+        data: {
+          userId: userProfile.id,
+          type: 'seeker_payment_confirmation',
+          title: 'Subscription Activated',
+          message: `Your ${planConfig.name} subscription is now active${isTrial ? ' (trial)' : ''}. Enjoy your membership!`,
+          data: {
+            subscriptionId: subscription.id,
+            plan: planConfig.membershipPlan,
+            planName: planConfig.name,
+            amount: purchaseAmount,
+            expiresAt: expiresAt.toISOString(),
+          },
+          priority: 'high',
+          actionUrl: '/seeker/dashboard',
+        },
+      })
+    } catch (notifErr) {
+      console.error('[Seeker Purchase] In-app notification failed:', notifErr)
+    }
+
+    // ── Customer confirmation email ────────────────────────────────────────────
+    try {
+      const { NotificationService } = await import('@/lib/notification-service')
+      await NotificationService.sendPaymentConfirmation({
+        userId: userProfile.id,
+        userType: 'seeker',
+        firstName: userProfile.name?.split(' ')[0] || 'there',
+        email: userProfile.email || '',
+        amount: purchaseAmount,
+        description: `${planConfig.name} Subscription`,
+        transactionId: stripeSubscriptionId || stripeCustomerId,
+        planName: planConfig.name,
+      })
+    } catch (emailErr) {
+      console.error('[Seeker Purchase] Customer email failed:', emailErr)
+    }
+
+    // ── Admin notification email ───────────────────────────────────────────────
+    try {
+      const { sendEmail, getAdminNotificationRecipients, buildAdminEmailHtml } = await import('@/lib/resend')
+      const adminEmails = getAdminNotificationRecipients()
+      await sendEmail({
+        to: adminEmails,
+        subject: `[AmperTalent Admin] New Seeker Subscription — ${planConfig.name}`,
+        html: buildAdminEmailHtml({
+          title: '👤 New Seeker Subscription',
+          subtitle: `Activated on ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`,
+          rows: [
+            { label: 'Seeker', value: `${userProfile.name} (${userProfile.email})` },
+            { label: 'Plan', value: planConfig.name },
+            { label: 'Amount', value: isTrial ? 'Free Trial' : `$${purchaseAmount}` },
+            { label: 'Subscription ID', value: subscription.id },
+            { label: 'Expires', value: expiresAt.toLocaleDateString() },
+          ],
+          footerNote: isTrial ? 'This is a free trial activation — no charge was made today.' : 'Review in the AmperTalent admin dashboard.',
+        }),
+      })
+    } catch (adminEmailErr) {
+      console.error('[Seeker Purchase] Admin email failed:', adminEmailErr)
+    }
+
     return NextResponse.json(
       {
         success: true,
