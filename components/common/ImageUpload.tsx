@@ -40,6 +40,16 @@ export function ImageUpload({
   useEffect(() => {
     const fetchPresignedUrl = async () => {
       if (currentImageUrl && currentImageUrl.trim() !== '' && fileType === 'logo') {
+        // If the URL is already a full public Supabase storage URL, use it directly —
+        // no need to hit /api/employer/company-logo which would 404 before the DB is saved.
+        if (currentImageUrl.startsWith('https://')) {
+          setPresignedUrl(currentImageUrl)
+          setImageLoadError(false)
+          setIsRefreshing(false)
+          setIsInitialLoad(false)
+          return
+        }
+
         setIsRefreshing(true)
         try {
           // Check for impersonation context and add headers if needed

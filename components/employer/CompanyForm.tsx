@@ -126,7 +126,23 @@ export function CompanyForm({ initialData, onSubmit }: CompanyFormProps) {
         setUploadSuccess('Failed to remove logo. Please try again or contact support if the problem persists.')
       }
     } else {
-      setUploadSuccess('Company logo uploaded successfully! Make sure to save your profile to keep all changes.')
+      // Auto-save the new logo URL immediately so it persists before the user clicks Save
+      try {
+        await onSubmit({
+          companyName: watch('companyName'),
+          companyWebsite: normalizeUrl(watch('companyWebsite')),
+          companyDescription: watch('companyDescription'),
+          companyLogoUrl: logoUrl,
+          missionStatement: watch('missionStatement'),
+          coreValues: watch('coreValues'),
+          billingAddress: watch('billingAddress'),
+          taxId: watch('taxId')
+        })
+        setUploadSuccess('Company logo uploaded and saved successfully!')
+      } catch (error) {
+        console.error('Error auto-saving logo URL:', error)
+        setUploadSuccess('Logo uploaded! Make sure to save your profile to keep all changes.')
+      }
     }
 
     // Clear success message after 5 seconds (longer to ensure user sees the message)
