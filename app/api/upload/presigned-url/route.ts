@@ -3,7 +3,20 @@ import { getCurrentUser } from '@/lib/auth'
 import { createClient } from '@supabase/supabase-js'
 import { randomUUID } from 'crypto'
 
-const BUCKET_NAME = process.env.SUPABASE_STORAGE_BUCKET || 'ampertalent-files'
+// Map uploadType → actual Supabase bucket name.
+// Supabase buckets that exist: resumes, profile-pictures, company-logos, attachments
+// Never fall back to a generic 'ampertalent-files' bucket that doesn't exist.
+const BUCKET_FOR_TYPE: Record<string, string> = {
+  resume:   'resumes',
+  logo:     'company-logos',
+  image:    'company-logos',
+  profile:  'profile-pictures',
+  avatar:   'profile-pictures',
+  attachment: 'attachments',
+  document: 'resumes', // generic docs go in resumes bucket
+}
+const DEFAULT_BUCKET = process.env.SUPABASE_STORAGE_BUCKET || 'resumes'
+
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 const ALLOWED_FILE_TYPES = {
   'application/pdf': '.pdf',
@@ -65,17 +78,20 @@ export async function POST(request: NextRequest) {
     const sanitizedFileName = fileName.replace(/[^a-zA-Z0-9.-]/g, '_')
     const fileKey = `${uploadType}s/${currentUser.profile.id}/${uniqueId}-${sanitizedFileName}`
 
+    // Resolve the correct existing Supabase bucket for this upload type
+    const bucketName = BUCKET_FOR_TYPE[uploadType] || DEFAULT_BUCKET
+
     // Create Supabase signed upload URL
     const supabase = getSupabaseAdmin()
     const { data, error } = await supabase.storage
-      .from(BUCKET_NAME)
+      .from(bucketName)
       .createSignedUploadUrl(fileKey)
 
     if (error) throw error
 
     const uploadUrl = data.signedUrl
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
-    const fileUrl = `${supabaseUrl}/storage/v1/object/public/${BUCKET_NAME}/${fileKey}`
+    const fileUrl = `${supabaseUrl}/storage/v1/object/public/${bucketName}/${fileKey}`
     const uploadId = randomUUID()
 
     return NextResponse.json({

@@ -1,84 +1,53 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
-import { S3Service } from '@/lib/s3';
+import { createClient } from '@supabase/supabase-js';
+import { randomUUID } from 'crypto';
 
-const BUCKET_NAME = process.env.AWS_S3_BUCKET || 'ampertalent-files';
+// Uses Supabase Storage — bucket 'company-logos' is public.
+// No S3 / AWS dependencies.
+const BUCKET = 'company-logos';
+
+function getSupabaseAdmin() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 export async function GET(request: NextRequest) {
   try {
     const currentUser = await getCurrentUser(request);
 
     if (!currentUser?.clerkUser || !currentUser.profile) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
-    // Log impersonation context for debugging
     if (currentUser.isImpersonating) {
-      console.log(
-        '🎭 IMPERSONATION: Company logo API called with impersonated user',
-        {
-          adminId: (currentUser as any).adminProfile?.id,
-          impersonatedUserId: currentUser.profile?.id,
-          impersonatedRole: currentUser.profile?.role,
-        }
-      );
+      console.log('🎭 IMPERSONATION: Company logo GET called', {
+        adminId: (currentUser as any).adminProfile?.id,
+        impersonatedUserId: currentUser.profile?.id,
+      });
     }
 
-    // Verify employer role
     if (
       !currentUser.profile ||
       currentUser.profile.role !== 'employer' ||
       !currentUser.profile.employer
     ) {
-      console.error('❌ EMPLOYER ACCESS DENIED (Company Logo GET):', {
-        hasProfile: !!currentUser.profile,
-        role: currentUser.profile?.role,
-        hasEmployer: !!currentUser.profile?.employer,
-        isImpersonating: currentUser.isImpersonating,
-      });
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const employer = currentUser.profile.employer;
 
     if (!employer.companyLogoUrl || employer.companyLogoUrl.trim() === '') {
-      return NextResponse.json(
-        { error: 'No company logo found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'No company logo found' }, { status: 404 });
     }
 
-    try {
-      // Extract S3 key from the full URL
-      const url = new URL(employer.companyLogoUrl);
-      const s3Key = url.pathname.substring(1); // Remove leading slash
-
-      // Generate presigned URL for download (valid for 1 hour)
-      const presignedUrl = await S3Service.generatePresignedDownloadUrl(
-        BUCKET_NAME,
-        s3Key,
-        3600 // 1 hour
-      );
-
-      return NextResponse.json({
-        companyLogoUrl: presignedUrl,
-      });
-    } catch (error) {
-      console.error('Error generating presigned URL for company logo:', error);
-      // Fall back to original URL if presigned URL generation fails
-      return NextResponse.json({
-        companyLogoUrl: employer.companyLogoUrl,
-      });
-    }
+    // Supabase public bucket — stored URL is directly accessible, no presigned URL needed.
+    return NextResponse.json({ companyLogoUrl: employer.companyLogoUrl });
   } catch (error) {
     console.error('Error fetching company logo:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -87,19 +56,10 @@ export async function POST(request: NextRequest) {
     const currentUser = await getCurrentUser(request);
 
     if (!currentUser?.clerkUser || !currentUser.profile) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
-    // Verify employer role
     if (!currentUser.profile || currentUser.profile.role !== 'employer') {
-      console.error('❌ EMPLOYER ACCESS DENIED (Company Logo POST):', {
-        hasProfile: !!currentUser.profile,
-        role: currentUser.profile?.role,
-        isImpersonating: currentUser.isImpersonating,
-      });
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -107,64 +67,44 @@ export async function POST(request: NextRequest) {
     const file = form.get('logo') as unknown as File | null;
 
     if (!file) {
-      return NextResponse.json(
-        { error: 'No file provided. Expected form field "logo".' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'No file provided. Expected form field "logo".' }, { status: 400 });
     }
 
     const contentType = file.type || 'application/octet-stream';
     const fileSize = file.size || 0;
 
-    // Validate file type and size (align with frontend guidance)
     if (!contentType.startsWith('image/')) {
-      return NextResponse.json(
-        { error: 'Invalid file type. Please upload an image.' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Invalid file type. Please upload an image.' }, { status: 400 });
     }
 
-    // Max 5MB (matches UI constraint)
     const MAX_SIZE_BYTES = 5 * 1024 * 1024;
     if (fileSize > MAX_SIZE_BYTES) {
-      return NextResponse.json(
-        { error: 'File too large. Please upload an image smaller than 5MB.' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'File too large. Please upload an image smaller than 5MB.' }, { status: 400 });
     }
 
-    // Prepare S3 key
     const originalFilename = (file as any).name || 'logo.png';
-    const key = S3Service.generateFileKey(
-      currentUser.profile.id,
-      'logo',
-      originalFilename
-    );
+    const ext = originalFilename.split('.').pop() || 'png';
+    const key = `logos/${currentUser.profile.id}/${randomUUID()}.${ext}`;
 
-    // Read file into Buffer
     const arrayBuffer = await file.arrayBuffer();
     const fileBuffer = Buffer.from(arrayBuffer);
 
-    // Upload to S3
-    const { url } = await S3Service.uploadFile(
-      BUCKET_NAME,
-      key,
-      fileBuffer,
-      contentType,
-      {
-        userId: currentUser.profile.id,
-        uploadType: 'logo',
-        originalFileName: originalFilename,
-      }
-    );
+    const supabase = getSupabaseAdmin();
+    const { error: uploadError } = await supabase.storage
+      .from(BUCKET)
+      .upload(key, fileBuffer, { contentType, upsert: true });
 
-    // Return URL for this specific email blast (do not overwrite company profile logo)
-    return NextResponse.json({ logoUrl: url }, { status: 200 });
+    if (uploadError) {
+      console.error('Supabase storage upload error:', uploadError);
+      return NextResponse.json({ error: 'Failed to upload logo' }, { status: 500 });
+    }
+
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+    const logoUrl = `${supabaseUrl}/storage/v1/object/public/${BUCKET}/${key}`;
+
+    return NextResponse.json({ logoUrl }, { status: 200 });
   } catch (error) {
     console.error('Error uploading company logo:', error);
-    return NextResponse.json(
-      { error: 'Failed to upload logo' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to upload logo' }, { status: 500 });
   }
 }
