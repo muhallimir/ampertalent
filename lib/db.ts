@@ -13,15 +13,19 @@ const createPrismaClient = () => {
     databaseUrl = `${databaseUrl}${separator}pgbouncer=true`
   }
 
-  // Add connection pool limits for Supabase
-  // connection_limit: max connections in the pool (lower for tests to avoid exhaustion)
-  // pool_timeout: max seconds to wait for a connection
-  // connect_timeout: max seconds to establish a new connection
+  // Connection pool settings for Supabase + Vercel serverless:
+  // - connection_limit=1 is CRITICAL for pgbouncer transaction mode on serverless.
+  //   Prisma should not maintain its own pool on top of pgbouncer — pgbouncer handles
+  //   the real pooling server-side. Using >1 here causes multiple cold-start TCP
+  //   connections on every new Vercel function instance.
+  // - pool_timeout: max seconds to wait for a connection from the pool
+  // - connect_timeout: max seconds to establish a new TCP connection
   const isTest = process.env.NODE_ENV === 'test'
   if (!databaseUrl.includes('connection_limit')) {
     const separator = databaseUrl.includes('?') ? '&' : '?'
-    const connectionLimit = isTest ? 5 : 8  // Increased limit for tests
-    databaseUrl = `${databaseUrl}${separator}connection_limit=${connectionLimit}&pool_timeout=20&connect_timeout=10`
+    // 1 for serverless prod/staging, small pool only for local test runner
+    const connectionLimit = isTest ? 3 : 1
+    databaseUrl = `${databaseUrl}${separator}connection_limit=${connectionLimit}&pool_timeout=10&connect_timeout=10`
   }
 
   const client = new PrismaClient({
@@ -70,4 +74,8 @@ export const db =
   globalForPrisma.prisma ??
   createPrismaClient()
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db
+// Always cache in globalThis — in production this prevents spinning up a new
+// PrismaClient on every warm Vercel function re-use (which would open new TCP
+// connections to pgbouncer each time). Safe in serverless because the global
+// is scoped to the Lambda worker instance, not shared across requests.
+globalForPrisma.prisma = db
