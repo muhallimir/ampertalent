@@ -107,7 +107,21 @@ export async function POST(request: NextRequest) {
 
         // Execute the billing agreement
         const paypalClient = getPayPalClient()
-        const result = await paypalClient.executeBillingAgreement(token)
+        if (!paypalClient.isConfigured()) {
+            console.error(`❌ [${requestId}] PayPal: Client not configured — check NEXT_PUBLIC_PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET env vars`)
+            return NextResponse.json({ error: 'PayPal is not configured on this server.' }, { status: 503 })
+        }
+
+        let result: Awaited<ReturnType<typeof paypalClient.executeBillingAgreement>>
+        try {
+            result = await paypalClient.executeBillingAgreement(token)
+        } catch (execError: any) {
+            console.error(`❌ [${requestId}] PayPal executeBillingAgreement failed:`, execError?.message || execError)
+            return NextResponse.json(
+                { error: 'Failed to execute PayPal billing agreement', details: execError?.message },
+                { status: 502 }
+            )
+        }
         console.log(`✅ [${requestId}] PayPal billing agreement executed: ${result.billingAgreementId}`)
 
         // ─── SETUP-ONLY: just save billing agreement as a payment method ───────
@@ -352,10 +366,10 @@ export async function POST(request: NextRequest) {
             employerPackageId,
             message: 'PayPal payment processed successfully',
         })
-    } catch (error) {
+    } catch (error: any) {
         console.error(`❌ [${requestId}] PayPal execute billing agreement error:`, error)
         return NextResponse.json(
-            { error: 'Failed to execute PayPal billing agreement' },
+            { error: 'Failed to execute PayPal billing agreement', details: error?.message },
             { status: 500 }
         )
     }
