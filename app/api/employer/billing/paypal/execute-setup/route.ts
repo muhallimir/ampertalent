@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Missing required field: token' }, { status: 400 })
         }
 
-        if (!process.env.PAYPAL_CLIENT_ID || !process.env.PAYPAL_CLIENT_SECRET) {
+        if (!process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || !process.env.PAYPAL_CLIENT_SECRET) {
             return NextResponse.json(
                 { error: 'PayPal is not configured on this server.' },
                 { status: 503 }
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
         const authResponse = await fetch('https://api-m.paypal.com/v1/oauth2/token', {
             method: 'POST',
             headers: {
-                Authorization: `Basic ${Buffer.from(`${process.env.PAYPAL_CLIENT_ID}:${process.env.PAYPAL_CLIENT_SECRET}`).toString('base64')}`,
+                Authorization: `Basic ${Buffer.from(`${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID}:${process.env.PAYPAL_CLIENT_SECRET}`).toString('base64')}`,
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
             body: 'grant_type=client_credentials',

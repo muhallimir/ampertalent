@@ -37,8 +37,8 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        // Check if PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET are configured
-        if (!process.env.PAYPAL_CLIENT_ID || !process.env.PAYPAL_CLIENT_SECRET) {
+        // Check if NEXT_PUBLIC_PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET are configured
+        if (!process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || !process.env.PAYPAL_CLIENT_SECRET) {
             return NextResponse.json(
                 { error: 'PayPal is not configured on this server. Please use a credit card instead.' },
                 { status: 503 }
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
         const authResponse = await fetch('https://api-m.paypal.com/v1/oauth2/token', {
             method: 'POST',
             headers: {
-                Authorization: `Basic ${Buffer.from(`${process.env.PAYPAL_CLIENT_ID}:${process.env.PAYPAL_CLIENT_SECRET}`).toString('base64')}`,
+                Authorization: `Basic ${Buffer.from(`${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID}:${process.env.PAYPAL_CLIENT_SECRET}`).toString('base64')}`,
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
             body: 'grant_type=client_credentials',

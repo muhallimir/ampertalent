@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
                 'AmperTalent Subscription'
 
         // Check PayPal config
-        if (!process.env.PAYPAL_CLIENT_ID || !process.env.PAYPAL_CLIENT_SECRET) {
+        if (!process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || !process.env.PAYPAL_CLIENT_SECRET) {
             return NextResponse.json(
                 { error: 'PayPal is not configured. Please use a credit card.' },
                 { status: 503 }
