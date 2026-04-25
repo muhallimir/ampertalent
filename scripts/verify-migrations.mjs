@@ -18,6 +18,8 @@ const { Client } = pg
 
 // Prefer DIRECT_URL (bypasses pgbouncer) for the verification query.
 // Falls back to DATABASE_URL if DIRECT_URL is not set.
+// Single SELECT statements work fine through pgbouncer, so the pooler URL is
+// acceptable for column existence checks even when DIRECT_URL isn't reachable.
 const connectionString = process.env.DIRECT_URL || process.env.DATABASE_URL
 
 if (!connectionString) {
