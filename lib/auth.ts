@@ -39,14 +39,22 @@ async function getClerkUser(request?: NextRequest) {
     return null
   }
 
-  const clerk = await clerkClient()
-  const user = await clerk.users.getUser(userId)
+  // Try to fetch the full Clerk user object (email, name, etc.).
+  // If the Clerk Management API is unavailable (rate limit, network, missing key),
+  // fall back to a minimal object built from the JWT userId so that all routes
+  // which only check `clerkUser.id` keep working.
+  let user: any
+  try {
+    const clerk = await clerkClient()
+    user = await clerk.users.getUser(userId)
 
-  if (process.env.DEBUG_MODE === 'true') {
-    console.log('✅ Clerk user fetched', {
-      userId: user?.id,
-      hasUser: !!user
-    })
+    if (process.env.DEBUG_MODE === 'true') {
+      console.log('✅ Clerk user fetched', { userId: user?.id, hasUser: !!user })
+    }
+  } catch (clerkApiError) {
+    console.warn('⚠️ Clerk API call failed, falling back to JWT-derived user object:', clerkApiError)
+    // Build a minimal Clerk-user-shaped object so downstream checks don't fail
+    user = { id: userId, primaryEmailAddress: null, firstName: null, lastName: null }
   }
 
   // If we have a request object, cache the user for this request

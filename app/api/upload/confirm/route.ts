@@ -39,7 +39,8 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      const seekerId = currentUser.profile.jobSeeker.id
+      // jobSeeker.userId IS the primary key (matches UserProfile.id)
+      const seekerId = currentUser.profile.jobSeeker.userId
       const resolvedKey = storageKey || fileUrl.split('/').slice(-1)[0]
       const resolvedName = fileName || resolvedKey || 'resume'
 
