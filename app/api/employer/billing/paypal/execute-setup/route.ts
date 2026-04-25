@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth'
 import { db } from '@/lib/db'
+import { getPayPalClient } from '@/lib/paypal'
 
 /**
  * POST /api/employer/billing/paypal/execute-setup
@@ -37,48 +38,16 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Missing required field: token' }, { status: 400 })
         }
 
-        if (!process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || !process.env.PAYPAL_CLIENT_SECRET) {
+        const paypalClient = getPayPalClient()
+        if (!paypalClient.isConfigured()) {
             return NextResponse.json(
                 { error: 'PayPal is not configured on this server.' },
                 { status: 503 }
             )
         }
 
-        // Get PayPal access token
-        const authResponse = await fetch('https://api-m.paypal.com/v1/oauth2/token', {
-            method: 'POST',
-            headers: {
-                Authorization: `Basic ${Buffer.from(`${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID}:${process.env.PAYPAL_CLIENT_SECRET}`).toString('base64')}`,
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: 'grant_type=client_credentials',
-        })
-
-        if (!authResponse.ok) {
-            return NextResponse.json({ error: 'Failed to authenticate with PayPal' }, { status: 500 })
-        }
-
-        const { access_token } = await authResponse.json()
-
-        // Execute the billing agreement
-        const execResponse = await fetch(`https://api-m.paypal.com/v1/billing-agreements/agreements`, {
-            method: 'POST',
-            headers: {
-                Authorization: `Bearer ${access_token}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ token_id: token }),
-        })
-
-        if (!execResponse.ok) {
-            const errBody = await execResponse.json()
-            console.error(`❌ [${requestId}] PayPal execute billing agreement failed:`, errBody)
-            return NextResponse.json({ error: 'Failed to execute PayPal billing agreement' }, { status: 500 })
-        }
-
-        const agreement = await execResponse.json()
-        const billingAgreementId = agreement.id
-        const payerEmail = agreement.payer?.payer_info?.email || ''
+        const agreement = await paypalClient.executeBillingAgreement(token)
+        const { billingAgreementId, payerEmail } = agreement
 
         console.log(`✅ [${requestId}] PayPal billing agreement executed: ${billingAgreementId}`)
 
