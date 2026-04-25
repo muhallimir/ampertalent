@@ -104,8 +104,31 @@ export async function POST(request: NextRequest) {
             select: { authnetCustomerId: true },
         })
 
-        let customerId = latestSubscription?.authnetCustomerId
+        // Reuse existing Stripe customer rather than creating new ones on every "Add card".
+        // Priority:
+        //  1. PM already attached to a customer
+        //  2. Seeker has an existing subscription with authnetCustomerId (cus_xxx)
+        //  3. Create new customer
 
+        let customerId: string | undefined
+
+        // 1. Check if PM already has a customer
+        try {
+            const freshPM = await stripe.paymentMethods.retrieve(paymentMethodId)
+            if (freshPM.customer) customerId = freshPM.customer as string
+        } catch (_) { /* ignore */ }
+
+        // 2. Reuse customer from existing subscription
+        if (!customerId) {
+            const latestSub = await db.subscription.findFirst({
+                where: { seekerId: currentUser.profile.id, authnetCustomerId: { startsWith: 'cus_' } },
+                orderBy: { createdAt: 'desc' },
+                select: { authnetCustomerId: true },
+            })
+            if (latestSub?.authnetCustomerId) customerId = latestSub.authnetCustomerId
+        }
+
+        // 3. Create a new customer
         if (!customerId) {
             const customer = await stripe.customers.create({
                 email: currentUser.clerkUser.emailAddresses?.[0]?.emailAddress || '',

@@ -102,14 +102,59 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Employer profile not found' }, { status: 404 })
         }
 
-        // Create a Stripe customer and attach the payment method
-        const customer = await stripe.customers.create({
-            email: userProfile.email || '',
-            name: userProfile.name || '',
-            metadata: { userId: currentUser.profile.id, role: 'employer' },
-        })
+        // Reuse existing Stripe customer for this employer rather than creating a new
+        // one on every "Add card" call (which causes pm_xxx → wrong cus_xxx mismatch).
+        //
+        // Priority order:
+        //  1. PM is already attached to a customer (e.g. re-adding same card)
+        //  2. Employer has an existing DB payment method → retrieve its customer
+        //  3. Employer purchased before → customer stored in EmployerPackage.arbSubscriptionId
+        //  4. Last resort: create a new customer
 
-        const stripeMethod = await stripe.paymentMethods.attach(paymentMethodId, { customer: customer.id })
+        let customerId: string | undefined
+
+        // 1. Check if the freshly-tokenised PM is already attached to a customer
+        try {
+            const freshPM = await stripe.paymentMethods.retrieve(paymentMethodId)
+            if (freshPM.customer) customerId = freshPM.customer as string
+        } catch (_) { /* ignore */ }
+
+        // 2. Look up via an existing DB payment method for this employer
+        if (!customerId) {
+            const existingDbPMs = await db.paymentMethod.findMany({
+                where: { employerId: userProfile.employer.userId, authnetPaymentProfileId: { startsWith: 'pm_' } },
+                orderBy: { createdAt: 'asc' },
+                take: 3,
+            })
+            for (const dbPM of existingDbPMs) {
+                try {
+                    const pm = await stripe.paymentMethods.retrieve(dbPM.authnetPaymentProfileId!)
+                    if (pm.customer) { customerId = pm.customer as string; break }
+                } catch (_) { /* ignore */ }
+            }
+        }
+
+        // 3. Look up via the latest EmployerPackage (stores cus_xxx in arbSubscriptionId)
+        if (!customerId) {
+            const pkg = await db.employerPackage.findFirst({
+                where: { employerId: userProfile.employer.userId, arbSubscriptionId: { startsWith: 'cus_' } },
+                orderBy: { purchasedAt: 'desc' },
+                select: { arbSubscriptionId: true },
+            })
+            if (pkg?.arbSubscriptionId) customerId = pkg.arbSubscriptionId
+        }
+
+        // 4. No existing customer → create one now
+        if (!customerId) {
+            const customer = await stripe.customers.create({
+                email: userProfile.email || '',
+                name: userProfile.name || '',
+                metadata: { userId: currentUser.profile.id, role: 'employer' },
+            })
+            customerId = customer.id
+        }
+
+        const stripeMethod = await stripe.paymentMethods.attach(paymentMethodId, { customer: customerId })
 
         // Determine if this should be default (true if it's the first method)
         const existingMethodCount = await db.paymentMethod.count({
@@ -139,7 +184,7 @@ export async function POST(request: NextRequest) {
             },
         })
 
-        return NextResponse.json({ success: true, message: 'Payment method added successfully', customerId: customer.id, paymentMethod: savedMethod })
+        return NextResponse.json({ success: true, message: 'Payment method added successfully', customerId: customerId, paymentMethod: savedMethod })
     } catch (error) {
         console.error('Error adding employer payment method:', error)
         return NextResponse.json({ error: 'Failed to add payment method' }, { status: 500 })

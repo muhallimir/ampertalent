@@ -79,35 +79,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Payment method not found' }, { status: 404 })
     }
 
-    // Get or create Stripe customer for this employer
-    const existingCustomerPackage = await db.employerPackage.findFirst({
-      where: { employerId: employer.userId, arbSubscriptionId: { startsWith: 'cus_' } },
-      orderBy: { purchasedAt: 'desc' },
-      select: { arbSubscriptionId: true },
-    })
-
-    if (existingCustomerPackage?.arbSubscriptionId) {
-      stripeCustomerId = existingCustomerPackage.arbSubscriptionId
+    // Get the Stripe customer that owns this PM.
+    // IMPORTANT: Never look up the customer from an old EmployerPackage record —
+    // that cus_xxx may be different from the one the PM was attached to when it
+    // was saved.  The only source of truth is the PM itself on Stripe.
+    const stripePMDetails = await stripe.paymentMethods.retrieve(stripePaymentMethodId)
+    if (stripePMDetails.customer) {
+      stripeCustomerId = stripePMDetails.customer as string
     } else {
-      // Check payment_methods table for a cached customer id
-      const existingPm = await db.paymentMethod.findFirst({
-        where: { employerId: employer.userId, authnetPaymentProfileId: { startsWith: 'pm_' } },
-        orderBy: { createdAt: 'asc' },
-      })
-
+      // PM has no customer yet (fresh token, never attached) → create one and attach
       const customer = await stripe.customers.create({
         email: userProfile.email || '',
         name: userProfile.name || employer.companyName || '',
         metadata: { userId: currentUser.clerkUser.id, employerId: employer.userId },
       })
       stripeCustomerId = customer.id
-
-      // Attach the payment method to the newly created customer
-      try {
-        await stripe.paymentMethods.attach(stripePaymentMethodId, { customer: stripeCustomerId })
-      } catch (_) {
-        // Already attached is fine
-      }
+      await stripe.paymentMethods.attach(stripePaymentMethodId, { customer: stripeCustomerId })
     }
 
     const chargeAmount = totalPrice ?? pkgConfig.price

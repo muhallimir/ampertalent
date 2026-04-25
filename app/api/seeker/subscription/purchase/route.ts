@@ -78,28 +78,39 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Get or create Stripe customer
-    const existingSubscription = await db.subscription.findFirst({
-      where: { seekerId: jobSeeker.userId, authnetCustomerId: { startsWith: 'cus_' } },
-      select: { authnetCustomerId: true },
-    })
-
+    // Get the Stripe customer that owns this PM.
+    // Always retrieve from Stripe — do NOT reuse cus_xxx from a stale subscription
+    // record which may belong to a different customer than the one the PM was attached to.
     let stripeCustomerId: string
-    if (existingSubscription?.authnetCustomerId) {
-      stripeCustomerId = existingSubscription.authnetCustomerId
+    if (stripePaymentMethodId) {
+      const stripePMDetails = await stripe.paymentMethods.retrieve(stripePaymentMethodId)
+      if (stripePMDetails.customer) {
+        stripeCustomerId = stripePMDetails.customer as string
+      } else {
+        // Fresh token with no customer yet → create one and attach
+        const customer = await stripe.customers.create({
+          email: userProfile.email || '',
+          name: userProfile.name || '',
+          metadata: { userId: currentUser.clerkUser.id, seekerId: jobSeeker.userId },
+        })
+        stripeCustomerId = customer.id
+        await stripe.paymentMethods.attach(stripePaymentMethodId, { customer: stripeCustomerId })
+      }
     } else {
-      const customer = await stripe.customers.create({
-        email: userProfile.email || '',
-        name: userProfile.name || '',
-        metadata: { userId: currentUser.clerkUser.id, seekerId: jobSeeker.userId },
+      // Trial — no payment method — still need a customer record
+      const existingSubscription = await db.subscription.findFirst({
+        where: { seekerId: jobSeeker.userId, authnetCustomerId: { startsWith: 'cus_' } },
+        select: { authnetCustomerId: true },
       })
-      stripeCustomerId = customer.id
-
-      // Attach the payment method to the customer
-      if (stripePaymentMethodId) {
-        try {
-          await stripe.paymentMethods.attach(stripePaymentMethodId, { customer: stripeCustomerId })
-        } catch (_) { /* already attached */ }
+      if (existingSubscription?.authnetCustomerId) {
+        stripeCustomerId = existingSubscription.authnetCustomerId
+      } else {
+        const customer = await stripe.customers.create({
+          email: userProfile.email || '',
+          name: userProfile.name || '',
+          metadata: { userId: currentUser.clerkUser.id, seekerId: jobSeeker.userId },
+        })
+        stripeCustomerId = customer.id
       }
     }
 
