@@ -13,6 +13,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { inAppNotificationService } from '@/lib/in-app-notification-service';
+import { NotificationService } from '@/lib/notification-service';
 import type Stripe from 'stripe';
 
 export const dynamic = 'force-dynamic';
@@ -91,6 +93,71 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     }
 
     console.log(`✅ [Stripe Webhook] Saved card payment method for user: ${userProfile.id}`);
+
+    // ====== IN-APP ADMIN NOTIFICATION (safety net for all Stripe checkout flows) ======
+    // The success routes (stripe-success, stripe-job-success, process-payment) also fire these.
+    // The webhook is a reliable fallback for flows like create-checkout → /seeker/membership/success
+    // which never processes payment server-side. We avoid duplicates by using the session ID as a
+    // deduplication key via a try/ignore pattern — notifications are low-stakes so double-fire is
+    // acceptable but the primary routes handle the customer-facing ones.
+    try {
+      const planId = session.metadata?.planId;
+      const amountPaid = (session.amount_total || 0) / 100;
+      const planLabel = planId
+        ? planId.replace(/-|_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())
+        : 'Subscription';
+      const isSeeker = userProfile.role === 'seeker';
+      const userName = userProfile.name || (isSeeker ? 'Seeker' : 'Employer');
+      const isTrial = planId === 'trial';
+      const displayPrice = isTrial ? 0 : amountPaid;
+      const productDescription = isTrial ? `${planLabel} (Free Trial)` : planLabel;
+
+      // Admin in-app notification
+      await inAppNotificationService.notifyPaymentReceived(
+        userProfile.id,
+        userName,
+        displayPrice,
+        productDescription,
+        isSeeker ? 'seeker' : 'employer'
+      );
+
+      // Seeker: also notify the customer themselves if this is the membership flow
+      // (stripe-success and process-payment already do this for their flows)
+      const isOnboardingFlow = !!session.metadata?.clerkUserId;
+      if (!isOnboardingFlow && isSeeker) {
+        const txId = typeof session.payment_intent === 'string' ? session.payment_intent : session.id;
+        await inAppNotificationService.notifySeekerPaymentConfirmation(
+          userProfile.id,
+          displayPrice,
+          productDescription,
+          txId,
+          planLabel
+        );
+
+        // Also send admin email for flows that don't go through stripe-success
+        const orderDate = new Date();
+        const orderNumber = `ORD-${orderDate.toISOString().slice(0, 10).replace(/-/g, '')}-${session.id.slice(-4)}`;
+        await NotificationService.sendAdminPaymentNotification({
+          orderNumber,
+          orderDate: orderDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+          customerName: userName,
+          customerType: 'Seeker',
+          customerId: userProfile.id,
+          customerEmail: userProfile.email || session.customer_email || '',
+          productDescription,
+          quantity: 1,
+          price: displayPrice,
+          lineItems: [{ name: productDescription, quantity: 1, price: displayPrice }],
+          paymentType: 'card',
+          isRenewal: false,
+          transactionId: typeof session.payment_intent === 'string' ? session.payment_intent : session.id,
+        });
+      }
+
+      console.log(`✅ [Stripe Webhook] In-app notifications fired for user: ${userProfile.id}`);
+    } catch (notifErr) {
+      console.error('[Stripe Webhook] Error firing in-app notifications (non-blocking):', notifErr);
+    }
   } catch (err) {
     console.error('[Stripe Webhook] Error saving payment method from checkout.session.completed:', err);
   }

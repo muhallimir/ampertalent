@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import Stripe from 'stripe'
 import { NotificationService } from '@/lib/notification-service'
+import { inAppNotificationService } from '@/lib/in-app-notification-service'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
     apiVersion: '2023-10-16' as any
@@ -144,6 +145,24 @@ export async function GET(request: NextRequest) {
                     isRecurring: false,
                     paymentType: 'card',
                 })
+
+                // ====== IN-APP NOTIFICATIONS ======
+                const txId = typeof session.payment_intent === 'string' ? session.payment_intent : sessionId
+                await inAppNotificationService.notifyPaymentReceived(
+                    userProfile.id,
+                    userProfile.name || 'Seeker',
+                    displayPrice,
+                    productDescription,
+                    'seeker'
+                )
+                await inAppNotificationService.notifySeekerPaymentConfirmation(
+                    userProfile.id,
+                    displayPrice,
+                    productDescription,
+                    txId,
+                    planLabel
+                )
+
                 console.log('✅ STRIPE-SUCCESS: Admin and customer emails sent')
             } catch (emailError) {
                 console.error('⚠️ STRIPE-SUCCESS: Email sending failed (non-blocking):', emailError)

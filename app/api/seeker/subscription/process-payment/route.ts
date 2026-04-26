@@ -4,6 +4,7 @@ import { db } from '@/lib/db'
 import Stripe from 'stripe'
 import { Decimal } from '@prisma/client/runtime/library'
 import { NotificationService } from '@/lib/notification-service'
+import { inAppNotificationService } from '@/lib/in-app-notification-service'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
     apiVersion: '2023-10-16' as any
@@ -268,6 +269,23 @@ export async function POST(request: NextRequest) {
                         isRecurring: false,
                         paymentType: 'card',
                     })
+
+                    // ====== IN-APP NOTIFICATIONS ======
+                    const txId = typeof session.payment_intent === 'string' ? session.payment_intent : sessionId
+                    await inAppNotificationService.notifyPaymentReceived(
+                        userProfile.id,
+                        userProfile.name || 'Seeker',
+                        displayPrice,
+                        productDescription,
+                        'seeker'
+                    )
+                    await inAppNotificationService.notifySeekerPaymentConfirmation(
+                        userProfile.id,
+                        displayPrice,
+                        productDescription,
+                        txId,
+                        planName
+                    )
 
                     console.log('✅ PROCESS-PAYMENT: Admin and customer emails sent')
                 } catch (emailError) {
