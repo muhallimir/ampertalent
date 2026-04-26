@@ -1,27 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth'
 import { db } from '@/lib/db'
-import { S3Service } from '@/lib/s3'
-import { presignedUrlCache } from '@/lib/presigned-url-cache'
 
-const BUCKET_NAME = process.env.SUPABASE_STORAGE_BUCKET || 'ampertalent-files'
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
 
-async function generatePresignedUrl(s3Key: string): Promise<string | null> {
-    if (!s3Key) return null
-    const cached = presignedUrlCache.get(s3Key)
-    if (cached) return cached
-
-    try {
-        const url = new URL(s3Key)
-        const pathParts = url.pathname.split('/').filter(Boolean)
-        const fileKey = pathParts.slice(-3).join('/')
-        const presignedUrl = await S3Service.generatePresignedDownloadUrl(BUCKET_NAME, fileKey, 24 * 60 * 60)
-        presignedUrlCache.set(s3Key, presignedUrl, 23 * 60 * 60)
-        return presignedUrl
-    } catch (error) {
-        console.error('Error generating presigned URL:', error)
-        return null
-    }
+function getPublicProfilePictureUrl(url: string | null | undefined): string | undefined {
+    if (!url) return undefined
+    if (url.startsWith('http')) return url
+    return `${SUPABASE_URL}/storage/v1/object/public/profile-pictures/${url}`
 }
 
 export async function GET(request: NextRequest) {
@@ -117,12 +103,9 @@ export async function GET(request: NextRequest) {
         const uniqueProfilePictures = new Set<string>()
         participants.forEach(p => { if (p.profilePictureUrl) uniqueProfilePictures.add(p.profilePictureUrl) })
 
-        const profilePictureUrlMap = await Promise.all(
-            Array.from(uniqueProfilePictures).map(async url => {
-                const presigned = await generatePresignedUrl(url)
-                return [url, presigned] as const
-            })
-        ).then(results => new Map(results))
+        const profilePictureUrlMap = new Map(
+            Array.from(uniqueProfilePictures).map(url => [url, getPublicProfilePictureUrl(url)] as const)
+        )
 
         const messages = threads.map(thread => {
             const latestMessage = latestMessageByThread.get(thread.id)

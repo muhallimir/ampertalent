@@ -145,6 +145,7 @@ export function MessageInbox({ userType = 'employer' }: MessageInboxProps) {
     }, [fetchInbox])
 
     useNotificationListener('new_message', handleSseNewMessage)
+    useNotificationListener('new_thread', handleSseNewMessage)
 
     useNotificationListener('message_read', (notification) => {
         if (!notification.data?.threadId || !notification.data?.messageId) return
