@@ -76,7 +76,10 @@ export async function POST(request: NextRequest) {
     // Generate unique file key
     const uniqueId = randomUUID()
     const sanitizedFileName = fileName.replace(/[^a-zA-Z0-9.-]/g, '_')
-    const fileKey = `${uploadType}s/${currentUser.profile.id}/${uniqueId}-${sanitizedFileName}`
+    // For logos, don't add the uploadType prefix since bucket already includes it
+    const fileKey = uploadType === 'logo'
+      ? `${currentUser.profile.id}/${uniqueId}-${sanitizedFileName}`
+      : `${uploadType}s/${currentUser.profile.id}/${uniqueId}-${sanitizedFileName}`
 
     // Resolve the correct existing Supabase bucket for this upload type
     const bucketName = BUCKET_FOR_TYPE[uploadType] || DEFAULT_BUCKET

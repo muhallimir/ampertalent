@@ -205,21 +205,34 @@ export async function POST(request: NextRequest) {
         const paypalLineItems: { name: string; quantity: string; price: string; description?: string }[] = [];
 
         if (packageId && employerPackageConfig) {
-            // Add main package as first item
-            paypalLineItems.push({
-                name: employerPackageConfig.name,
-                quantity: '1',
-                price: employerPackageConfig.price.toFixed(2),
-                description: `Ampertalent ${employerPackageConfig.name}`
-            });
-
-            // Add each add-on as separate line item
-            for (const addOn of addOnConfigs) {
+            // Calculate expected total from package + add-ons
+            const expectedTotal = employerPackageConfig.price + addOnConfigs.reduce((sum, addOn) => sum + addOn.price, 0);
+            
+            if (Math.abs(amount - expectedTotal) < 0.01) {
+                // Amount matches expected total, use individual prices for line items
                 paypalLineItems.push({
-                    name: addOn.name,
+                    name: employerPackageConfig.name,
                     quantity: '1',
-                    price: addOn.price.toFixed(2),
-                    description: `Add-on: ${addOn.name}`
+                    price: employerPackageConfig.price.toFixed(2),
+                    description: `Ampertalent ${employerPackageConfig.name}`
+                });
+
+                // Add each add-on as separate line item
+                for (const addOn of addOnConfigs) {
+                    paypalLineItems.push({
+                        name: addOn.name,
+                        quantity: '1',
+                        price: addOn.price.toFixed(2),
+                        description: `Add-on: ${addOn.name}`
+                    });
+                }
+            } else {
+                // Amount doesn't match expected total, use amount as single line item price
+                paypalLineItems.push({
+                    name: employerPackageConfig.name,
+                    quantity: '1',
+                    price: amount.toFixed(2),
+                    description: `Ampertalent ${employerPackageConfig.name}${addOnConfigs.length > 0 ? ' with add-ons' : ''}`
                 });
             }
         } else if (serviceId) {
