@@ -3,27 +3,33 @@ import { getCurrentUser } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { S3Service } from '@/lib/s3'
 import { presignedUrlCache } from '@/lib/presigned-url-cache'
+import { createClient } from '@supabase/supabase-js'
 
-const BUCKET_NAME = process.env.SUPABASE_STORAGE_BUCKET || 'ampertalent-files'
 const PAGE_SIZE = 20
 
-async function generatePresignedUrl(s3Key: string, isProfilePicture: boolean = false): Promise<string | null> {
+// Supabase public URL helper - profile-pictures bucket is public, no signing needed
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+
+function getSupabasePublicUrl(storedUrl: string, bucket: string): string {
+    if (!storedUrl) return storedUrl
+    // If already a full URL, return as-is (it's already a public Supabase URL)
+    if (storedUrl.startsWith('http')) return storedUrl
+    // Build public URL from storage key
+    return `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${storedUrl}`
+}
+
+// For attachments (private bucket 'attachments'), still use signed URLs
+async function generateSignedAttachmentUrl(s3Key: string): Promise<string | null> {
     if (!s3Key) return null
     const cached = presignedUrlCache.get(s3Key)
     if (cached) return cached
 
     try {
-        let fileKey = s3Key
-        if (isProfilePicture) {
-            const url = new URL(s3Key)
-            const pathParts = url.pathname.split('/').filter(Boolean)
-            fileKey = pathParts.slice(-3).join('/')
-        }
-        const presignedUrl = await S3Service.generatePresignedDownloadUrl(BUCKET_NAME, fileKey, 24 * 60 * 60)
+        const presignedUrl = await S3Service.generatePresignedDownloadUrl('attachments', s3Key, 24 * 60 * 60)
         presignedUrlCache.set(s3Key, presignedUrl, 23 * 60 * 60)
         return presignedUrl
     } catch (error) {
-        console.error('Error generating presigned URL:', error)
+        console.error('Error generating signed URL:', error)
         return null
     }
 }
@@ -122,16 +128,19 @@ export async function GET(
         participantDetails.forEach(p => { if (p.profilePictureUrl) uniqueProfilePictures.add(p.profilePictureUrl) })
         Array.from(attachmentsMap.values()).flat().forEach(att => uniqueAttachmentUrls.add(att.fileUrl))
 
-        const [profilePictureUrlMap, attachmentUrlMap] = await Promise.all([
-            Promise.all(Array.from(uniqueProfilePictures).map(async url => {
-                const presigned = await generatePresignedUrl(url, true)
-                return [url, presigned] as const
-            })).then(results => new Map(results)),
-            Promise.all(Array.from(uniqueAttachmentUrls).map(async url => {
-                const presigned = await generatePresignedUrl(url, false)
-                return [url, presigned || url] as const
-            })).then(results => new Map(results)),
-        ])
+        // Profile pictures: bucket is now public, use public URLs directly
+        const profilePictureUrlMap = new Map<string, string>()
+        for (const url of uniqueProfilePictures) {
+            profilePictureUrlMap.set(url, getSupabasePublicUrl(url, 'profile-pictures'))
+        }
+
+        // Attachments: private bucket, use signed URLs
+        const attachmentUrlMap = await Promise.all(
+            Array.from(uniqueAttachmentUrls).map(async url => {
+                const signed = await generateSignedAttachmentUrl(url)
+                return [url, signed || url] as const
+            })
+        ).then(results => new Map(results))
 
         const participantDetailsWithPresigned = participantDetails.map(p => ({
             id: p.id, clerkUserId: p.clerkUserId,

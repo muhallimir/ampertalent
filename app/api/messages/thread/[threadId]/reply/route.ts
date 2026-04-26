@@ -6,21 +6,22 @@ import { socketIOService } from '@/lib/socket-io-service'
 import { S3Service } from '@/lib/s3'
 import { presignedUrlCache } from '@/lib/presigned-url-cache'
 
-const BUCKET_NAME = process.env.SUPABASE_STORAGE_BUCKET || 'ampertalent-files'
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
 
-async function generatePresignedUrl(s3Key: string, isProfilePicture: boolean = false): Promise<string | null> {
+// Profile-pictures bucket is public — no signing needed
+function getProfilePicturePublicUrl(url: string): string | null {
+    if (!url) return null
+    if (url.startsWith('http')) return url
+    return `${SUPABASE_URL}/storage/v1/object/public/profile-pictures/${url}`
+}
+
+// Attachments bucket is private — use signed URLs
+async function generateSignedAttachmentUrl(s3Key: string): Promise<string | null> {
     if (!s3Key) return null
     const cached = presignedUrlCache.get(s3Key)
     if (cached) return cached
-
     try {
-        let fileKey = s3Key
-        if (isProfilePicture) {
-            const url = new URL(s3Key)
-            const pathParts = url.pathname.split('/').filter(Boolean)
-            fileKey = pathParts.slice(-3).join('/')
-        }
-        const presignedUrl = await S3Service.generatePresignedDownloadUrl(BUCKET_NAME, fileKey, 24 * 60 * 60)
+        const presignedUrl = await S3Service.generatePresignedDownloadUrl('attachments', s3Key, 24 * 60 * 60)
         presignedUrlCache.set(s3Key, presignedUrl, 23 * 60 * 60)
         return presignedUrl
     } catch (error) {
@@ -108,13 +109,16 @@ export async function POST(
         ])
 
         const attachmentUrls = attachmentsCreated.map(att => att.fileUrl)
-        const [presignedAttachmentMap, presignedAvatar] = await Promise.all([
-            Promise.all(attachmentUrls.map(async url => {
-                const presigned = await generatePresignedUrl(url, false)
-                return [url, presigned || url] as const
-            })).then(results => new Map(results)),
-            generatePresignedUrl(sender?.profilePictureUrl || '', true),
-        ])
+        const presignedAttachmentMap = await Promise.all(
+            attachmentUrls.map(async url => {
+                const signed = await generateSignedAttachmentUrl(url)
+                return [url, signed || url] as const
+            })
+        ).then(results => new Map(results))
+
+        const presignedAvatar = sender?.profilePictureUrl
+            ? getProfilePicturePublicUrl(sender.profilePictureUrl)
+            : null
 
         const messageForClient = {
             id: createdMessage.id,
