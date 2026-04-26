@@ -36,68 +36,28 @@ export function ImageUpload({
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [isInitialLoad, setIsInitialLoad] = useState(true)
 
-  // Fetch presigned URL for company logos when currentImageUrl changes
+  // For ampertalent, logos are stored in Supabase public buckets - no presigned URL needed
   useEffect(() => {
     const fetchPresignedUrl = async () => {
       if (currentImageUrl && currentImageUrl.trim() !== '' && fileType === 'logo') {
-        // If the URL is already a full public Supabase storage URL, use it directly —
-        // no need to hit /api/employer/company-logo which would 404 before the DB is saved.
-        if (currentImageUrl.startsWith('https://')) {
-          setPresignedUrl(currentImageUrl)
-          setImageLoadError(false)
-          setIsRefreshing(false)
-          setIsInitialLoad(false)
-          return
-        }
-
-        setIsRefreshing(true)
-        try {
-          // Check for impersonation context and add headers if needed
-          const headers: HeadersInit = {
-            'Cache-Control': 'no-cache'
-          }
-
-          if (typeof window !== 'undefined') {
-            const impersonationSession = getImpersonationSession()
-            if (impersonationSession) {
-              console.log('🎭 FRONTEND: Adding impersonation headers to company logo request', {
-                impersonatedUserId: impersonationSession.impersonatedUser.id,
-                adminId: impersonationSession.adminId
-              })
-              headers['x-impersonated-user-id'] = impersonationSession.impersonatedUser.id
-              headers['x-admin-user-id'] = impersonationSession.adminId
-            }
-          }
-
-          // Add cache-busting parameter
-          const response = await fetch(`/api/employer/company-logo?t=${Date.now()}`, { headers })
-          if (response.ok) {
-            const data = await response.json()
-            setPresignedUrl(data.companyLogoUrl)
-            setImageLoadError(false)
-          } else {
-            // If presigned URL fails, fall back to direct URL
-            setPresignedUrl(currentImageUrl)
-          }
-        } catch (error) {
-          console.error('Error fetching presigned URL for company logo:', error)
-          // Fall back to direct URL
-          setPresignedUrl(currentImageUrl)
-        } finally {
-          setIsRefreshing(false)
-          setIsInitialLoad(false)
-        }
-      } else {
-        setPresignedUrl(currentImageUrl || undefined)
+        // Supabase public bucket URLs are directly accessible - use them as-is
+        setPresignedUrl(currentImageUrl)
+        setImageLoadError(false)
         setIsRefreshing(false)
         setIsInitialLoad(false)
+        return
       }
+
+      // For non-logo images, no presigned URL fetching needed
+      setPresignedUrl(currentImageUrl || undefined)
+      setIsRefreshing(false)
+      setIsInitialLoad(false)
     }
 
     setPreviewUrl(currentImageUrl || null)
     setImageLoadError(false)
 
-    // Only fetch presigned URL if we have a valid image URL
+    // Always set up the URL for display
     if (currentImageUrl && currentImageUrl.trim() !== '') {
       fetchPresignedUrl()
     } else {
@@ -107,20 +67,14 @@ export function ImageUpload({
     }
   }, [currentImageUrl, fileType])
 
-  // Get the display URL - for logos, always use presigned URL if available
-  const displayImageUrl = fileType === 'logo'
-    ? (presignedUrl || previewUrl)
-    : (previewUrl || currentImageUrl)
+  // Get the display URL - for logos, use presignedUrl (direct Supabase URL), for others use preview or current
+  const displayImageUrl = presignedUrl || previewUrl || currentImageUrl
 
-  // For logos, only show image when we have presigned URL or it's a fresh upload (previewUrl)
-  const shouldShowImage = displayImageUrl && (
-    fileType !== 'logo' ||
-    presignedUrl ||
-    (previewUrl && previewUrl !== currentImageUrl)
-  )
+  // Show image when we have any URL
+  const shouldShowImage = !!displayImageUrl
 
-  // Show loading state when we have a currentImageUrl but no presigned URL yet (for logos)
-  const isLoadingImage = fileType === 'logo' && currentImageUrl && !presignedUrl && isInitialLoad
+  // Show loading state when we have a currentImageUrl but no display URL yet
+  const isLoadingImage = fileType === 'logo' && currentImageUrl && !displayImageUrl && isInitialLoad
 
   // Handle image load errors
   const handleImageError = () => {

@@ -1,21 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth'
-import { getPayPalClient } from '@/lib/paypal'
+import { getPayPalClient, formatPayPalStorageId } from '@/lib/paypal'
 import { db } from '@/lib/db'
-import { MembershipPlan } from '@prisma/client'
+import { MembershipPlan, PackageType } from '@prisma/client'
 import { getServiceById } from '@/lib/additional-services'
 import { getEmployerPackageById } from '@/lib/employer-packages'
 import { completeSeekerOnboardingFromPendingSignup } from '@/lib/checkout-session-management'
 import { NotificationService } from '@/lib/notification-service'
-import { Decimal } from '@prisma/client/runtime/library'
 
 /**
  * POST /api/payments/paypal/execute-billing-agreement
  * Execute a PayPal Billing Agreement after user approval.
- * Called from:
- *   - /seeker/subscription/paypal-return  (logged-in seeker subscription/service)
- *   - /employer/billing/paypal-return     (logged-in employer package)
- *   - /api/payments/paypal-success        (onboarding new seeker)
+ * Mirrors HireMyMom implementation exactly — adapted for ampertalent schema.
  */
 export async function POST(request: NextRequest) {
     const requestId = Math.random().toString(36).substring(2, 8)
@@ -47,7 +43,7 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        // Resolve user profile — complete onboarding first if needed
+        // ── Resolve user profile — complete onboarding first if needed ───────
         let userProfile = await db.userProfile.findUnique({
             where: { clerkUserId: currentUser.clerkUser.id },
             include: { employer: true, jobSeeker: true },
@@ -84,8 +80,10 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Invalid user type' }, { status: 400 })
         }
 
-        // Map planId to MembershipPlan enum
-        const membershipPlans: Record<string, { name: string; price: number; duration: number; trialDays?: number; plan: MembershipPlan }> = {
+        // ── Plan / package / service lookup ──────────────────────────────────
+        const membershipPlans: Record<string, {
+            name: string; price: number; duration: number; trialDays?: number; plan: MembershipPlan
+        }> = {
             trial: { name: '3-Day Free Trial', price: 0, duration: 3, trialDays: 3, plan: 'trial_monthly' },
             gold: { name: 'Gold Professional', price: 49.99, duration: 60, plan: 'gold_bimonthly' },
             'vip-platinum': { name: 'VIP Platinum Professional', price: 79.99, duration: 90, plan: 'vip_quarterly' },
@@ -93,22 +91,23 @@ export async function POST(request: NextRequest) {
         }
 
         const planDetails = planId ? membershipPlans[planId] : undefined
-        const serviceId = planId && planId.startsWith('service_') ? planId.replace('service_', '') : (planId || '')
-        const service = planId && !planDetails ? getServiceById(serviceId) : null
-        const employerPkg = planId && !planDetails && !service ? getEmployerPackageById(planId) : null
+        const employerPkg = planId && !planDetails ? getEmployerPackageById(planId) : undefined
+        const serviceId = planId?.startsWith('service_') ? planId.replace('service_', '') : (planId || '')
+        const service = planId && !planDetails && !employerPkg ? getServiceById(serviceId) : undefined
 
         const isSubscriptionPurchase = !!planDetails && isSeeker
         const isPackagePurchase = !!employerPkg && isEmployer
         const isServicePurchase = !!service
 
-        if (!planDetails && !employerPkg && !service && !setupOnly) {
+        if (!setupOnly && !planDetails && !employerPkg && !service) {
+            console.error(`❌ [${requestId}] Invalid plan/package/service ID: ${planId}`)
             return NextResponse.json({ error: 'Invalid plan, package, or service ID' }, { status: 400 })
         }
 
-        // Execute the billing agreement
+        // ── Execute the billing agreement ─────────────────────────────────────
         const paypalClient = getPayPalClient()
         if (!paypalClient.isConfigured()) {
-            console.error(`❌ [${requestId}] PayPal: Client not configured — check NEXT_PUBLIC_PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET env vars`)
+            console.error(`❌ [${requestId}] PayPal not configured — check NEXT_PUBLIC_PAYPAL_CLIENT_ID + PAYPAL_CLIENT_SECRET`)
             return NextResponse.json({ error: 'PayPal is not configured on this server.' }, { status: 503 })
         }
 
@@ -116,7 +115,7 @@ export async function POST(request: NextRequest) {
         try {
             result = await paypalClient.executeBillingAgreement(token)
         } catch (execError: any) {
-            console.error(`❌ [${requestId}] PayPal executeBillingAgreement failed:`, execError?.message || execError)
+            console.error(`❌ [${requestId}] PayPal executeBillingAgreement failed:`, execError?.message)
             return NextResponse.json(
                 { error: 'Failed to execute PayPal billing agreement', details: execError?.message },
                 { status: 502 }
@@ -124,14 +123,14 @@ export async function POST(request: NextRequest) {
         }
         console.log(`✅ [${requestId}] PayPal billing agreement executed: ${result.billingAgreementId}`)
 
-        // ─── SETUP-ONLY: just save billing agreement as a payment method ───────
+        // ── SETUP-ONLY: just save billing agreement as payment method ─────────
         if (setupOnly) {
-            const existingMethodCount = await db.paymentMethod.count({
+            const existingCount = await db.paymentMethod.count({
                 where: isSeeker
                     ? { seekerId: userProfile.jobSeeker!.userId }
                     : { employerId: userProfile.employer!.userId },
             })
-            if (existingMethodCount > 0) {
+            if (existingCount > 0) {
                 await db.paymentMethod.updateMany({
                     where: isSeeker
                         ? { seekerId: userProfile.jobSeeker!.userId, isDefault: true }
@@ -141,26 +140,28 @@ export async function POST(request: NextRequest) {
             }
             await db.paymentMethod.create({
                 data: {
-                    ...(isSeeker ? { seekerId: userProfile.jobSeeker!.userId } : { employerId: userProfile.employer!.userId }),
+                    ...(isSeeker
+                        ? { seekerId: userProfile.jobSeeker!.userId }
+                        : { employerId: userProfile.employer!.userId }),
                     type: 'paypal',
-                    last4: userProfile.email?.split('@')[0]?.slice(-4) || 'acct',
+                    last4: result.payerEmail?.slice(-8) || 'acct',
                     brand: 'PayPal',
-                    expiryMonth: 0,
-                    expiryYear: 0,
-                    isDefault: existingMethodCount === 0,
-                    authnetPaymentProfileId: `PAYPAL|${result.billingAgreementId}`,
+                    expiryMonth: 12,
+                    expiryYear: 2099,
+                    isDefault: existingCount === 0,
+                    authnetPaymentProfileId: formatPayPalStorageId(result.billingAgreementId),
                 },
             })
             console.log(`✅ [${requestId}] PayPal: Saved billing agreement as payment method (setup-only)`)
             return NextResponse.json({ success: true, setupOnly: true, billingAgreementId: result.billingAgreementId })
         }
-        // ────────────────────────────────────────────────────────────────────────
 
-        // Determine if immediate charge is needed
+        // ── Charge immediately if needed ──────────────────────────────────────
         const isTrial = planId === 'trial'
         const needsImmediateCharge = !isTrial && (isPackagePurchase || isServicePurchase || (!!planDetails && !isTrial))
 
         let paypalTransactionId: string | undefined
+        let paypalSaleId: string | undefined
 
         if (needsImmediateCharge) {
             let chargeAmount: number
@@ -179,161 +180,217 @@ export async function POST(request: NextRequest) {
                 return NextResponse.json({ error: 'Could not determine charge amount' }, { status: 400 })
             }
 
+            console.log(`💰 [${requestId}] Charging PayPal: $${chargeAmount} for ${chargeDescription}`)
+
             const chargeResult = await paypalClient.chargeReferenceTransaction({
                 billingAgreementId: result.billingAgreementId,
                 amount: chargeAmount,
                 currency: 'USD',
                 description: chargeDescription,
-                invoiceNumber: `PP-${Date.now().toString().slice(-8)}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`,
+                invoiceNumber: `AT-${Date.now().toString().slice(-8)}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`,
             })
 
             if (!chargeResult.success) {
+                console.error(`❌ [${requestId}] PayPal charge failed:`, chargeResult.error, chargeResult.errorDetails)
                 return NextResponse.json(
-                    { error: 'PayPal payment failed', details: chargeResult.error },
+                    { error: 'PayPal payment failed', details: chargeResult.error, errorDetails: chargeResult.errorDetails },
                     { status: 400 }
                 )
             }
 
             paypalTransactionId = chargeResult.transactionId
-            console.log(`✅ [${requestId}] PayPal charge successful: ${paypalTransactionId}`)
+            paypalSaleId = chargeResult.saleId
+            console.log(`✅ [${requestId}] PayPal charge successful: txn=${paypalTransactionId} sale=${paypalSaleId}`)
         }
 
-        // Save payment method
+        // ── Save payment method ───────────────────────────────────────────────
         if (savePaymentMethod) {
-            const storedId = `PAYPAL|${result.billingAgreementId}`
+            const storedId = formatPayPalStorageId(result.billingAgreementId)
             const payerDisplay = result.payerEmail?.slice(-8) || 'PayPal'
-            const ownerId = isSeeker ? userProfile.id : (userProfile.employer?.userId || userProfile.id)
-            const ownerField = isSeeker ? 'seeker_id' : 'employer_id'
+            const ownerId = isSeeker ? userProfile.id : userProfile.id
 
-            const existingMethods = await db.$queryRaw<Array<{ id: string }>>`
-                SELECT id FROM payment_methods
-                WHERE ${isSeeker ? db.$queryRaw`seeker_id` : db.$queryRaw`employer_id`} = ${ownerId}
-                AND authnet_payment_profile_id LIKE 'PAYPAL|%'
-                LIMIT 1
-            `.catch(() => [] as Array<{ id: string }>)
-
-            // Use raw SQL to handle dynamic column
-            if (existingMethods.length > 0) {
-                await db.$executeRawUnsafe(
-                    `UPDATE payment_methods SET authnet_payment_profile_id = $1, last4 = $2, brand = 'paypal', updated_at = NOW() WHERE id = $3`,
-                    storedId, payerDisplay, existingMethods[0].id
-                )
+            if (isSeeker) {
+                const existing = await db.$queryRaw<Array<{ id: string }>>`
+                    SELECT id FROM payment_methods WHERE seeker_id = ${ownerId}
+                    AND authnet_payment_profile_id LIKE 'PAYPAL|%' LIMIT 1
+                `
+                if (existing.length > 0) {
+                    await db.$executeRaw`
+                        UPDATE payment_methods SET authnet_payment_profile_id = ${storedId},
+                        brand = 'paypal', last4 = ${payerDisplay}, updated_at = NOW()
+                        WHERE id = ${existing[0].id}
+                    `
+                } else {
+                    await db.$executeRaw`UPDATE payment_methods SET is_default = false WHERE seeker_id = ${ownerId}`
+                    const pmId = `pm_paypal_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+                    await db.$executeRaw`
+                        INSERT INTO payment_methods (id, seeker_id, type, last4, brand, expiry_month, expiry_year, is_default, authnet_payment_profile_id, created_at, updated_at)
+                        VALUES (${pmId}, ${ownerId}, 'paypal', ${payerDisplay}, 'paypal', 12, 2099, true, ${storedId}, NOW(), NOW())
+                    `
+                }
             } else {
-                await db.$executeRawUnsafe(
-                    `UPDATE payment_methods SET is_default = false WHERE ${ownerField} = $1`,
-                    ownerId
-                )
-                const pmId = `pm_paypal_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-                await db.$executeRawUnsafe(
-                    `INSERT INTO payment_methods (id, ${ownerField}, type, last4, brand, expiry_month, expiry_year, is_default, authnet_payment_profile_id, created_at, updated_at)
-                     VALUES ($1, $2, 'paypal', $3, 'paypal', 12, 2099, true, $4, NOW(), NOW())`,
-                    pmId, ownerId, payerDisplay, storedId
-                )
+                const existing = await db.$queryRaw<Array<{ id: string }>>`
+                    SELECT id FROM payment_methods WHERE employer_id = ${ownerId}
+                    AND authnet_payment_profile_id LIKE 'PAYPAL|%' LIMIT 1
+                `
+                if (existing.length > 0) {
+                    await db.$executeRaw`
+                        UPDATE payment_methods SET authnet_payment_profile_id = ${storedId},
+                        brand = 'paypal', last4 = ${payerDisplay}, updated_at = NOW()
+                        WHERE id = ${existing[0].id}
+                    `
+                } else {
+                    await db.$executeRaw`UPDATE payment_methods SET is_default = false WHERE employer_id = ${ownerId}`
+                    const pmId = `pm_paypal_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+                    await db.$executeRaw`
+                        INSERT INTO payment_methods (id, employer_id, type, last4, brand, expiry_month, expiry_year, is_default, authnet_payment_profile_id, created_at, updated_at)
+                        VALUES (${pmId}, ${ownerId}, 'paypal', ${payerDisplay}, 'paypal', 12, 2099, true, ${storedId}, NOW(), NOW())
+                    `
+                }
             }
             console.log(`✅ [${requestId}] PayPal payment method saved`)
         }
 
-        // Process purchase based on type
+        // ── Process based on purchase type ────────────────────────────────────
         let subscriptionId: string | undefined
         let servicePurchaseId: string | undefined
         let employerPackageId: string | undefined
 
         if (isServicePurchase && service && isSeeker) {
-            // Create service purchase record
             const purchaseId = `asp_paypal_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
             await db.$executeRaw`
                 INSERT INTO additional_service_purchases (id, service_id, user_id, seeker_id, amount_paid, status, created_at, updated_at)
                 VALUES (${purchaseId}, ${service.id}, ${userProfile.id}, ${userProfile.id}, ${service.price}, 'pending', NOW(), NOW())
             `
             servicePurchaseId = purchaseId
+            console.log(`✅ [${requestId}] Service purchase created: ${purchaseId}`)
 
         } else if (isSubscriptionPurchase && planDetails && userProfile.jobSeeker) {
-            // Create external payment record (required by Subscription FK constraint)
-            const amountPaid = isTrial ? 0 : planDetails.price
+            const seekerUserId = userProfile.jobSeeker.userId
+
+            // External payment record (required by Subscription FK)
             const externalPayment = await db.externalPayment.create({
                 data: {
                     userId: userProfile.id,
-                    amount: new Decimal(amountPaid.toFixed(2)),
+                    ghlTransactionId: `PAYPAL_${result.billingAgreementId}`,
+                    amount: isTrial ? 0 : planDetails.price,
                     planId,
                     status: 'completed',
                     webhookProcessedAt: new Date(),
                 },
             })
 
-            // Deactivate any existing active subscriptions
+            const now = new Date()
+            const periodEnd = new Date(now.getTime() + planDetails.duration * 24 * 60 * 60 * 1000)
+
+            // Deactivate existing active subscriptions
             await db.subscription.updateMany({
                 where: { seekerId: userProfile.id, status: 'active' },
                 data: { status: 'canceled' },
             })
 
-            const periodEnd = new Date(Date.now() + planDetails.duration * 24 * 60 * 60 * 1000)
             const subscription = await db.subscription.create({
                 data: {
-                    seekerId: userProfile.jobSeeker.userId,
+                    seekerId: seekerUserId,
                     plan: planDetails.plan,
                     status: 'active',
                     externalPaymentId: externalPayment.id,
-                    currentPeriodStart: new Date(),
+                    currentPeriodStart: now,
                     currentPeriodEnd: periodEnd,
-                    nextBillingDate: periodEnd,
-                    authnetCustomerId: `PAYPAL|${result.billingAgreementId}`,
+                    authnetCustomerId: formatPayPalStorageId(result.billingAgreementId),
                 },
             })
 
-            // Update job seeker membership
             await db.jobSeeker.update({
-                where: { userId: userProfile.jobSeeker.userId },
+                where: { userId: seekerUserId },
                 data: {
                     membershipPlan: planDetails.plan,
                     membershipExpiresAt: periodEnd,
                     isOnTrial: isTrial,
-                    trialEndsAt: isTrial ? new Date(Date.now() + 3 * 24 * 60 * 60 * 1000) : null,
+                    trialEndsAt: isTrial ? new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000) : null,
                 },
             })
 
             subscriptionId = subscription.id
-            console.log(`✅ [${requestId}] PayPal: Subscription created: ${subscriptionId}`)
+            console.log(`✅ [${requestId}] Subscription created: ${subscriptionId} (${planDetails.plan})`)
 
         } else if (isPackagePurchase && employerPkg && userProfile.employer) {
-            // Create employer package
+            const employerUserId = userProfile.employer.userId
+            const expiresAt = new Date(Date.now() + (employerPkg.duration || 30) * 24 * 60 * 60 * 1000)
+
+            // Map package ID to PackageType enum
+            const packageTypeMap: Record<string, PackageType> = {
+                'standard': 'standard_job_post',
+                'featured': 'featured_job_post',
+                'email_blast': 'email_blast',
+                'gold_plus': 'gold_plus',
+                'concierge_lite': 'concierge_lite',
+                'concierge_level_1': 'concierge_level_1',
+                'concierge_level_2': 'concierge_level_2',
+                'concierge_level_3': 'concierge_level_3',
+            }
+            const packageType: PackageType = packageTypeMap[employerPkg.id] || 'standard_job_post'
+
             const pkg = await db.employerPackage.create({
                 data: {
-                    employerId: userProfile.employer.userId,
-                    packageType: planId as any,
-                    listingsRemaining: 1,
+                    employerId: employerUserId,
+                    packageType,
+                    listingsRemaining: employerPkg.listings ?? 1,
+                    featuredListingsRemaining: employerPkg.featuredListings ?? 0,
+                    expiresAt,
                     purchasedAt: new Date(),
-                    expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-                    arbSubscriptionId: `PAYPAL|${result.billingAgreementId}`,
+                    arbSubscriptionId: formatPayPalStorageId(result.billingAgreementId),
                 },
             })
+
             await db.employer.update({
-                where: { userId: userProfile.employer.userId },
+                where: { userId: employerUserId },
                 data: { currentPackageId: pkg.id },
             })
+
+            // Invoice record
+            try {
+                await db.invoice.create({
+                    data: {
+                        employerPackageId: pkg.id,
+                        authnetTransactionId: null,
+                        amountDue: Math.round((customAmount ?? employerPkg.price) * 100),
+                        status: 'paid',
+                        description: `${employerPkg.name} - ${userProfile.employer.companyName || userProfile.name}`,
+                        packageName: employerPkg.name,
+                        paidAt: new Date(),
+                    },
+                })
+            } catch (invoiceErr) {
+                console.error(`⚠️ [${requestId}] Invoice creation failed (non-blocking):`, invoiceErr)
+            }
+
             employerPackageId = pkg.id
+            console.log(`✅ [${requestId}] Employer package created: ${pkg.id} (${employerPkg.name})`)
         }
 
-        // Clean up pending signup after successful onboarding
+        // ── Clean up pending signup ───────────────────────────────────────────
         if (pendingSignupId) {
             await db.pendingSignup.delete({ where: { id: pendingSignupId } }).catch(() => null)
         }
 
-        // Send admin + customer notification emails
+        // ── Send emails (non-blocking) ────────────────────────────────────────
         try {
             const orderDate = new Date()
-            const orderNumber = `ORD-${orderDate.toISOString().slice(0, 10).replace(/-/g, '')}-${(paypalTransactionId || result.billingAgreementId).slice(-4)}`
+            const orderDateStr = orderDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+            const orderSuffix = (paypalTransactionId || result.billingAgreementId).slice(-4).toUpperCase()
+            const orderNumber = `ORD-${orderDate.toISOString().slice(0, 10).replace(/-/g, '')}-${orderSuffix}`
             const productName = planDetails?.name || service?.name || employerPkg?.name || planId
-            const chargedAmount = isTrial ? 0 : (planDetails?.price || service?.price || (customAmount ?? employerPkg?.price) || 0)
+            const chargedAmount = isTrial ? 0 : (planDetails?.price ?? service?.price ?? customAmount ?? employerPkg?.price ?? 0)
             const customerName = isEmployer
-                ? (userProfile.employer as any)?.companyName || userProfile.name || 'Employer'
-                : userProfile.name || 'Seeker'
-            const customerType = isEmployer ? 'Employer' : 'Seeker'
+                ? (userProfile.employer?.companyName || userProfile.name || 'Employer')
+                : (userProfile.name || 'Seeker')
 
             await NotificationService.sendAdminPaymentNotification({
                 orderNumber,
-                orderDate: orderDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+                orderDate: orderDateStr,
                 customerName,
-                customerType,
+                customerType: isEmployer ? 'Employer' : 'Seeker',
                 customerId: userProfile.id,
                 customerEmail: userProfile.email || '',
                 productDescription: isTrial ? `${productName} (Free Trial)` : productName,
@@ -341,7 +398,7 @@ export async function POST(request: NextRequest) {
                 price: chargedAmount,
                 paymentType: 'paypal',
                 isRenewal: false,
-                transactionId: paypalTransactionId || result.billingAgreementId,
+                transactionId: paypalTransactionId || `PAYPAL_${result.billingAgreementId}`,
             })
 
             await NotificationService.sendCustomerPaymentConfirmationEmail({
@@ -349,23 +406,64 @@ export async function POST(request: NextRequest) {
                 firstName: userProfile.firstName || userProfile.name?.split(' ')[0] || 'Valued Customer',
                 amount: chargedAmount,
                 description: isTrial ? `${productName} (Free Trial - No Charge Today)` : productName,
-                transactionId: paypalTransactionId || result.billingAgreementId,
+                transactionId: paypalTransactionId || `PAYPAL_${result.billingAgreementId}`,
                 paymentType: 'paypal',
                 isTrial,
                 isRecurring: isSubscriptionPurchase && !isTrial,
             })
-        } catch (emailError) {
-            console.error(`⚠️ [${requestId}] PayPal: Email sending failed (non-blocking):`, emailError)
+        } catch (emailErr) {
+            console.error(`⚠️ [${requestId}] Email sending failed (non-blocking):`, emailErr)
         }
+
+        // ── Response ──────────────────────────────────────────────────────────
+        const pendingNotification = (() => {
+            if (isSeeker && planDetails) {
+                return {
+                    type: 'welcome',
+                    title: isTrial ? 'Welcome to AmperTalent! 🎉' : 'Subscription Activated! 🎉',
+                    message: isTrial
+                        ? 'Your 3-day free trial is now active. Enjoy full access!'
+                        : `Your ${planDetails.name} subscription is now active.`,
+                    showToast: true, toastVariant: 'success', toastDuration: 8000,
+                }
+            }
+            if (isSeeker && service) {
+                return {
+                    type: 'purchase', title: 'Service Purchased! ✅',
+                    message: `Your ${service.name} has been purchased. Our team will reach out shortly.`,
+                    showToast: true, toastVariant: 'success', toastDuration: 6000,
+                }
+            }
+            if (isPackagePurchase && employerPkg) {
+                return {
+                    type: 'purchase', title: 'Package Purchased! 🎉',
+                    message: `Your ${employerPkg.name} package is ready. Start posting jobs now!`,
+                    showToast: true, toastVariant: 'success', toastDuration: 6000,
+                }
+            }
+        })()
 
         return NextResponse.json({
             success: true,
             billingAgreementId: result.billingAgreementId,
+            payerEmail: result.payerEmail,
+            transactionId: paypalTransactionId,
+            saleId: paypalSaleId,
+            charged: !!paypalTransactionId,
             subscriptionId,
             servicePurchaseId,
             employerPackageId,
-            message: 'PayPal payment processed successfully',
+            planId,
+            pendingNotification,
+            message: isPackagePurchase
+                ? 'Employer package purchased successfully via PayPal'
+                : isServicePurchase
+                    ? 'Service purchased successfully via PayPal'
+                    : paypalTransactionId
+                        ? 'PayPal payment processed successfully'
+                        : 'PayPal trial subscription activated',
         })
+
     } catch (error: any) {
         console.error(`❌ [${requestId}] PayPal execute billing agreement error:`, error)
         return NextResponse.json(
