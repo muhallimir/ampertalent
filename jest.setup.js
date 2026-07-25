@@ -109,6 +109,25 @@ global.Response = class Response {
     async text() {
         return typeof this.body === 'string' ? this.body : JSON.stringify(this.body);
     }
+
+    // Static `Response.json` is what real `NextResponse.json()` calls under the hood.
+    // Without this, calling `NextResponse.json(...)` from inside an API route throws
+    // `TypeError: Response.json is not a function` in the test environment.
+    static json(data, options = {}) {
+        return new Response(JSON.stringify(data), {
+            status: options.status || 200,
+            headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
+        });
+    }
+
+    static redirect(url, options = {}) {
+        const response = new Response(null, {
+            status: options.status || 307,
+            headers: options.headers || {},
+        });
+        response.headers.set('Location', typeof url === 'string' ? url : url.href);
+        return response;
+    }
 };
 
 // Mock NextResponse

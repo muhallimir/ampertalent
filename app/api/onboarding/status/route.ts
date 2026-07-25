@@ -136,6 +136,26 @@ export async function GET(request: NextRequest) {
             })
         }
 
+        // Demo-mode override: a demo user with a role (seeker/employer)
+        // hasn't actually walked the onboarding form yet — the role is
+        // set on the UserProfile at demo create time so the user can
+        // pick a role, but they still need to go through the real
+        // onboarding. Return `completed: false` so the middleware
+        // routes them to /onboarding instead of skipping to the dashboard.
+        // Admin / super_admin demo users skip onboarding entirely.
+        const isDemo = userProfile.name?.startsWith('demo-') ?? false
+        const isAdminDemo =
+            isDemo &&
+            (userProfile.role === 'admin' || userProfile.role === 'super_admin')
+
+        if (isDemo && !isAdminDemo) {
+            return NextResponse.json({
+                completed: false,
+                role: userProfile.role,
+                isDemo: true,
+            })
+        }
+
         return NextResponse.json({
             completed: true,
             role: userProfile.role

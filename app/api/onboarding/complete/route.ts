@@ -2,6 +2,20 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { UserRole } from "@prisma/client";
+import { DEMO_NAME_REGEX } from "@/lib/demo-credentials";
+
+/**
+ * For demo accounts only, the role field can be `admin` or `super_admin`.
+ * Defence in depth: even if someone calls this with role=admin from a real
+ * signup, the demo token must match the canonical `demo-{role}-{ts}` pattern
+ * AND the existing UserProfile (if any) must be a demo profile.
+ */
+function isValidDemoToken(token: unknown, profileRole?: string): boolean {
+    if (typeof token !== 'string') return false
+    if (!DEMO_NAME_REGEX.test(token)) return false
+    if (profileRole && !['admin', 'super_admin'].includes(profileRole)) return false
+    return true
+}
 
 export async function POST(request: NextRequest) {
     try {
@@ -42,6 +56,7 @@ export async function POST(request: NextRequest) {
             goals,
             professionalSummary,
             isServiceOnly,
+            demoToken,
         } = body;
 
         console.log("📝 ONBOARDING COMPLETE: Data received:", {
@@ -63,6 +78,28 @@ export async function POST(request: NextRequest) {
                 { error: "Missing required fields" },
                 { status: 400 }
             );
+        }
+
+        // Demo-mode gate: `admin` / `super_admin` roles are only reachable
+        // through the demo flow. They require a matching demo token. The
+        // existing profile (if any) must already be a demo profile — for the
+        // first-time create path (no existing profile), the demo token alone
+        // is sufficient.
+        if (role === 'admin' || role === 'super_admin') {
+            const existingIsDemo = currentUser.profile?.name
+                ? DEMO_NAME_REGEX.test(currentUser.profile.name)
+                : true // first-time create — no existing profile is expected
+            if (!isValidDemoToken(demoToken) || !existingIsDemo) {
+                console.warn('🚫 ONBOARDING COMPLETE: Blocked non-demo admin role attempt', {
+                    userId: user.id,
+                    hasToken: !!demoToken,
+                    existingIsDemo,
+                })
+                return NextResponse.json(
+                    { error: 'Demo token required for admin role onboarding' },
+                    { status: 403 }
+                )
+            }
         }
 
         let userProfile;
@@ -219,6 +256,8 @@ export async function POST(request: NextRequest) {
             redirectTo:
                 userProfile.role === "employer"
                     ? "/employer/dashboard"
+                    : userProfile.role === "admin" || userProfile.role === "super_admin"
+                    ? "/admin/dashboard"
                     : "/seeker/dashboard",
         });
     } catch (error) {

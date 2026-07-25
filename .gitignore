@@ -36,3 +36,8 @@ yarn.lock
 # Prisma
 .prisma/
 scripts/run.sh
+
+# Internal planning docs (gitignored — used by opencode TDD workflow)
+.plans/
+.vercel
+.env*

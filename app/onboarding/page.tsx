@@ -626,6 +626,38 @@ export default function OnboardingPage() {
           setHasAutoRestored(true) // Mark as restored so we don't overwrite
         }
 
+        // Priority 3: Demo mode — if the user arrived via /api/demo/create,
+        // there's a `ampertalent_demo_role` marker in localStorage with
+        // the role the visitor chose. We pre-select that role in the
+        // onboarding form (still NO step is skipped — the visitor walks
+        // through every screen). This makes the demo flow feel like the
+        // marketing site already knew which role they wanted.
+        try {
+          const pendingDemoRole = localStorage.getItem('ampertalent_demo_role')
+          if (
+            pendingDemoRole === 'seeker' ||
+            pendingDemoRole === 'employer'
+          ) {
+            console.log('🎭 ONBOARDING: No draft/invitation, but pending demo role:', pendingDemoRole)
+            setOnboardingData(prev => ({
+              ...prev,
+              role: pendingDemoRole as 'seeker' | 'employer',
+              // For demo seekers, pre-select the trial plan so the
+              // onboarding form has a package to confirm. The actual
+              // subscription is activated directly (skipping
+              // Stripe/PayPal) at submit time.
+              selectedPackage:
+                pendingDemoRole === 'seeker' && !prev.selectedPackage
+                  ? 'trial'
+                  : prev.selectedPackage,
+            }))
+            setCurrentStep(1) // Skip the role step itself — the rest still runs
+            setHasAutoRestored(true)
+          }
+        } catch {
+          // ignore (SSR / no localStorage)
+        }
+
         return false // Indicate that no data was found
 
       } catch (error) {
@@ -868,11 +900,21 @@ export default function OnboardingPage() {
       // Service-only flow: User came via service SKU, skip payment and go to services
       if (isServiceOnlyFlow) {
         await handleServiceOnlyOnboarding()
-      } else if (onboardingData.role === 'seeker' && onboardingData.selectedPackage) {
+      } else if (
+        onboardingData.role === 'seeker' &&
+        onboardingData.selectedPackage &&
+        // Demo mode bypass: skip the Stripe/PayPal checkout for demo
+        // accounts. The demo subscription is activated directly via
+        // /api/demo/activate-subscription inside handleStandardOnboarding.
+        !isDemoMode()
+      ) {
         // For seekers with selected package, redirect to external checkout
         await handleSeekerCheckoutFlow()
       } else {
         // Original flow for employers or seekers without packages
+        // (also handles the demo seeker case — the seed + subscription
+        // activation happens inside handleStandardOnboarding when it
+        // detects the demo marker)
         await handleStandardOnboarding()
       }
     } catch (error) {
@@ -1141,6 +1183,59 @@ export default function OnboardingPage() {
     // Redirect to appropriate dashboard
     const dashboardPath = getDashboardPath(onboardingData.role || 'seeker')
     console.log('🔄 ONBOARDING: Completing onboarding, redirecting to dashboard:', dashboardPath)
+
+    // Demo mode: if this is a freshly-created demo account, seed sample
+    // data on the server BEFORE redirecting so the dashboard is populated
+    // when the visitor lands on it. The seed is best-effort and doesn't
+    // block the redirect.
+    try {
+      const demoMarker = typeof window !== 'undefined' ? localStorage.getItem('ampertalent_demo_role') : null
+      const isDemoUser = demoMarker !== null
+      console.log('🎭 ONBOARDING: handleStandardOnboarding - isDemoUser:', isDemoUser, 'role:', onboardingData.role)
+      if (isDemoUser && onboardingData.role === 'seeker') {
+        // 1. Activate a demo subscription (skips Stripe/PayPal) so the
+        //    seeker dashboard shows real membership data + resume credits.
+        try {
+          const subRes = await fetch('/api/demo/activate-subscription', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              planId: onboardingData.selectedPackage
+                ? mapPlanIdToInternal(onboardingData.selectedPackage)
+                : 'trial',
+            }),
+          })
+          if (subRes.ok) {
+            console.log('🎭 ONBOARDING: demo subscription activated', await subRes.json())
+          } else {
+            console.warn('🎭 ONBOARDING: demo subscription returned', subRes.status, await subRes.text())
+          }
+        } catch (subErr) {
+          console.warn('🎭 ONBOARDING: demo subscription failed (non-fatal):', subErr)
+        }
+      }
+      if (isDemoUser && (onboardingData.role === 'seeker' || onboardingData.role === 'employer')) {
+        // 2. Seed applications (for seeker) or jobs (for employer)
+        const seedRes = await fetch('/api/demo/seed', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            role: onboardingData.role,
+            profileId: result.userId ?? undefined,
+          }),
+        })
+        if (seedRes.ok) {
+          console.log('🎭 ONBOARDING: demo seed succeeded', await seedRes.json())
+        } else {
+          console.warn('🎭 ONBOARDING: demo seed returned', seedRes.status, await seedRes.text())
+        }
+        // Clean up the demo marker so a future real signin isn't auto-seeded
+        localStorage.removeItem('ampertalent_demo_role')
+      }
+    } catch (seedErr) {
+      console.warn('🎭 ONBOARDING: demo seed failed (non-fatal):', seedErr)
+    }
+
     // Use window.location.href for a hard navigation to ensure the redirect completes
     // This prevents redirect loops by forcing a full page reload and letting middleware do a fresh role check
     window.location.href = dashboardPath
@@ -1271,6 +1366,28 @@ export default function OnboardingPage() {
   const updateData = (updates: Partial<OnboardingData>) => {
     setOnboardingData(prev => ({ ...prev, ...updates }))
   }
+
+  /**
+   * Returns true if the current session is a demo account. Used to bypass
+   * the Stripe/PayPal checkout (we activate the subscription directly via
+   * /api/demo/activate-subscription) and to seed sample data.
+   */
+  const isDemoMode = (): boolean => {
+    if (typeof window === 'undefined') return false
+    return (
+      localStorage.getItem('ampertalent_demo_role') !== null ||
+      localStorage.getItem('ampertalent_demo') !== null
+    )
+  }
+
+  /**
+   * The onboarding form stores the plan under the public `id` (e.g. 'trial',
+   * 'gold', 'vip-platinum', 'annual-platinum'). The demo activation
+   * endpoint expects one of those same public IDs, so this is a no-op
+   * identity mapping today — but having it as a function makes future
+   * aliasing trivial.
+   */
+  const mapPlanIdToInternal = (publicId: string): string => publicId
 
   const handleResendVerification = async () => {
     if (!user || !user.primaryEmailAddress) {

@@ -5,6 +5,7 @@ import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import UserInviteSignupForm from '@/components/UserInviteSignUpForm';
 import { processMarketingSkuFromUrl, getSignedInRedirectUrl } from '@/lib/marketing-preselect';
+import { DemoModeEntry } from '@/components/demo/DemoModeEntry';
 
 function SignUpContent() {
   const searchParams = useSearchParams()
@@ -98,20 +99,23 @@ function SignUpContent() {
   }
 
   return invitationToken === null ? (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
-      <SignUp
-        appearance={{
-          elements: {
-            rootBox: "mx-auto",
-            card: "shadow-lg",
-            cardBox: "w-[27rem]"
-          }
-        }}
-        routing="path"
-        path="/sign-up"
-        signInUrl="/sign-in"
-        afterSignUpUrl="/onboarding"
-      />
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
+      <div className="w-full max-w-md">
+        <SignUp
+          appearance={{
+            elements: {
+              rootBox: "mx-auto",
+              card: "shadow-lg",
+              cardBox: "w-[27rem]"
+            }
+          }}
+          routing="path"
+          path="/sign-up"
+          signInUrl="/sign-in"
+          afterSignUpUrl="/onboarding"
+        />
+        <DemoModeEntry />
+      </div>
     </div>
   ) : <UserInviteSignupForm invitationToken={invitationToken} />
 }

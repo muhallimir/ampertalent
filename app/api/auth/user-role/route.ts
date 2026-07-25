@@ -12,7 +12,7 @@ export async function GET() {
 
         const userProfile = await db.userProfile.findUnique({
             where: { clerkUserId: userId },
-            select: { role: true },
+            select: { role: true, name: true, id: true },
         });
 
         if (!userProfile) {
@@ -22,7 +22,11 @@ export async function GET() {
             );
         }
 
-        return NextResponse.json({ role: userProfile.role });
+        return NextResponse.json({
+            role: userProfile.role,
+            name: userProfile.name,
+            profileId: userProfile.id,
+        });
     } catch (error) {
         console.error("Error fetching user role:", error);
         return NextResponse.json(

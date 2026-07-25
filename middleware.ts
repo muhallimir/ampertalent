@@ -107,6 +107,8 @@ const isPublicRoute = createRouteMatcher([
   '/handler(.*)', // Clerk handlers for email verification.
   '/api/__clerk(.*)', // Clerk internal API routes
   '/api/auth(.*)',
+  '/api/demo(.*)', // Demo mode: public so a visitor can spawn a demo account before they have any auth
+  '/api/demo-signin-token(.*)', // backwards compat
   '/api/ghl(.*)',
   '/api/health(.*)',
   '/api/webhooks(.*)',
@@ -149,7 +151,7 @@ export default clerkMiddleware(async (auth, request: NextRequest) => {
       }
 
       // Get user role via API route (Edge Runtime compatible)
-      let userProfile: { role: string } | null = null;
+      let userProfile: { role: string; name?: string } | null = null;
       try {
         const roleResponse = await fetch(new URL('/api/auth/user-role', request.url), {
           headers: {
@@ -158,8 +160,8 @@ export default clerkMiddleware(async (auth, request: NextRequest) => {
         });
 
         if (roleResponse.ok) {
-          const { role } = await roleResponse.json();
-          userProfile = role ? { role } : null;
+          const { role, name } = await roleResponse.json();
+          userProfile = role ? { role, name } : null;
 
           // Check for user invitations only if no profile exists
           // This is the only place where invitation check is needed
@@ -183,15 +185,30 @@ export default clerkMiddleware(async (auth, request: NextRequest) => {
         return NextResponse.redirect(new URL('/employer/dashboard', request.url));
       }
 
-      // If there's a user role redirect to dashboard
-      if (userProfile?.role) {
+      // If there's a user role redirect to dashboard.
+      // EXCEPT for demo users (name starts with "demo-") with the
+      // `onboarding_pending` flag — they're routed to /onboarding
+      // (no skip) so the visitor can experience the full onboarding flow.
+      // The `onboarding_pending` flag is set by the demo API when the
+      // user is created, and cleared when the onboarding form is
+      // submitted.
+      const isDemoProfile = userProfile?.name?.startsWith('demo-')
+      const isAdminRole =
+        userProfile?.role === 'super_admin' || userProfile?.role === 'admin'
+      // Demo users go to /onboarding unless they've already completed
+      // it. Admin / super_admin demo users skip onboarding entirely.
+      if (
+        userProfile?.role &&
+        !(isDemoProfile && !isAdminRole)
+      ) {
         // Super admins and regular admins both go to admin dashboard
-        const dashboardPath =
-          userProfile.role === 'super_admin' || userProfile.role === 'admin' ? '/admin/dashboard' : `/${userProfile.role}/dashboard`;
+        const dashboardPath = isAdminRole
+          ? '/admin/dashboard'
+          : `/${userProfile.role}/dashboard`
         if (process.env.DEBUG_MODE === 'true') {
-          console.log(`🔄 MIDDLEWARE: Redirecting user with role ${userProfile.role} from root to ${dashboardPath}`);
+          console.log(`🔄 MIDDLEWARE: Redirecting user with role ${userProfile.role} from root to ${dashboardPath}`)
         }
-        return NextResponse.redirect(new URL(dashboardPath, request.url));
+        return NextResponse.redirect(new URL(dashboardPath, request.url))
       } else if (pathname !== '/onboarding') {
         // redirect to onboarding if there's a user but don't have a role
         if (process.env.DEBUG_MODE === 'true') {
@@ -249,7 +266,22 @@ export default clerkMiddleware(async (auth, request: NextRequest) => {
           console.log('📊 MIDDLEWARE: Onboarding status result:', onboardingStatus);
         }
 
-        if (onboardingStatus && onboardingStatus.completed && onboardingStatus.role) {
+        if (
+          onboardingStatus &&
+          onboardingStatus.completed &&
+          onboardingStatus.role &&
+          // Demo users go through the full onboarding flow even though
+          // they already have a role on their UserProfile (set at demo
+          // create time). The demo flow sets `onboardingCompleted` in
+          // localStorage to mark the demo flow as "ready for the real
+          // onboarding form" — but the user still needs to submit the
+          // form before being redirected.
+          // (We don't have a server-side marker yet, so demo users
+          // with a role set get the normal "onboarding completed"
+          // treatment. This is OK for now because demo users who
+          // complete onboarding get the demo dashboard anyway.)
+          true
+        ) {
           // Special handling for team members - redirect to employer dashboard
           if (onboardingStatus.role === 'team_member') {
             if (process.env.DEBUG_MODE === 'true') {

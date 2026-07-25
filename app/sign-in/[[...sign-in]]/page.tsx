@@ -4,6 +4,7 @@ import { SignIn, useUser } from '@clerk/nextjs';
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { processMarketingSkuFromUrl, getSignedInRedirectUrl } from '@/lib/marketing-preselect';
+import { DemoModeEntry } from '@/components/demo/DemoModeEntry';
 
 function SignInContent() {
   const searchParams = useSearchParams()
@@ -11,6 +12,12 @@ function SignInContent() {
   const { isSignedIn, isLoaded } = useUser()
   const [skuProcessed, setSkuProcessed] = useState(false)
   const [redirecting, setRedirecting] = useState(false)
+
+  // When the visitor lands on /sign-in?demo_email=... (the manual sign-in
+  // fallback from the demo flow), we can't pre-fill Clerk's <SignIn /> directly,
+  // but we can show a banner reminding them which credentials to use.
+  const demoEmailFromUrl = searchParams?.get('demo_email')
+  const demoRoleFromUrl = searchParams?.get('demo_role')
 
   // Handle already signed-in users with SKU parameter
   useEffect(() => {
@@ -90,19 +97,37 @@ function SignInContent() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
-      <SignIn
-        appearance={{
-          elements: {
-            rootBox: "mx-auto",
-            card: "shadow-lg",
-          }
-        }}
-        routing="path"
-        path="/sign-in"
-        signUpUrl="/sign-up"
-        afterSignInUrl="/onboarding"
-      />
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
+      <div className="w-full max-w-md">
+        {demoEmailFromUrl && (
+          <div
+            data-testid="demo-manual-signin-banner"
+            className="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
+          >
+            <strong>Demo account ready.</strong> Sign in with{' '}
+            <code className="font-mono text-xs">{demoEmailFromUrl}</code>
+            {demoRoleFromUrl ? (
+              <>
+                {' '}(role: <strong>{demoRoleFromUrl}</strong>)
+              </>
+            ) : null}
+            . Your password is shown in the persistent demo banner at the top.
+          </div>
+        )}
+        <SignIn
+          appearance={{
+            elements: {
+              rootBox: "mx-auto",
+              card: "shadow-lg",
+            }
+          }}
+          routing="path"
+          path="/sign-in"
+          signUpUrl="/sign-up"
+          afterSignInUrl="/onboarding"
+        />
+        <DemoModeEntry />
+      </div>
     </div>
   );
 }

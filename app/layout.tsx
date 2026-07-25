@@ -9,6 +9,7 @@ import { RealTimeNotificationProvider } from "@/components/providers/RealTimeNot
 import { UserProfileProvider } from "@/components/providers/UserProfileProvider";
 import { MessageProvider } from "@/components/providers/MessageProvider";
 import { SavedJobsProvider } from "@/components/providers/SavedJobsProvider";
+import { PersistentDemoBanner } from "@/components/demo/PersistentDemoBanner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -39,6 +40,7 @@ export default function RootLayout({
                 <SavedJobsProvider>
                   <ToastProvider>
                     <RealTimeNotificationProvider>
+                      <PersistentDemoBanner />
                       {children}
                       <Toaster />
                     </RealTimeNotificationProvider>
