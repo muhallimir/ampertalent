@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+# Pre-commit hook — runs gitleaks on staged files BEFORE they reach the
+# remote. Install gitleaks (`brew install gitleaks` on macOS) to enable.
+# If gitleaks isn't installed, the hook falls back to a built-in basic
+# scan that catches the most common secret patterns.
+#
+# Install for the whole team:
+#   ln -sf ../../scripts/pre-commit .git/hooks/pre-commit
+# Or run once locally:
+#   cp scripts/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+
+set -e
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+cd "$REPO_ROOT"
+
+# Get the list of staged files (Added / Modified / Copied / Renamed)
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACMR 2>/dev/null || true)
+
+if [ -z "$STAGED_FILES" ]; then
+  exit 0
+fi
+
+# ─── 1. Try gitleaks first (the gold standard) ──────────────────────────────
+if command -v gitleaks >/dev/null 2>&1; then
+  echo "🔐 gitleaks: scanning staged files..."
+  if ! gitleaks protect --staged --redact --no-banner \
+      --config "$REPO_ROOT/.gitleaks.toml" \
+      --verbose 2>&1; then
+    echo ""
+    echo "❌ Commit blocked: gitleaks found a secret in your staged files."
+    echo "   Remove the secret, rotate it if it's a real key, and re-stage."
+    echo "   See .gitleaks.toml for rules + allowlist."
+    exit 1
+  fi
+  echo "✅ gitleaks clean"
+  exit 0
+fi
+
+# ─── 2. Fallback: built-in basic scan ─────────────────────────────────────
+# Catches the most common patterns even if gitleaks isn't installed.
+# Less thorough than gitleaks but better than nothing.
+
+echo "🔐 gitleaks not installed — using built-in basic scan"
+echo "   (install with: brew install gitleaks)"
+
+BASIC_PATTERNS='sk_(test|live)_[A-Za-z0-9]{20,}|pk_(test|live)_[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16,}|ghp_[A-Za-z0-9]{36,}|re_[A-Za-z0-9]{20,}|eyJ[A-Za-z0-9_-]{10,}\.eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}'
+PASSWORD_PATTERNS='(password|passwd|pwd|api[_-]?key|secret|token)\s*[:=]\s*["'"'"'][^"'"'"']{8,}["'"'"']'
+
+FOUND=0
+for file in $STAGED_FILES; do
+  # Skip the config file itself (it has the regex patterns)
+  case "$file" in
+    .gitleaks.toml|package-lock.json) continue ;;
+  esac
+
+  # Only scan text files that exist in the working tree
+  [ -f "$file" ] || continue
+
+  # Use git grep so we only see STAGED content (not the latest working copy)
+  if hits=$(git grep -nE "$BASIC_PATTERNS" -- "$file" 2>/dev/null); then
+    echo ""
+    echo "❌ Possible API key / secret in $file:"
+    echo "$hits" | sed 's/^/   /'
+    FOUND=1
+  fi
+  if hits=$(git grep -nE "$PASSWORD_PATTERNS" -- "$file" 2>/dev/null | grep -v '<TEST-ONLY-NOT-REAL>' | grep -v 'process\.env'); then
+    echo ""
+    echo "❌ Possible hardcoded password in $file:"
+    echo "$hits" | sed 's/^/   /'
+    FOUND=1
+  fi
+done
+
+if [ "$FOUND" -ne 0 ]; then
+  echo ""
+  echo "❌ Commit blocked. Remove the secrets, rotate them if real, and re-stage."
+  echo "   To bypass (NOT recommended): git commit --no-verify"
+  exit 1
+fi
+
+echo "✅ basic scan clean"
+exit 0
