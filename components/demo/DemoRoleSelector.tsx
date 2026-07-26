@@ -15,7 +15,6 @@
  */
 
 import { useState } from 'react'
-import { useSignIn } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import {
   Users,
@@ -97,7 +96,6 @@ const ROLE_CARDS: RoleCard[] = [
 export function DemoRoleSelector({ onAccountCreated }: DemoRoleSelectorProps) {
   const [busyRole, setBusyRole] = useState<DemoRole | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const { signIn, setActive, isLoaded: signInLoaded } = useSignIn()
   const router = useRouter()
 
   const handlePickRole = async (role: DemoRole) => {
@@ -138,24 +136,15 @@ export function DemoRoleSelector({ onAccountCreated }: DemoRoleSelectorProps) {
       //    dashboard" button from here on.
       setBusyRole(null)
 
-      // 4. Sign the new user in with Clerk so they're authenticated immediately
-      if (signInLoaded && signIn) {
-        try {
-          const signInAttempt = await signIn.create({
-            identifier: data.email,
-            password: data.password,
-          })
-          if (signInAttempt.status === 'complete' && signInAttempt.createdSessionId) {
-            await setActive({ session: signInAttempt.createdSessionId })
-          } else if (signInAttempt.status === 'needs_first_factor') {
-            // Email not pre-verified — fall through to manual flow
-            console.warn('Demo account needs first-factor verification')
-          }
-        } catch (signInErr: any) {
-          const msg = signInErr?.errors?.[0]?.message || signInErr?.message
-          console.warn('Auto sign-in failed (will fall back to manual):', msg)
-        }
-      }
+      // 4. We do NOT auto sign-in here. If we did, the sign-in page's
+      //    "user is signed in → redirect to /" useEffect would fire and
+      //    yank the page away from the user before they can interact
+      //    with the credentials dialog (e.g. tick "Try Stripe test
+      //    mode"). Sign-in is now exclusively handled by the dialog's
+      //    "Enter dashboard" button via the Clerk `signIn.create({
+      //    strategy: 'ticket' })` path — which is also faster because
+      //    it skips the email+password round-trip and the
+      //    needs_first_factor branch.
     } catch (err: any) {
       console.error('Demo create failed:', err)
       setError(err?.message || 'Something went wrong creating the demo account.')
