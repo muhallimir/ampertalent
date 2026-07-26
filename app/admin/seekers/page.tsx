@@ -276,7 +276,13 @@ export default function AdminSeekersPage() {
     search: '',
     status: 'all',
     membershipPlan: 'all',
-    includeNoPlan: false,
+    // Default to `true` so the page agrees with /admin/users, which shows
+    // every user with `role='seeker'` regardless of membership. The
+    // "Include seekers without a plan" checkbox is then on by default —
+    // admins can uncheck it to focus on paid users only. (Previously
+    // this defaulted to `false`, which silently hid every new signup
+    // and made the page appear empty next to /admin/users.)
+    includeNoPlan: true,
   });
   const [isSearching, setIsSearching] = useState(false);
   const hasLoadedOnce = useRef(false);
@@ -893,7 +899,10 @@ export default function AdminSeekersPage() {
                     search: '',
                     status: 'all',
                     membershipPlan: 'all',
-                    includeNoPlan: false,
+                    // Reset to the page default (include no-plan users,
+                    // matching /admin/users). Admins who only want to see
+                    // paid users can uncheck the box after clearing.
+                    includeNoPlan: true,
                   });
                   setPagination((prev) => ({ ...prev, currentPage: 1 }));
                   document.querySelectorAll<HTMLInputElement>('input[placeholder="Name or email..."]').forEach(input => { input.value = '' });

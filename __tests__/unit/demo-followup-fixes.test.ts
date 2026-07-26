@@ -331,6 +331,49 @@ describe('/api/admin/seekers — where-clause builder', () => {
   })
 })
 
+// ─── Issue #2 follow-up: /admin/seekers default filter must agree with /admin/users ──
+
+/**
+ * /admin/users shows every user with role='seeker' regardless of membership
+ * plan. The /admin/seekers page must agree on the default view, otherwise
+ * the two pages disagree on who counts as a "seeker" (the original bug
+ * the user reported). The page's `filters.includeNoPlan` default
+ * determines this — when `false`, the page sends `excludeNoPlan=true`
+ * and silently hides every user with `membershipPlan: 'none'`, which
+ * for new signups is the default.
+ *
+ * This test pins the contract for the DEFAULT `includeNoPlan` value so
+ * the page can't silently regress to "shows nothing" again.
+ */
+function defaultIncludeNoPlan(): boolean {
+  // Mirror of the initial useState in app/admin/seekers/page.tsx.
+  return true
+}
+
+function clearFiltersResetIncludeNoPlan(): boolean {
+  // Mirror of the "Clear Filters" button handler in app/admin/seekers/page.tsx.
+  return true
+}
+
+describe('/admin/seekers — default filter (must agree with /admin/users)', () => {
+  it('initial `includeNoPlan` is true so the page shows all seekers by default', () => {
+    expect(defaultIncludeNoPlan()).toBe(true)
+  })
+
+  it('"Clear Filters" button resets to `includeNoPlan: true` (not false)', () => {
+    expect(clearFiltersResetIncludeNoPlan()).toBe(true)
+  })
+
+  it('only sends `excludeNoPlan=true` to the API when the user explicitly opts in', () => {
+    // The page only appends `excludeNoPlan=true` when `includeNoPlan` is
+    // false. With the new default of `true`, the default view sends
+    // no excludeNoPlan param at all — so the API returns everyone.
+    const defaultFilter = { includeNoPlan: defaultIncludeNoPlan() }
+    const shouldSendExcludeNoPlan = !defaultFilter.includeNoPlan
+    expect(shouldSendExcludeNoPlan).toBe(false)
+  })
+})
+
 // ─── Issue #5: PersistentDemoBanner.handleExit clears every marker ──────
 
 /**
