@@ -260,6 +260,13 @@ export async function GET(request: NextRequest) {
       // etc. When there's no JobSeeker row yet, return sensible defaults
       // so the list still renders (and the row can show an "Onboarding
       // incomplete" badge).
+      //
+      // We deliberately return every array / object field the client
+      // touches (resumes, subscriptions, paymentMethods, _count, …) as
+      // an empty/default value even when `hasJobSeeker` is false. This
+      // keeps the client code free of optional-chaining noise and
+      // prevents runtime `Cannot read properties of undefined` errors
+      // when admins click a row whose user hasn't finished onboarding.
       return {
         userId: hasJobSeeker ? seeker!.userId : profile.id,
         headline: seeker?.headline ?? null,
@@ -297,11 +304,20 @@ export async function GET(request: NextRequest) {
           ...sub,
           legacyId: sub.legacyId ? String(sub.legacyId) : null,
         })),
+        resumes: (seeker?.resumes ?? []).map((r) => ({
+          id: r.id,
+          filename: r.filename,
+          uploadedAt: r.uploadedAt.toISOString(),
+        })),
+        _count: {
+          applications: hireCount,
+        },
         hireCount,
         lastActiveDate:
           lastActiveDate.getTime() === 0
             ? null
             : lastActiveDate.toISOString(),
+        // Strip raw applications from response (same shape as before)
         applications: undefined,
         paymentMethods: [],
         pendingSignup: profile.clerkUserId

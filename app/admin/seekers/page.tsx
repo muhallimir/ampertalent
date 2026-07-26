@@ -150,7 +150,13 @@ interface JobSeeker {
     filename: string;
     uploadedAt: string;
   }>;
-  _count?: {
+  /**
+   * The API always returns this — defaults to `{ applications: 0 }` for
+   * users without a JobSeeker row (i.e. onboarding incomplete). Made
+   * non-optional so the detail dialog can access it without optional
+   * chaining.
+   */
+  _count: {
     applications: number;
   };
   hireCount: number;
@@ -1303,7 +1309,7 @@ export default function AdminSeekersPage() {
                   </div>
                   <div>
                     <span className="font-medium">Applications:</span>{' '}
-                    {selectedSeeker._count.applications}
+                    {selectedSeeker._count?.applications ?? 0}
                   </div>
                   <div>
                     <span className="font-medium">Hires:</span>{' '}
