@@ -64,6 +64,7 @@ import {
   CreditCard,
   Receipt,
   ShoppingCart,
+  AlertCircle,
 } from 'lucide-react';
 import { SEEKER_SUBSCRIPTION_PLANS, getPlanByMembershipPlan } from '@/lib/subscription-plans';
 
@@ -124,6 +125,13 @@ interface JobSeeker {
   pendingSignup: { createdAt: string; selectedPlan: string } | null;
   createdAt: string;
   updatedAt: string;
+  /**
+   * Set to false by the server when the user has role='seeker' but has
+   * not yet completed onboarding (no JobSeeker row exists). The list
+   * shows a "Onboarding incomplete" badge in that case. Field is
+   * optional for backward compatibility with older API responses.
+   */
+  hasJobSeeker?: boolean;
   user: {
     id: string;
     name: string;
@@ -142,7 +150,7 @@ interface JobSeeker {
     filename: string;
     uploadedAt: string;
   }>;
-  _count: {
+  _count?: {
     applications: number;
   };
   hireCount: number;
@@ -907,7 +915,7 @@ export default function AdminSeekersPage() {
           {seekers.length > 0 ? (
             seekers.map((seeker) => {
               const latestSubscription = getLatestSubscription(
-                seeker.subscriptions
+                seeker.subscriptions ?? []
               );
 
               return (
@@ -956,6 +964,12 @@ export default function AdminSeekersPage() {
                                 seeker.isOnTrial
                               )}
                             </Badge>
+                            {seeker.hasJobSeeker === false && (
+                              <Badge className="bg-amber-100 text-amber-800 border-amber-200">
+                                <AlertCircle className="h-3 w-3 mr-1" />
+                                Onboarding incomplete
+                              </Badge>
+                            )}
                             {seeker.isOnTrial && (
                               <Badge className="bg-orange-100 text-orange-800">
                                 <Clock className="h-3 w-3 mr-1" />
@@ -1054,7 +1068,7 @@ export default function AdminSeekersPage() {
                           </div>
                           <div className="text-center">
                             <div className="text-lg font-semibold text-green-600">
-                              {seeker._count.applications}
+                              {seeker._count?.applications ?? 0}
                             </div>
                             <div className="text-xs text-gray-500">
                               Applications

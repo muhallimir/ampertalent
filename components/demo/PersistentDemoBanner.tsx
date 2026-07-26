@@ -72,8 +72,16 @@ export function PersistentDemoBanner() {
       }).catch(() => {
         // non-fatal — the localStorage clear still logs them out of the demo
       })
-      // 2. Clear the local marker
+      // 2. Clear ALL demo localStorage markers (main marker + role +
+      //    stripe-test toggle + admin token)
       clearDemoAccount()
+      try {
+        window.localStorage.removeItem('ampertalent_demo_role')
+        window.localStorage.removeItem('ampertalent_demo_stripe_test')
+        window.localStorage.removeItem('ampertalent_demo_token')
+      } catch {
+        // ignore
+      }
       // 3. Sign out of Clerk
       try {
         await signOut({ redirectUrl: '/sign-in' })

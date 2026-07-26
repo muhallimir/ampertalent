@@ -38,6 +38,7 @@ export interface DemoAccountPayload {
   name: string
   email: string
   password: string
+  signInToken?: string | null
 }
 
 interface DemoRoleSelectorProps {
@@ -126,9 +127,18 @@ export function DemoRoleSelector({ onAccountCreated }: DemoRoleSelectorProps) {
         name: data.name,
         email: data.email,
         password: data.password,
+        // Carry the one-time sign-in token through to the dialog so it
+        // can authenticate without a second round-trip to /api/demo/signin-token.
+        signInToken: data.signInToken ?? null,
       })
 
-      // 3. Sign the new user in with Clerk so they're authenticated immediately
+      // 3. Clear the busy state NOW so the role-selector button stops
+      //    showing "Creating…" once the credentials dialog is open.
+      //    The dialog handles its own loading state on the "Enter
+      //    dashboard" button from here on.
+      setBusyRole(null)
+
+      // 4. Sign the new user in with Clerk so they're authenticated immediately
       if (signInLoaded && signIn) {
         try {
           const signInAttempt = await signIn.create({

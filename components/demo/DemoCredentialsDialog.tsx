@@ -11,13 +11,19 @@
  *   - seeker/employer → /onboarding (full flow, no skipping)
  *   - admin/super_admin → /admin/dashboard (onboarding skipped)
  *
+ * For seekers there's a toggle: "Skip payment" (the current direct-activation
+ * path) vs "Try Stripe test mode" (one-click Stripe sandbox using the test
+ * card `4242 4242 4242 4242`). The latter mirrors aims-commerce's "one-click
+ * sandbox" so visitors can experience the real checkout flow with Stripe's
+ * UI, not just skip it.
+ *
  * Mirrors aims-commerce's `PersistentDemoAccountDialog` (show creds + Enter),
  * adapted to the four-role flow.
  */
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { CheckCircle2, Copy, Check, ArrowRight, X, Sparkles, Loader2 } from 'lucide-react'
+import { CheckCircle2, Copy, Check, ArrowRight, X, Sparkles, Loader2, CreditCard } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -27,7 +33,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { writeDemoAccount, type DemoRole, getDemoDisplayName, getDemoRouteAfterOnboarding } from '@/lib/demo-mode'
+import { writeDemoAccount, setDemoStripeTestMode, type DemoRole, getDemoDisplayName } from '@/lib/demo-mode'
 import type { DemoAccountPayload } from './DemoRoleSelector'
 
 interface DemoCredentialsDialogProps {
@@ -41,6 +47,11 @@ export function DemoCredentialsDialog({ open, account, onOpenChange }: DemoCrede
   const [copied, setCopied] = useState<'name' | 'email' | 'password' | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // Seeker-only: when true, "Enter dashboard" creates a real Stripe test-mode
+  // checkout session and redirects to Stripe's hosted checkout with the test
+  // card pre-applied. When false (default), the demo subscription is
+  // activated directly via /api/demo/activate-subscription.
+  const [useStripeTest, setUseStripeTest] = useState(false)
 
   const handleCopy = async (text: string, field: 'name' | 'email' | 'password') => {
     try {
@@ -79,6 +90,11 @@ export function DemoCredentialsDialog({ open, account, onOpenChange }: DemoCrede
         } catch {
           // ignore
         }
+        // Seeker-only: when the visitor ticks the "Try Stripe test mode"
+        // checkbox, set the marker so the onboarding page knows to send
+        // them through a real Stripe checkout instead of bypassing the
+        // payment step.
+        setDemoStripeTestMode(account.role === 'seeker' && useStripeTest)
       }
 
       // 3. Try to auto sign the user in via the sign-in token. We use the
@@ -86,8 +102,13 @@ export function DemoCredentialsDialog({ open, account, onOpenChange }: DemoCrede
       //    is the proper way to consume a one-time sign-in token — it
       //    doesn't go through Clerk's catchall redirect, it just sets the
       //    session in-place.
-      const dest = getDemoRouteAfterOnboarding(account.role)
-      const tokenResult = await fetchSignInToken(account.profileId)
+      //
+      //    Prefer the token that was returned alongside the create
+      //    response (saves a round-trip); fall back to /api/demo/signin-token.
+      const tokenResult = account.signInToken
+        ? { token: account.signInToken }
+        : await fetchSignInToken(account.profileId)
+
       if (tokenResult?.token) {
         const clerk = (window as any).Clerk
         if (clerk?.client?.signIn) {
@@ -157,10 +178,8 @@ export function DemoCredentialsDialog({ open, account, onOpenChange }: DemoCrede
   }
 
   /**
-   * Re-fetch the sign-in token for a freshly-created demo account. The token
-   * is generated server-side during /api/demo/create and we currently don't
-   * pass it through to the client (to keep the credentials dialog light),
-   * so we re-request it via a tiny endpoint.
+   * Re-fetch the sign-in token for a freshly-created demo account. Called
+   * only as a fallback when the create response didn't carry one.
    */
   const fetchSignInToken = async (profileId: string): Promise<{ token: string } | null> => {
     try {
@@ -233,6 +252,27 @@ export function DemoCredentialsDialog({ open, account, onOpenChange }: DemoCrede
             )}
           </div>
         </div>
+
+        {account.role === 'seeker' && (
+          <label
+            data-testid="demo-stripe-test-toggle"
+            className="flex items-start gap-2 cursor-pointer rounded-md border border-violet-200 bg-violet-50/60 px-3 py-2 text-xs text-violet-900 hover:bg-violet-50"
+          >
+            <input
+              type="checkbox"
+              className="mt-0.5 h-3.5 w-3.5 rounded border-violet-300 text-violet-600 focus:ring-violet-500"
+              checked={useStripeTest}
+              onChange={(e) => setUseStripeTest(e.target.checked)}
+            />
+            <span>
+              <CreditCard className="inline h-3.5 w-3.5 mr-1 -mt-0.5" />
+              <strong>Try Stripe test mode</strong> — go through a real Stripe sandbox checkout
+              (test card <code className="font-mono">4242 4242 4242 4242</code>) instead of the
+              one-click activation. Uncheck to skip the payment step and land straight on the
+              dashboard.
+            </span>
+          </label>
+        )}
 
         {error && (
           <p role="alert" className="text-xs text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">

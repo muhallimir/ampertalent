@@ -20,6 +20,15 @@ import { DEMO_NAME_REGEX } from './demo-credentials'
 export const DEMO_STORAGE_KEY = 'ampertalent_demo'
 export const DEMO_TTL_MS = 24 * 60 * 60 * 1000 // 24 hours
 
+/**
+ * localStorage keys used by the demo flow (besides the main `ampertalent_demo`
+ * marker above). Kept in one place so the dialog / onboarding page / banner
+ * stay in sync.
+ */
+export const DEMO_ROLE_KEY = 'ampertalent_demo_role'
+export const DEMO_STRIPE_TEST_KEY = 'ampertalent_demo_stripe_test'
+export const DEMO_ADMIN_TOKEN_KEY = 'ampertalent_demo_token'
+
 export type DemoRole = 'seeker' | 'employer' | 'admin' | 'super_admin'
 
 export interface DemoAccountInfo {
@@ -142,4 +151,29 @@ export function isDemoActive(): boolean {
     return false
   }
   return true
+}
+
+/* -------------------------------------------------------------------------- */
+/* Demo Stripe sandbox toggle                                                 */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Set by the demo credentials dialog when the visitor ticks "Try Stripe
+ * test mode" before clicking "Enter dashboard". Read by the onboarding
+ * page to decide whether to bypass the checkout (default) or route the
+ * user through a real Stripe test-mode checkout session so they can
+ * experience the actual payment UI.
+ */
+export function setDemoStripeTestMode(enabled: boolean): void {
+  if (!hasLocalStorage()) return
+  if (enabled) {
+    window.localStorage.setItem(DEMO_STRIPE_TEST_KEY, '1')
+  } else {
+    window.localStorage.removeItem(DEMO_STRIPE_TEST_KEY)
+  }
+}
+
+export function isDemoStripeTestMode(): boolean {
+  if (!hasLocalStorage()) return false
+  return window.localStorage.getItem(DEMO_STRIPE_TEST_KEY) === '1'
 }

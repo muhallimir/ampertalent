@@ -34,7 +34,8 @@ import {
   TrendingUp,
   Eye,
   CheckCircle,
-  ShoppingCart
+  ShoppingCart,
+  Loader2,
 } from 'lucide-react'
 
 interface JobPostingBreakdown {
@@ -154,6 +155,10 @@ export default function BillingPage() {
   const [extensionRequestPackage, setExtensionRequestPackage] = useState<SinglePackage | null>(null)
   const [extensionMonths, setExtensionMonths] = useState<number>(6)
   const [isRequestingExtension, setIsRequestingExtension] = useState(false)
+  // One-click Stripe sandbox (employer-only): creates a real $1 Stripe
+  // test-mode checkout session so admins / prospects can experience the
+  // payment UI without buying a real package.
+  const [stripeSandboxBusy, setStripeSandboxBusy] = useState(false)
   const { addToast } = useToast()
 
   useEffect(() => {
@@ -176,6 +181,30 @@ export default function BillingPage() {
 
       // Switch to current package tab
       setActiveTab('current')
+    }
+
+    // Stripe sandbox result handler — success or cancel from the
+    // one-click sandbox button (no real money moves either way).
+    const stripeSandbox = searchParams?.get('stripe_sandbox')
+    if (stripeSandbox === 'success') {
+      addToast({
+        title: 'Stripe sandbox payment complete',
+        description: 'No real money was charged. Your $1.00 test payment succeeded.',
+        variant: 'success',
+        duration: 5000,
+      })
+      const url = new URL(window.location.href)
+      url.searchParams.delete('stripe_sandbox')
+      window.history.replaceState({}, '', url.toString())
+    } else if (stripeSandbox === 'cancelled') {
+      addToast({
+        title: 'Stripe sandbox cancelled',
+        description: 'No payment was made.',
+        duration: 4000,
+      })
+      const url = new URL(window.location.href)
+      url.searchParams.delete('stripe_sandbox')
+      window.history.replaceState({}, '', url.toString())
     }
 
     // Check for tab parameter
@@ -413,6 +442,46 @@ export default function BillingPage() {
         variant: "destructive",
         duration: 5000,
       })
+    }
+  }
+
+  /**
+   * One-click Stripe sandbox: creates a real Stripe test-mode checkout
+   * session for $1.00 and redirects to Stripe's hosted page. The visitor
+   * completes the payment with the test card 4242 4242 4242 4242. No
+   * real money moves; the success URL just bounces back to the billing
+   * page with a `?stripe_sandbox=success` query param that we surface as
+   * a toast.
+   *
+   * Mirrors aims-commerce's "one-click sandbox" so admins / prospects
+   * can experience the real Stripe payment UI without buying a package.
+   */
+  const handleTryStripeSandbox = async () => {
+    if (stripeSandboxBusy) return
+    setStripeSandboxBusy(true)
+    try {
+      const res = await fetch('/api/demo/employer-stripe-sandbox', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err?.error || 'Failed to create Stripe sandbox session')
+      }
+      const data = await res.json()
+      if (!data?.url) {
+        throw new Error('No checkout URL returned')
+      }
+      window.location.href = data.url
+    } catch (err: any) {
+      console.error('Stripe sandbox failed:', err)
+      addToast({
+        title: 'Stripe sandbox failed',
+        description: err?.message || 'Could not create the Stripe test session',
+        variant: 'destructive',
+        duration: 5000,
+      })
+      setStripeSandboxBusy(false)
     }
   }
 
@@ -1024,6 +1093,46 @@ export default function BillingPage() {
                       All payments are processed securely through our integrated payment system. You'll be redirected to complete your purchase.
                     </p>
                   </div>
+                </div>
+              </div>
+
+              {/* One-click Stripe sandbox — exercises the real Stripe
+                  test-mode UI (no real money charged) so admins / prospects
+                  can experience the actual payment flow end-to-end. */}
+              <div className="bg-violet-50 border border-violet-200 rounded-lg p-4">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                  <div className="flex items-start space-x-3">
+                    <div className="flex-shrink-0">
+                      <CreditCard className="h-5 w-5 text-violet-600" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-medium text-violet-900">Try Stripe sandbox (one click)</h4>
+                      <p className="text-sm text-violet-800 mt-1">
+                        Charge a real Stripe test checkout for <strong>$1.00</strong> using the
+                        test card <code className="font-mono">4242 4242 4242 4242</code> — no
+                        real money moves. Useful for QA'ing the payment UI without
+                        buying a package.
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    type="button"
+                    data-testid="try-stripe-sandbox"
+                    disabled={stripeSandboxBusy}
+                    onClick={handleTryStripeSandbox}
+                    size="sm"
+                    className="bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-600 hover:to-indigo-600 text-white flex-shrink-0"
+                  >
+                    {stripeSandboxBusy ? (
+                      <>
+                        <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> Creating…
+                      </>
+                    ) : (
+                      <>
+                        <CreditCard className="mr-1.5 h-3.5 w-3.5" /> Try Stripe sandbox
+                      </>
+                    )}
+                  </Button>
                 </div>
               </div>
             </CardContent>

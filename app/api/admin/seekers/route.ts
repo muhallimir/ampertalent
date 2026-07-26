@@ -30,111 +30,114 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '50')
     const offset = parseInt(searchParams.get('offset') || '0')
 
-    // Build where clause
-    const where: any = {}
+    // Build where clause.
+    //
+    // We LEFT-JOIN from UserProfile (where role='seeker') so users who have
+    // registered with role='seeker' but have NOT yet completed onboarding
+    // (no JobSeeker row) still show up here. Previously this endpoint only
+    // queried the JobSeeker table, so /admin/users and /admin/seekers
+    // disagreed on who counts as a "seeker" — the users page saw them
+    // all, the seekers page saw only the ones with a JobSeeker row. The
+    // JobSeeker relation is now optional; callers must check `seeker.userId`
+    // exists for any fields that live on the JobSeeker table.
+    const where: any = {
+      role: 'seeker',
+    }
 
     if (search) {
       where.OR = [
-        { user: { name: { contains: search, mode: 'insensitive' } } },
-        { user: { email: { contains: search, mode: 'insensitive' } } },
-        { user: { firstName: { contains: search, mode: 'insensitive' } } },
-        { user: { lastName: { contains: search, mode: 'insensitive' } } }
+        { name: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } },
+        { firstName: { contains: search, mode: 'insensitive' } },
+        { lastName: { contains: search, mode: 'insensitive' } },
       ]
     }
 
     if (status === 'active') {
-      where.isSuspended = false
+      where.jobSeeker = { isSuspended: false }
     } else if (status === 'suspended') {
-      where.isSuspended = true
+      where.jobSeeker = { isSuspended: true }
     } else if (status === 'canceling') {
-      where.isSuspended = false
-      where.subscriptions = {
-        some: {
-          status: 'active',
-          cancelAtPeriodEnd: true,
-        },
+      where.jobSeeker = {
+        isSuspended: false,
+        subscriptions: { some: { status: 'active', cancelAtPeriodEnd: true } },
       }
     }
 
     if (membershipPlan && membershipPlan !== 'all') {
-      where.membershipPlan = membershipPlan
+      where.jobSeeker = { ...(where.jobSeeker ?? {}), membershipPlan }
     } else if (excludeNoPlan) {
-      where.membershipPlan = { not: 'none' }
+      where.jobSeeker = { ...(where.jobSeeker ?? {}), membershipPlan: { not: 'none' } }
     }
 
     // Run count and data fetch in parallel
-    const [totalCount, seekers] = await Promise.all([
-      db.jobSeeker.count({ where }),
-      db.jobSeeker.findMany({
+    const [totalCount, userProfiles] = await Promise.all([
+      db.userProfile.count({ where }),
+      db.userProfile.findMany({
         where,
         select: {
-          userId: true,
-          headline: true,
-          aboutMe: true,
-          availability: true,
-          skills: true,
-          resumeUrl: true,
-          resumeLastUploaded: true,
-          salaryExpectations: true,
-          membershipPlan: true,
-          membershipExpiresAt: true,
-          resumeLimit: true,
-          resumesUsed: true,
-          resumeCredits: true,
-          isOnTrial: true,
-          isSuspended: true,
-          cancelledSeeker: true,
-          cancelledAt: true,
+          id: true,
+          name: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          phone: true,
+          profilePictureUrl: true,
+          legacyId: true,
+          clerkUserId: true,
           createdAt: true,
           updatedAt: true,
-          user: {
+          jobSeeker: {
             select: {
-              id: true,
-              name: true,
-              email: true,
-              firstName: true,
-              lastName: true,
-              phone: true,
-              profilePictureUrl: true,
-              legacyId: true,
-              clerkUserId: true,
-            },
-          },
-          // Only fetch the most recent subscription for the badge shown in the list
-          subscriptions: {
-            orderBy: { createdAt: 'desc' },
-            take: 1,
-            select: {
-              id: true,
-              plan: true,
-              status: true,
-              currentPeriodEnd: true,
-              cancelAtPeriodEnd: true,
+              userId: true,
+              headline: true,
+              aboutMe: true,
+              availability: true,
+              skills: true,
+              resumeUrl: true,
+              resumeLastUploaded: true,
+              salaryExpectations: true,
+              membershipPlan: true,
+              membershipExpiresAt: true,
+              resumeLimit: true,
+              resumesUsed: true,
+              resumeCredits: true,
+              isOnTrial: true,
+              isSuspended: true,
+              cancelledSeeker: true,
+              cancelledAt: true,
               createdAt: true,
-              legacyId: true,
+              updatedAt: true,
+              // Only fetch the most recent subscription for the badge shown in the list
+              subscriptions: {
+                orderBy: { createdAt: 'desc' },
+                take: 1,
+                select: {
+                  id: true,
+                  plan: true,
+                  status: true,
+                  currentPeriodEnd: true,
+                  cancelAtPeriodEnd: true,
+                  createdAt: true,
+                  legacyId: true,
+                },
+              },
+              resumes: {
+                select: { id: true, filename: true, uploadedAt: true },
+                orderBy: { uploadedAt: 'desc' },
+                take: 1,
+              },
+              // Use DB aggregations instead of loading all rows into JS
+              _count: {
+                select: { applications: true },
+              },
+              // Only fetch hired applications for hireCount, and limit for lastActiveDate
+              applications: {
+                where: { status: 'hired' },
+                select: { appliedAt: true },
+                orderBy: { appliedAt: 'desc' },
+              },
             },
-          },
-          resumes: {
-            select: {
-              id: true,
-              filename: true,
-              uploadedAt: true,
-            },
-            orderBy: { uploadedAt: 'desc' },
-            // Only need the most recent resume date for lastActiveDate
-            take: 1,
-          },
-          // Use DB aggregations instead of loading all rows into JS
-          _count: {
-            select: {
-              applications: true,
-            },
-          },
-          // Only fetch hired applications for hireCount, and limit for lastActiveDate
-          applications: {
-            where: { status: 'hired' },
-            select: { appliedAt: true },
-            orderBy: { appliedAt: 'desc' },
           },
         },
         orderBy: { createdAt: 'desc' },
@@ -145,7 +148,9 @@ export async function GET(request: NextRequest) {
 
     // Also get the most recent non-hired application date per seeker for lastActiveDate
     // We do this in one batched query instead of per-seeker
-    const seekerUserIds = seekers.map((s) => s.userId)
+    const seekerUserIds = userProfiles
+      .map((p) => p.id)
+      .filter((id): id is string => Boolean(id))
     const latestApplications = await db.application.findMany({
       where: { seekerId: { in: seekerUserIds } },
       select: { seekerId: true, appliedAt: true },
@@ -157,9 +162,9 @@ export async function GET(request: NextRequest) {
     )
 
     // Fetch pending signups for no-plan seekers (abandoned carts)
-    const abandonedCartClerkIds = seekers
-      .filter(s => s.membershipPlan === 'none' && !s.cancelledSeeker && s.user.clerkUserId)
-      .map(s => s.user.clerkUserId as string)
+    const abandonedCartClerkIds = userProfiles
+      .filter(p => p.jobSeeker && p.jobSeeker.membershipPlan === 'none' && !p.jobSeeker.cancelledSeeker && p.clerkUserId)
+      .map(p => p.clerkUserId as string)
 
     const pendingSignups = abandonedCartClerkIds.length > 0
       ? await db.pendingSignup.findMany({
@@ -176,15 +181,15 @@ export async function GET(request: NextRequest) {
 
     // Batch-resolve presigned URLs for S3 profile pictures to avoid N+1 fetches on the client
     const s3Pictures: { userId: string; fileKey: string }[] = []
-    for (const seeker of seekers) {
-      const picUrl = seeker.user.profilePictureUrl
+    for (const profile of userProfiles) {
+      const picUrl = profile.profilePictureUrl
       if (!picUrl || picUrl.includes('gravatar.com')) continue
       try {
         const url = new URL(picUrl)
         const pathParts = url.pathname.split('/').filter(Boolean)
         const fileKey = pathParts.slice(-3).join('/')
-        if (fileKey.includes(seeker.userId)) {
-          s3Pictures.push({ userId: seeker.userId, fileKey })
+        if (fileKey.includes(profile.id)) {
+          s3Pictures.push({ userId: profile.id, fileKey })
         }
       } catch {
         // skip malformed URLs
@@ -223,19 +228,25 @@ export async function GET(request: NextRequest) {
       annual_platinum: 999,
     }
 
-    const seekersWithCredits = seekers.map((seeker) => {
+    const seekersWithCredits = userProfiles.map((profile) => {
+      const seeker = profile.jobSeeker
+      const hasJobSeeker = Boolean(seeker)
       const hasActivePlan =
-        seeker.membershipPlan && seeker.membershipPlan !== 'none'
+        hasJobSeeker && seeker!.membershipPlan && seeker!.membershipPlan !== 'none'
       const resumeLimit = hasActivePlan
-        ? planMap[seeker.membershipPlan] ?? 0
+        ? planMap[seeker!.membershipPlan] ?? 0
         : 0
 
-      const hireCount = seeker.applications.length
+      const hireCount = seeker?.applications.length ?? 0
 
-      const lastAppDate = latestAppBySeeker.get(seeker.userId) ?? null
+      const lastAppDate = hasJobSeeker ? latestAppBySeeker.get(seeker!.userId) ?? null : null
       const lastResumeDate =
-        seeker.resumes.length > 0 ? new Date(seeker.resumes[0].uploadedAt) : null
-      const profileUpdateDate = new Date(seeker.updatedAt)
+        hasJobSeeker && seeker!.resumes.length > 0
+          ? new Date(seeker!.resumes[0].uploadedAt)
+          : null
+      const profileUpdateDate = hasJobSeeker
+        ? new Date(seeker!.updatedAt)
+        : new Date(profile.updatedAt)
 
       const lastActiveDate = [lastAppDate, lastResumeDate, profileUpdateDate]
         .filter((d): d is Date => d !== null)
@@ -244,30 +255,57 @@ export async function GET(request: NextRequest) {
           new Date(0)
         )
 
+      // Build the same shape the client expects: it always reads
+      // `seeker.userId` and `seeker.user.*` and `seeker.membershipPlan`
+      // etc. When there's no JobSeeker row yet, return sensible defaults
+      // so the list still renders (and the row can show an "Onboarding
+      // incomplete" badge).
       return {
-        ...seeker,
+        userId: hasJobSeeker ? seeker!.userId : profile.id,
+        headline: seeker?.headline ?? null,
+        aboutMe: seeker?.aboutMe ?? null,
+        availability: seeker?.availability ?? null,
+        skills: seeker?.skills ?? [],
+        resumeUrl: seeker?.resumeUrl ?? null,
+        resumeLastUploaded: seeker?.resumeLastUploaded ?? null,
+        salaryExpectations: seeker?.salaryExpectations ?? null,
+        membershipPlan: seeker?.membershipPlan ?? 'none',
+        membershipExpiresAt: seeker?.membershipExpiresAt ?? null,
+        resumeLimit,
+        resumesUsed: seeker?.resumes.length ?? 0,
+        resumeCredits: seeker?.resumeCredits ?? 0,
+        isOnTrial: seeker?.isOnTrial ?? false,
+        isSuspended: seeker?.isSuspended ?? false,
+        cancelledSeeker: seeker?.cancelledSeeker ?? false,
+        cancelledAt: seeker?.cancelledAt ?? null,
+        createdAt: seeker?.createdAt ?? profile.createdAt,
+        updatedAt: seeker?.updatedAt ?? profile.updatedAt,
+        hasJobSeeker,
         user: {
-          ...seeker.user,
-          legacyId: seeker.user.legacyId ? String(seeker.user.legacyId) : null,
-          resolvedProfilePictureUrl: resolvedProfilePictures[seeker.userId] ?? seeker.user.profilePictureUrl,
+          id: profile.id,
+          name: profile.name,
+          email: profile.email,
+          firstName: profile.firstName,
+          lastName: profile.lastName,
+          phone: profile.phone,
+          profilePictureUrl: profile.profilePictureUrl,
+          legacyId: profile.legacyId ? String(profile.legacyId) : null,
+          clerkUserId: profile.clerkUserId,
+          resolvedProfilePictureUrl: resolvedProfilePictures[profile.id] ?? profile.profilePictureUrl,
         },
-        subscriptions: seeker.subscriptions.map((sub) => ({
+        subscriptions: (seeker?.subscriptions ?? []).map((sub) => ({
           ...sub,
           legacyId: sub.legacyId ? String(sub.legacyId) : null,
         })),
-        resumeLimit,
-        resumesUsed: seeker.resumes.length,
         hireCount,
         lastActiveDate:
           lastActiveDate.getTime() === 0
             ? null
             : lastActiveDate.toISOString(),
-        // Strip raw applications from response
         applications: undefined,
-        // paymentMethods are NOT loaded here — fetch them lazily in the detail dialog
         paymentMethods: [],
-        pendingSignup: seeker.user.clerkUserId
-          ? (pendingSignupByClerkId.get(seeker.user.clerkUserId) ?? null)
+        pendingSignup: profile.clerkUserId
+          ? (pendingSignupByClerkId.get(profile.clerkUserId) ?? null)
           : null,
       }
     })

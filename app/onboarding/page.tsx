@@ -1371,9 +1371,18 @@ export default function OnboardingPage() {
    * Returns true if the current session is a demo account. Used to bypass
    * the Stripe/PayPal checkout (we activate the subscription directly via
    * /api/demo/activate-subscription) and to seed sample data.
+   *
+   * Note: returns FALSE when the demo visitor picked "Try Stripe test mode"
+   * in the credentials dialog — those visitors want to experience the real
+   * Stripe checkout, so we keep the normal /api/seeker/subscription/checkout
+   * path. The "useStripeTest" flag is cleared by the success handler once
+   * the payment completes.
    */
   const isDemoMode = (): boolean => {
     if (typeof window === 'undefined') return false
+    if (localStorage.getItem('ampertalent_demo_stripe_test') === '1') {
+      return false
+    }
     return (
       localStorage.getItem('ampertalent_demo_role') !== null ||
       localStorage.getItem('ampertalent_demo') !== null
