@@ -1,12 +1,19 @@
 import { db } from './db';
-import { S3Service } from './s3';
+import { S3Service, isSupabaseStorageUrl } from './s3';
 
-const BUCKET_NAME = process.env.AWS_S3_BUCKET || 'amper-talent-files';
+const BUCKET_NAME = process.env.SUPABASE_STORAGE_BUCKET || 'ampertalent-files';
 
-// Helper function to generate presigned URL for company logo
+// Helper function to generate presigned URL for company logo.
+//
+// CRITICAL: only Supabase Storage URLs are signed. DiceBear / Gravatar
+// / external CDN URLs are returned as-is so we don't spam
+// /storage/v1/object/sign/... with 400 warnings for keys that don't
+// exist in the bucket. Also fixes a long-standing typo where this
+// file defaulted to 'amper-talent-files' instead of the actual
+// bucket 'ampertalent-files'.
 async function generatePresignedLogoUrl(companyLogoUrl: string | null): Promise<string | null> {
-  if (!companyLogoUrl || companyLogoUrl.trim() === '') {
-    return null;
+  if (!companyLogoUrl || companyLogoUrl.trim() === '' || !isSupabaseStorageUrl(companyLogoUrl)) {
+    return companyLogoUrl;
   }
 
   try {

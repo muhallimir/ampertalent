@@ -1,20 +1,25 @@
 import { db } from './db';
-import { S3Service } from './s3';
+import { S3Service, isSupabaseStorageUrl } from './s3';
 import { decodeHtmlEntities } from './utils';
 
-const BUCKET_NAME = process.env.AWS_S3_BUCKET || 'amper-talent-files';
+const BUCKET_NAME = process.env.SUPABASE_STORAGE_BUCKET || 'ampertalent-files';
 
-// Helper function to generate presigned URLs for company logos
+// Helper function to generate presigned URLs for company logos.
+//
+// Only signs URLs hosted on our Supabase Storage bucket — DiceBear /
+// Gravatar / external CDN URLs are returned as-is so we don't spam
+// /storage/v1/object/sign/... with 400 warnings for keys that don't
+// exist in the bucket.
 async function generatePresignedLogoUrl(companyLogoUrl: string | null): Promise<string | null> {
-  if (!companyLogoUrl || companyLogoUrl.trim() === '') {
-    return null;
+  if (!companyLogoUrl || companyLogoUrl.trim() === '' || !isSupabaseStorageUrl(companyLogoUrl)) {
+    return companyLogoUrl;
   }
 
   try {
     // Extract S3 key from the full URL
     const url = new URL(companyLogoUrl);
     const s3Key = url.pathname.substring(1); // Remove leading slash
-    
+
     // Generate presigned URL for download (valid for 1 hour)
     const presignedUrl = await S3Service.generatePresignedDownloadUrl(
       BUCKET_NAME,
@@ -30,17 +35,18 @@ async function generatePresignedLogoUrl(companyLogoUrl: string | null): Promise<
   }
 }
 
-// Helper function to generate presigned URLs for profile pictures
+// Helper function to generate presigned URLs for profile pictures.
+// Same DiceBear/Gravatar guard as the logo helper above.
 async function generatePresignedProfileUrl(profilePictureUrl: string | null): Promise<string | null> {
-  if (!profilePictureUrl || profilePictureUrl.trim() === '') {
-    return null;
+  if (!profilePictureUrl || profilePictureUrl.trim() === '' || !isSupabaseStorageUrl(profilePictureUrl)) {
+    return profilePictureUrl;
   }
 
   try {
     // Extract S3 key from the full URL
     const url = new URL(profilePictureUrl);
     const s3Key = url.pathname.substring(1); // Remove leading slash
-    
+
     // Generate presigned URL for download (valid for 1 hour)
     const presignedUrl = await S3Service.generatePresignedDownloadUrl(
       BUCKET_NAME,
