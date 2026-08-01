@@ -1,8 +1,16 @@
-import { clearMarketingPreselect } from './marketing-preselect'
+import { clearAllClientState } from './auth-cleanup'
 
 /**
  * Utility function to handle user logout
- * Clears localStorage, cookies, and signs out from Clerk with redirect
+ *
+ * Wipes every byte of app-owned client state (localStorage, sessionStorage,
+ * non-Clerk cookies) BEFORE handing off to Clerk's `signOut`, which clears
+ * Clerk's own session cookies and reloads the page.
+ *
+ * Critical: this also clears impersonation sessionStorage. If the admin clicks
+ * "Sign Out" while still viewing an employer or seeker via impersonation,
+ * otherwise the `admin_impersonation_session_{adminId}` key would resurface
+ * the banner + role override on the next sign-in.
  */
 export async function handleUserLogout(
   signOut: (options?: { redirectUrl?: string }) => Promise<void>,
@@ -14,21 +22,15 @@ export async function handleUserLogout(
   try {
     console.log('🔓 AUTH: Logging out user')
 
-    // Clear local storage
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('onboardingCompleted')
-      localStorage.removeItem('userRole')
-      localStorage.removeItem('onboardingData')
-      // Clear service-only onboarding redirect to prevent affecting next user
-      localStorage.removeItem('hmm_post_onboarding_service')
-      console.log('✅ AUTH: Cleared localStorage')
+    // 1. Wipe localStorage, sessionStorage, and non-Clerk cookies.
+    //    This includes demo markers, onboarding flags, PayPal pending state,
+    //    exclusive-plan flags, and impersonation session — everything our
+    //    app might have written to the browser.
+    clearAllClientState()
+    console.log('✅ AUTH: Cleared localStorage, sessionStorage, and app cookies')
 
-      // Clear marketing preselection cookie to prevent affecting next user
-      clearMarketingPreselect()
-      console.log('✅ AUTH: Cleared hmm_preselect cookie')
-    }
-
-    // Clerk sign out with redirect — always go to marketing home
+    // 2. Clerk sign out with redirect — always go to marketing home.
+    //    `signOut` clears Clerk's session cookies and triggers the redirect.
     const redirectUrl = options?.redirectUrl || '/'
     await signOut({ redirectUrl })
 

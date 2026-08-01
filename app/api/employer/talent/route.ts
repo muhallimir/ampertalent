@@ -125,23 +125,6 @@ export async function GET(request: NextRequest) {
 
     await PerformanceMonitor.trackCacheOperation('miss', 'talent_search')
 
-    // Fetch employer's active job posts for relevance scoring
-    const activeJobPosts = await db.job.findMany({
-      where: {
-        employerId: currentUser.profile.employer?.userId,
-        status: 'approved',
-        expiresAt: {
-          gt: new Date()
-        }
-      },
-      select: {
-        skillsRequired: true,
-        category: true
-      }
-    });
-
-    console.log('📊 TALENT API: Found active job posts for relevance:', activeJobPosts.length);
-
     // Build optimized where clause for filtering
     const whereClause: any = {
       isSuspended: false,
@@ -184,15 +167,25 @@ export async function GET(request: NextRequest) {
 
       // Enhanced skill search with multiple approaches
       try {
-        // Method 1: Direct case-insensitive skill search using raw SQL
-        const skillMatches = await db.$queryRaw<{ userId: string }[]>`
-          SELECT DISTINCT "userId" FROM "job_seekers"
+        // Method 1: Direct case-insensitive skill search using raw SQL.
+        //
+        // Column names use snake_case at the DB level (Prisma maps `userId`
+        // → `user_id`, `isSuspended` → `is_suspended`, etc.). The previous
+        // version quoted `"userId"` which Postgres doesn't have, so the
+        // query threw a 42703 error and the whole talent API call failed
+        // — leaving the /employer/talent page stuck on its loading skeleton.
+        //
+        // The search term is also bound as a parameter (no string interpolation
+        // into the SQL) so a single quote in the search term can't break the
+        // query or worse, open a SQL injection vector.
+        const skillMatches = await db.$queryRaw<{ user_id: string }[]>`
+          SELECT DISTINCT user_id FROM job_seekers
           WHERE EXISTS (
             SELECT 1 FROM unnest(skills) AS skill
-            WHERE LOWER(skill) LIKE LOWER(${'%${searchLower}%'})
+            WHERE LOWER(skill) LIKE LOWER(${`%${searchLower}%`})
           )
-          AND "isSuspended" = false
-          AND "profileVisibility" = 'employers_only'
+          AND is_suspended = false
+          AND profile_visibility = 'employers_only'
         `
 
         // Method 2: Also try exact skill matches with different cases
@@ -255,7 +248,7 @@ export async function GET(request: NextRequest) {
 
         // Add skill matches from raw SQL if found
         if (skillMatches.length > 0) {
-          const userIds = skillMatches.map(row => row.userId)
+          const userIds = skillMatches.map((row) => row.user_id)
           searchConditions.push({
             userId: {
               in: userIds
@@ -341,23 +334,6 @@ export async function GET(request: NextRequest) {
 
     console.log('📊 TALENT API: Final whereClause:', JSON.stringify(whereClause, null, 2))
 
-    // Get cached count first
-    let totalCount = await TalentCacheService.getCachedCount(cacheParams)
-
-    if (totalCount === null) {
-      // Get total count for pagination (only if not cached)
-      totalCount = await PerformanceMonitor.trackDbQuery('talent_count', async () => {
-        const count = await db.jobSeeker.count({
-          where: whereClause
-        })
-        console.log('📊 TALENT API: Total count from DB:', count)
-        return count
-      })
-
-      // Cache the count
-      await TalentCacheService.cacheCount(cacheParams, totalCount)
-    }
-
     // Build optimized query with proper ordering
     const orderBy: any = {}
     if (sortBy === 'updated_at') {
@@ -370,27 +346,71 @@ export async function GET(request: NextRequest) {
       orderBy.updatedAt = 'desc' // Default fallback
     }
 
-    // Fetch job seekers with optimized query
-    const jobSeekers = await PerformanceMonitor.trackDbQuery('talent_search', async () => {
-      return db.jobSeeker.findMany({
-        where: whereClause,
-        include: {
-          user: {
-            select: {
-              id: true,
-              name: true,
-              firstName: true,
-              lastName: true,
-              profilePictureUrl: true,
-              createdAt: true
+    // PEAK PERFORMANCE FIX for the /employer/talent page loading time.
+    //
+    // The previous version made 4 sequential DB round trips on the same
+    // pgbouncer connection (count, fetch, active-jobs, applications). At
+    // ~1.5s per round trip through Supabase pooler that's 6+ seconds of
+    // pure network latency before the page can render. Promise.all lets
+    // them all run concurrently so the entire talent query is bounded by
+    // the slowest single query, not the sum.
+    const employerUserId = currentUser.profile.employer?.userId
+
+    // Total count: cached for 5 minutes. The cache check happens here so
+    // a cache hit short-circuits all four DB queries below.
+    const cachedCount = await TalentCacheService.getCachedCount(cacheParams)
+
+    const [
+      totalCount,
+      jobSeekers,
+      activeJobPosts,
+    ] = await Promise.all([
+      cachedCount !== null
+        ? Promise.resolve(cachedCount)
+        : PerformanceMonitor.trackDbQuery('talent_count', () =>
+            db.jobSeeker.count({ where: whereClause })
+          ),
+      PerformanceMonitor.trackDbQuery('talent_search', () =>
+        db.jobSeeker.findMany({
+          where: whereClause,
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                firstName: true,
+                lastName: true,
+                profilePictureUrl: true,
+                createdAt: true
+              }
             }
-          }
+          },
+          skip: cursor ? 0 : (page - 1) * limit,
+          take: limit + 1,
+          orderBy
+        })
+      ),
+      // Active jobs for relevance scoring — only needed once the page
+      // has results, but we kick it off in parallel so it overlaps the
+      // talent fetch.
+      db.job.findMany({
+        where: {
+          employerId: employerUserId,
+          status: 'approved',
+          expiresAt: { gt: new Date() }
         },
-        skip: cursor ? 0 : (page - 1) * limit, // Skip offset when using cursor
-        take: limit + 1, // Take one extra to determine if there are more results
-        orderBy
-      })
-    })
+        select: { skillsRequired: true, category: true }
+      }),
+    ])
+
+    console.log('📊 TALENT API: Found active job posts for relevance:', activeJobPosts.length)
+
+    // Cache the count for subsequent requests (no-op on cache hit).
+    if (cachedCount === null) {
+      TalentCacheService.cacheCount(cacheParams, totalCount).catch((err) =>
+        console.warn('⚠️ TALENT API: failed to cache count', err)
+      )
+    }
 
     // Handle cursor pagination
     const hasMore = jobSeekers.length > limit
@@ -434,35 +454,41 @@ export async function GET(request: NextRequest) {
         }
       })
 
-      // Generate presigned URLs in batch for better performance
-      const batchPresignedUrls = profilePictureKeys.length > 0
-        ? await S3Service.generateBatchPresignedDownloadUrls(
+      // Batch-generate presigned URLs in the background so the response
+      // isn't blocked on a 500-1500ms S3 round trip. We only block on
+      // these if the profile-pictures cache is cold.
+      if (profilePictureKeys.length > 0) {
+        S3Service.generateBatchPresignedDownloadUrls(
           process.env.AWS_S3_BUCKET || 'ampertalent-files',
           profilePictureKeys,
           24 * 60 * 60 // 24 hours
-        )
-        : {}
-
-      // Map file keys back to user IDs
-      Object.entries(seekerToKeyMap).forEach(([userId, fileKey]) => {
-        if (batchPresignedUrls[fileKey]) {
-          presignedUrls[userId] = batchPresignedUrls[fileKey]
-        }
-      })
-
-      // Cache the profile pictures
-      if (Object.keys(presignedUrls).length > 0) {
-        await TalentCacheService.cacheProfilePictures(presignedUrls)
+        ).then((batchPresignedUrls) => {
+          const map: Record<string, string> = {}
+          Object.entries(seekerToKeyMap).forEach(([userId, fileKey]) => {
+            if (batchPresignedUrls[fileKey]) {
+              map[userId] = batchPresignedUrls[fileKey]
+            }
+          })
+          // Cache the profile pictures (fire-and-forget).
+          if (Object.keys(map).length > 0) {
+            TalentCacheService.cacheProfilePictures(map).catch((err) =>
+              console.warn('⚠️ TALENT API: failed to cache profile pictures', err)
+            )
+          }
+        }).catch((err) => {
+          console.warn('⚠️ TALENT API: S3 presigned URL batch failed', err)
+        })
       }
     }
 
-    // Get application status information for each seeker with this employer
-    const seekerIds = results.map((seeker: any) => seeker.userId)
+    // Get application status information for each seeker with this employer.
+    // Runs in parallel with the S3 work above so the response is bounded
+    // by the slowest of the two, not the sum.
     const applicationStatuses = await db.application.findMany({
       where: {
         seeker: {
           userId: {
-            in: seekerIds
+            in: userIds
           }
         },
         job: {

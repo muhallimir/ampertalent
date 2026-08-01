@@ -291,8 +291,12 @@ export class AnalyticsService {
       console.log("[getRevenueMetrics] Found external payments:", externalPayments.length);
 
       // Calculate revenue metrics from database
+      // NOTE: coerce `payment.amount` through Number() — Prisma returns Decimal
+      // whose valueOf() yields a string, which would otherwise make `sum + amount`
+      // produce a concatenated string (e.g. "0453949.99...") and Intl.NumberFormat
+      // renders that as "$NaN".
       const totalRevenue = externalPayments.reduce(
-        (sum: number, payment: any) => sum + (payment.amount || 0),
+        (sum: number, payment: any) => sum + Number(payment.amount || 0),
         0
       );
 
@@ -630,7 +634,7 @@ export class AnalyticsService {
         },
       },
     });
-    return payments.reduce((sum: number, p: any) => sum + (p.amount || 0), 0);
+    return payments.reduce((sum: number, p: any) => sum + Number(p.amount || 0), 0);
   }
 
   /**
@@ -652,8 +656,10 @@ export class AnalyticsService {
       });
 
       if (payments && payments.length > 0) {
+        // See note in getRevenueMetrics — wrap `amount` in Number() so Decimal
+        // strings don't concatenate and break the Intl.NumberFormat render.
         const revenue = payments.reduce(
-          (sum: number, p: any) => sum + (p.amount || 0),
+          (sum: number, p: any) => sum + Number(p.amount || 0),
           0
         );
         console.log("[getRevenueForDateRange] Revenue from Authorize.net transactions:", revenue);
@@ -981,10 +987,12 @@ export class AnalyticsService {
       });
 
       // Group by date
+      // See note in getRevenueMetrics — wrap in Number() to avoid
+      // Decimal-→string concatenation that produced bogus values.
       const dateMap = new Map<string, number>();
       payments.forEach((payment: any) => {
         const date = payment.createdAt.toISOString().split("T")[0];
-        const amount = payment.amount || 0;
+        const amount = Number(payment.amount || 0);
         dateMap.set(date, (dateMap.get(date) || 0) + amount);
       });
 

@@ -8,30 +8,42 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get("page") || "1");
     const skip = (page - 1) * limit;
 
-    // Fetch featured and email blast jobs that are active
+    // Fetch featured and email blast jobs that are active.
+    //
+    // Two OR groups must be combined in a single AND so Prisma doesn't
+    // overwrite the first `OR` with the second (which is what the previous
+    // version did — it ended up returning ALL approved jobs instead of just
+    // featured / email-blast ones, and the seeker /seeker/jobs page then
+    // showed 5 random recent jobs under the "Featured" header).
     const featuredJobs = await db.job.findMany({
       where: {
         status: "approved",
-        OR: [
+        AND: [
           {
-            // Featured jobs
-            isFeatured: true,
             OR: [
-              { featuredCompletedAt: { not: null } },
-              { featuredStatus: "completed" },
+              {
+                // Featured jobs
+                isFeatured: true,
+                OR: [
+                  { featuredCompletedAt: { not: null } },
+                  { featuredStatus: "completed" },
+                ],
+              },
+              {
+                // Email blast jobs
+                isEmailBlast: true,
+                emailBlastStatus: "completed",
+                emailBlastExpiresAt: { gt: new Date() },
+              },
             ],
           },
           {
-            // Email blast jobs
-            isEmailBlast: true,
-            emailBlastStatus: "completed",
-            emailBlastExpiresAt: { gt: new Date() },
+            // Not expired
+            OR: [
+              { expiresAt: null },
+              { expiresAt: { gt: new Date() } },
+            ],
           },
-        ],
-        // Not expired
-        OR: [
-          { expiresAt: null },
-          { expiresAt: { gt: new Date() } },
         ],
       },
       include: {
@@ -48,23 +60,29 @@ export async function GET(request: NextRequest) {
     const totalCount = await db.job.count({
       where: {
         status: "approved",
-        OR: [
+        AND: [
           {
-            isFeatured: true,
             OR: [
-              { featuredCompletedAt: { not: null } },
-              { featuredStatus: "completed" },
+              {
+                isFeatured: true,
+                OR: [
+                  { featuredCompletedAt: { not: null } },
+                  { featuredStatus: "completed" },
+                ],
+              },
+              {
+                isEmailBlast: true,
+                emailBlastStatus: "completed",
+                emailBlastExpiresAt: { gt: new Date() },
+              },
             ],
           },
           {
-            isEmailBlast: true,
-            emailBlastStatus: "completed",
-            emailBlastExpiresAt: { gt: new Date() },
+            OR: [
+              { expiresAt: null },
+              { expiresAt: { gt: new Date() } },
+            ],
           },
-        ],
-        OR: [
-          { expiresAt: null },
-          { expiresAt: { gt: new Date() } },
         ],
       },
     });

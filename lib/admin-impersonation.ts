@@ -320,18 +320,28 @@ export async function startImpersonation(
 
 /**
  * Stop impersonating a user
+ *
+ * Always clears the impersonation sessionStorage, even if the API call fails
+ * — leaving the session in an inconsistent state (server-side cookie still
+ * active, client-side banner still showing) is the most dangerous failure mode
+ * because the next admin who signs in on the same browser inherits the
+ * impersonation override.
  */
 export async function stopImpersonation(adminId?: string): Promise<{ success: boolean; error?: string }> {
+  // Read the session first so we know which admin-specific key to clear,
+  // even if the API call fails.
+  const session = adminId ? getSecureImpersonationSession(adminId) : getImpersonationSession()
+  if (!session) {
+    console.log('🎭 IMPERSONATION: No active session found, already stopped')
+    return { success: true }
+  }
+
+  console.log('🎭 IMPERSONATION: Stopping session for', session.impersonatedUser.name, 'admin:', session.adminId)
+
+  // Always clear the session, even on failure — see the docstring above.
+  let apiSuccess = true
+  let apiError: string | undefined
   try {
-    // Try to get session with admin ID if provided, otherwise use fallback logic
-    const session = adminId ? getSecureImpersonationSession(adminId) : getImpersonationSession()
-    if (!session) {
-      console.log('🎭 IMPERSONATION: No active session found, already stopped')
-      return { success: true } // Already not impersonating
-    }
-
-    console.log('🎭 IMPERSONATION: Stopping session for', session.impersonatedUser.name, 'admin:', session.adminId)
-
     const response = await fetch('/api/admin/impersonation/stop', {
       method: 'POST',
       headers: {
@@ -343,20 +353,23 @@ export async function stopImpersonation(adminId?: string): Promise<{ success: bo
     })
 
     if (!response.ok) {
-      const error = await response.text()
-      console.error('🎭 IMPERSONATION ERROR: Stop failed:', error)
-      return { success: false, error }
+      const errorText = await response.text()
+      console.error('🎭 IMPERSONATION ERROR: Stop API failed:', errorText)
+      apiSuccess = false
+      apiError = errorText
     }
-
-    // CRITICAL: Clear the admin-specific session using the session's admin ID
-    clearImpersonationSession(session.adminId)
-    console.log('🎭 IMPERSONATION: Session stopped successfully for admin:', session.adminId)
-
-    return { success: true }
-  } catch (error) {
-    console.error('🎭 IMPERSONATION ERROR: Failed to stop impersonation:', error)
-    return { success: false, error: 'Failed to stop impersonation' }
+  } catch (err) {
+    console.error('🎭 IMPERSONATION ERROR: Stop fetch threw:', err)
+    apiSuccess = false
+    apiError = err instanceof Error ? err.message : String(err)
   }
+
+  // Clear sessionStorage regardless of API outcome so the banner can't
+  // resurface on the next sign-in.
+  clearImpersonationSession(session.adminId)
+  console.log('🎭 IMPERSONATION: Session stopped for admin:', session.adminId, apiSuccess ? '(API OK)' : '(API failed, cleared anyway)')
+
+  return apiSuccess ? { success: true } : { success: false, error: apiError }
 }
 
 /**
