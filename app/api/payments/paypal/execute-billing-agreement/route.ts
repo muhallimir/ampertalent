@@ -7,6 +7,7 @@ import { getServiceById } from '@/lib/additional-services'
 import { getEmployerPackageById } from '@/lib/employer-packages'
 import { completeSeekerOnboardingFromPendingSignup } from '@/lib/checkout-session-management'
 import { NotificationService } from '@/lib/notification-service'
+import { ensureDemoRoleRows } from '@/lib/demo-role-backfill'
 
 /**
  * POST /api/payments/paypal/execute-billing-agreement
@@ -71,6 +72,29 @@ export async function POST(request: NextRequest) {
 
         if (!userProfile) {
             return NextResponse.json({ error: 'User profile not found' }, { status: 404 })
+        }
+
+        // ── Demo backfill ───────────────────────────────────────────────────
+        // The demo flow defers JobSeeker / Employer row creation to the
+        // onboarding-completion step. A demo user who skips (or hasn't yet
+        // finished) onboarding is missing the role-specific row, which would
+        // trip the `isSeeker` / `isEmployer` guard below with the unhelpful
+        // "Invalid user type" error. For demo accounts we transparently
+        // create the missing row so visitors can experience the full
+        // payment flow. Real (non-demo) accounts are unaffected — the helper
+        // is a no-op when the name doesn't match the demo pattern.
+        const demoState = await ensureDemoRoleRows(userProfile.id)
+        if (demoState.isDemo && demoState.created) {
+            console.log(`🅿️ [${requestId}] PayPal: demo backfill created missing ${demoState.created} row for ${userProfile.id}`)
+            // Reload the profile so `userProfile.jobSeeker` / `userProfile.employer`
+            // reflect the freshly-created row.
+            userProfile = await db.userProfile.findUnique({
+                where: { clerkUserId: currentUser.clerkUser.id },
+                include: { employer: true, jobSeeker: true },
+            })
+            if (!userProfile) {
+                return NextResponse.json({ error: 'User profile not found' }, { status: 404 })
+            }
         }
 
         const isSeeker = userProfile.role === 'seeker' && !!userProfile.jobSeeker

@@ -3,6 +3,7 @@ import { db } from '@/lib/db'
 import Stripe from 'stripe'
 import { NotificationService } from '@/lib/notification-service'
 import { inAppNotificationService } from '@/lib/in-app-notification-service'
+import { ensureDemoRoleRows } from '@/lib/demo-role-backfill'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
     apiVersion: '2023-10-16' as any
@@ -68,9 +69,30 @@ export async function GET(request: NextRequest) {
         }
 
         // Get employer profile
-        const employer = await db.employer.findFirst({
+        let employer = await db.employer.findFirst({
             where: { user: { clerkUserId: pendingJobPost.clerkUserId } }
         })
+
+        if (!employer) {
+            // Demo backfill: a freshly-created demo account hasn't been
+            // through onboarding yet, so the Employer row may not exist.
+            // Create it on the fly so the visitor's Stripe sandbox payment
+            // doesn't fail with an "employer_not_found" redirect. Real
+            // (non-demo) accounts fall through to the existing error.
+            const pendingProfile = await db.userProfile.findUnique({
+                where: { clerkUserId: pendingJobPost.clerkUserId },
+                select: { id: true, name: true, role: true },
+            })
+            if (pendingProfile) {
+                const demoState = await ensureDemoRoleRows(pendingProfile.id)
+                if (demoState.isDemo && demoState.created === 'employer') {
+                    console.log('💳 STRIPE-JOB-SUCCESS: demo backfill created missing Employer row for', pendingJobPost.clerkUserId)
+                    employer = await db.employer.findFirst({
+                        where: { user: { clerkUserId: pendingJobPost.clerkUserId } }
+                    })
+                }
+            }
+        }
 
         if (!employer) {
             console.error('Employer not found for clerkUserId:', pendingJobPost.clerkUserId)

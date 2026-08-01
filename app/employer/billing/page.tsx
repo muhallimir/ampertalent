@@ -159,6 +159,10 @@ export default function BillingPage() {
   // test-mode checkout session so admins / prospects can experience the
   // payment UI without buying a real package.
   const [stripeSandboxBusy, setStripeSandboxBusy] = useState(false)
+  // One-click PayPal sandbox (employer-only): creates a real PayPal
+  // billing-agreement token in the sandbox so visitors can experience
+  // the PayPal-hosted approval screen end-to-end.
+  const [paypalSandboxBusy, setPaypalSandboxBusy] = useState(false)
   const { addToast } = useToast()
 
   useEffect(() => {
@@ -204,6 +208,32 @@ export default function BillingPage() {
       })
       const url = new URL(window.location.href)
       url.searchParams.delete('stripe_sandbox')
+      window.history.replaceState({}, '', url.toString())
+    }
+
+    // PayPal sandbox result handler — success or cancel from the
+    // one-click PayPal sandbox button. The execute-setup page stores a
+    // `paypal_sandbox` query param so the billing page can show a
+    // toast.
+    const paypalSandbox = searchParams?.get('paypal_sandbox')
+    if (paypalSandbox === 'success') {
+      addToast({
+        title: 'PayPal sandbox added',
+        description: 'A PayPal sandbox billing agreement was saved. No real money was charged.',
+        variant: 'success',
+        duration: 5000,
+      })
+      const url = new URL(window.location.href)
+      url.searchParams.delete('paypal_sandbox')
+      window.history.replaceState({}, '', url.toString())
+    } else if (paypalSandbox === 'cancelled') {
+      addToast({
+        title: 'PayPal sandbox cancelled',
+        description: 'No payment method was added.',
+        duration: 4000,
+      })
+      const url = new URL(window.location.href)
+      url.searchParams.delete('paypal_sandbox')
       window.history.replaceState({}, '', url.toString())
     }
 
@@ -482,6 +512,45 @@ export default function BillingPage() {
         duration: 5000,
       })
       setStripeSandboxBusy(false)
+    }
+  }
+
+  /**
+   * One-click PayPal sandbox: creates a real PayPal billing-agreement
+   * token and redirects to PayPal's hosted approval screen. The
+   * visitor approves the agreement in the PayPal sandbox; PayPal
+   * redirects back to /employer/billing/paypal-setup-return which
+   * saves the agreement as a payment method. No real money moves.
+   *
+   * Mirrors `handleTryStripeSandbox` so the demo billing page exposes
+   * one-click PayPal + one-click Stripe sandboxes side-by-side.
+   */
+  const handleTryPayPalSandbox = async () => {
+    if (paypalSandboxBusy) return
+    setPaypalSandboxBusy(true)
+    try {
+      const res = await fetch('/api/demo/employer-paypal-sandbox', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err?.error || 'Failed to create PayPal sandbox session')
+      }
+      const data = await res.json()
+      if (!data?.approvalUrl) {
+        throw new Error('No PayPal approval URL returned')
+      }
+      window.location.href = data.approvalUrl
+    } catch (err: any) {
+      console.error('PayPal sandbox failed:', err)
+      addToast({
+        title: 'PayPal sandbox failed',
+        description: err?.message || 'Could not create the PayPal test session',
+        variant: 'destructive',
+        duration: 5000,
+      })
+      setPaypalSandboxBusy(false)
     }
   }
 
@@ -1130,6 +1199,51 @@ export default function BillingPage() {
                     ) : (
                       <>
                         <CreditCard className="mr-1.5 h-3.5 w-3.5" /> Try Stripe sandbox
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+
+              {/* One-click PayPal sandbox — exercises the real PayPal
+                  sandbox approval flow (no real money charged) so admins /
+                  prospects can experience the actual PayPal-hosted UI
+                  end-to-end. */}
+              <div className="bg-sky-50 border border-sky-200 rounded-lg p-4">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                  <div className="flex items-start space-x-3">
+                    <div className="flex-shrink-0">
+                      <svg className="h-5 w-5 text-sky-700" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944 3.72a.774.774 0 0 1 .763-.648h6.39c2.146 0 3.783.567 4.861 1.684 1.005 1.04 1.48 2.513 1.412 4.384-.017.458-.088.911-.214 1.345a7.29 7.29 0 0 1-.713 1.79c-.333.554-.733 1.048-1.209 1.475a5.557 5.557 0 0 1-1.679 1.075c-.625.258-1.309.43-2.037.515-.39.046-.813.068-1.254.068H9.108a.774.774 0 0 0-.763.648l-.975 5.527a.773.773 0 0 1-.762.648h-.532" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-medium text-sky-900">Try PayPal sandbox (one click)</h4>
+                      <p className="text-sm text-sky-800 mt-1">
+                        Sign in to PayPal sandbox and approve a real billing
+                        agreement (no real money moves). Mirrors the Stripe
+                        sandbox so you can experience both payment flows.
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    type="button"
+                    data-testid="try-paypal-sandbox"
+                    disabled={paypalSandboxBusy}
+                    onClick={handleTryPayPalSandbox}
+                    size="sm"
+                    className="bg-gradient-to-r from-sky-500 to-cyan-500 hover:from-sky-600 hover:to-cyan-600 text-white flex-shrink-0"
+                  >
+                    {paypalSandboxBusy ? (
+                      <>
+                        <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> Creating…
+                      </>
+                    ) : (
+                      <>
+                        <svg className="mr-1.5 h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944 3.72a.774.774 0 0 1 .763-.648h6.39c2.146 0 3.783.567 4.861 1.684 1.005 1.04 1.48 2.513 1.412 4.384-.017.458-.088.911-.214 1.345a7.29 7.29 0 0 1-.713 1.79c-.333.554-.733 1.048-1.209 1.475a5.557 5.557 0 0 1-1.679 1.075c-.625.258-1.309.43-2.037.515-.39.046-.813.068-1.254.068H9.108a.774.774 0 0 0-.763.648l-.975 5.527a.773.773 0 0 1-.762.648h-.532" />
+                        </svg>
+                        Try PayPal sandbox
                       </>
                     )}
                   </Button>

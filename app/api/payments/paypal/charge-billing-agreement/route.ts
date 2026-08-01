@@ -22,6 +22,7 @@ import { inAppNotificationService } from '@/lib/in-app-notification-service';
 import { NotificationService } from '@/lib/notification-service';
 import { PackageType, MembershipPlan } from '@prisma/client';
 import { SEEKER_SUBSCRIPTION_PLANS } from '@/lib/subscription-plans';
+import { ensureDemoRoleRows } from '@/lib/demo-role-backfill';
 
 // Seeker membership plans mapping (matches execute-billing-agreement)
 const MEMBERSHIP_PLANS: Record<string, { name: string; price: number; billing: string; duration: number; trialDays?: number; plan: MembershipPlan }> = {
@@ -75,7 +76,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Get user profile
-        const userProfile = await db.userProfile.findUnique({
+        let userProfile = await db.userProfile.findUnique({
             where: { clerkUserId },
             include: {
                 employer: true,
@@ -86,6 +87,28 @@ export async function POST(request: NextRequest) {
         if (!userProfile) {
             console.log(`❌ [${requestId}] User profile not found for clerk ID: ${clerkUserId}`);
             return NextResponse.json({ error: 'User profile not found' }, { status: 404 });
+        }
+
+        // ── Demo backfill ───────────────────────────────────────────────────
+        // The demo flow defers JobSeeker / Employer row creation to the
+        // onboarding-completion step. A demo user who reaches the saved-PayPal
+        // charge flow before completing onboarding is missing the
+        // role-specific row, which would make `isSeeker` / `isEmployer`
+        // false and the saved-payment-method lookup fail. For demo
+        // accounts we transparently create the missing row so the saved
+        // PayPal flow works end-to-end. Real (non-demo) accounts are
+        // unaffected — the helper is a no-op when the name doesn't match
+        // the demo pattern.
+        const demoState = await ensureDemoRoleRows(userProfile.id)
+        if (demoState.isDemo && demoState.created) {
+            console.log(`🅿️ [${requestId}] PayPal charge: demo backfill created missing ${demoState.created} row for ${userProfile.id}`)
+            // Reload the profile so userProfile.employer / userProfile.jobSeeker
+            // reflect the freshly-created row.
+            const reloaded = await db.userProfile.findUnique({
+                where: { clerkUserId },
+                include: { employer: true, jobSeeker: true },
+            })
+            if (reloaded) userProfile = reloaded
         }
 
         // ====== PARSE REQUEST BODY ======

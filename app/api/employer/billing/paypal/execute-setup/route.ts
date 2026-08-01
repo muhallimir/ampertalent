@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { getPayPalClient } from '@/lib/paypal'
+import { ensureDemoRoleRows } from '@/lib/demo-role-backfill'
 
 /**
  * POST /api/employer/billing/paypal/execute-setup
@@ -28,6 +29,21 @@ export async function POST(request: NextRequest) {
         })
 
         if (!employer) {
+            // Demo backfill: a freshly-created demo employer that hasn't
+            // finished onboarding is missing the Employer row. Auto-create
+            // it so the sandbox PayPal setup flow doesn't fail with the
+            // unhelpful "Only employers can add payment methods" 403.
+            const demoState = await ensureDemoRoleRows(currentUser.profile.id)
+            if (demoState.isDemo && demoState.created === 'employer') {
+                console.log(`🅿️ [${requestId}] PayPal execute-setup: demo backfill created missing Employer row for ${currentUser.profile.id}`)
+            }
+        }
+
+        const employerAfterBackfill = await db.employer.findUnique({
+            where: { userId: currentUser.profile.id },
+        })
+
+        if (!employerAfterBackfill) {
             return NextResponse.json({ error: 'Only employers can add payment methods' }, { status: 403 })
         }
 

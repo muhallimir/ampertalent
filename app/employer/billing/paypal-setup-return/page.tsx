@@ -45,7 +45,9 @@ export default function PayPalSetupReturnPage() {
             hasExecutedRef.current = true;
             if (token) executionTokenRef.current = token;
 
-            console.log('🅿️ PayPal setup return - ba_token:', baToken, 'ec_token:', ecToken, 'using:', token, 'redirect:', redirectParam);
+            const isSandbox = searchParams.get('sandbox') === '1';
+
+            console.log(`🅿️ PayPal setup return — baToken=${baToken} ecToken=${ecToken} using=${token} redirect=${redirectParam} sandbox=${isSandbox}`);
 
             if (!token) {
                 setStatus('error');
@@ -151,9 +153,15 @@ export default function PayPalSetupReturnPage() {
                         duration: 5000,
                     });
 
-                    // Redirect to billing page after short delay
+                    // Redirect to billing page after short delay. Include
+                    // the `paypal_sandbox=success` marker when the visitor
+                    // came in via the one-click PayPal sandbox button so
+                    // the billing page can surface a confirmation toast.
+                    const target = isSandbox
+                        ? '/employer/billing?tab=payment-methods&paypal_sandbox=success'
+                        : '/employer/billing?tab=payment-methods';
                     setTimeout(() => {
-                        router.push('/employer/billing?tab=payment-methods');
+                        router.push(target);
                     }, 2000);
                 }
             } catch (error) {
