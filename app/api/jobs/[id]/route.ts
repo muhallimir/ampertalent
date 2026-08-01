@@ -15,7 +15,6 @@ async function generatePresignedLogoUrl(companyLogoUrl: string | null): Promise<
   if (!companyLogoUrl || companyLogoUrl.trim() === '' || !isSupabaseStorageUrl(companyLogoUrl)) {
     return companyLogoUrl
   }
-  }
 
   try {
     // Extract S3 key from the full URL
@@ -205,7 +204,6 @@ export async function GET(
           companyName: (jobInvitation.data as any).companyName || 'Company',
           invitedAt: jobInvitation.createdAt.toISOString()
         }
-      }
     }
 
     // Transform the job data to match the frontend interface
@@ -252,6 +250,8 @@ export async function GET(
     }
 
     return NextResponse.json(transformedJob)
+  }
+
   } catch (error) {
     console.error('Error fetching job:', error)
     return NextResponse.json(

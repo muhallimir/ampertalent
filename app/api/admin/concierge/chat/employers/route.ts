@@ -8,8 +8,7 @@ const BUCKET_NAME = process.env.AWS_S3_BUCKET || 'ampertalent-files';
 // Helper function to generate presigned URL for company logo
 async function generatePresignedLogoUrl(companyLogoUrl: string | null): Promise<string | null> {
   if (!companyLogoUrl || companyLogoUrl.trim() === '' || !isSupabaseStorageUrl(companyLogoUrl)) {
-    return companyLogoUrl
-  };
+    return companyLogoUrl;
   }
 
   try {

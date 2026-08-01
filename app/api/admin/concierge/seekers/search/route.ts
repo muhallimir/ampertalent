@@ -153,11 +153,6 @@ export async function GET(request: NextRequest) {
         // External URL — return as-is, no signing.
         profilePictureUrl = seeker.profilePictureUrl;
       }
-        } catch (error) {
-          console.error('Error generating presigned URL for seeker profile picture:', error);
-          // Continue without profile picture
-        }
-      }
 
       return {
         id: seeker.id,

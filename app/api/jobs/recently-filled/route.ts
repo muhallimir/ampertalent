@@ -6,7 +6,11 @@ import { S3Service, isSupabaseStorageUrl } from '@/lib/s3'
 const BUCKET_NAME = process.env.SUPABASE_STORAGE_BUCKET || 'ampertalent-files'
 
 async function generatePresignedLogoUrl(companyLogoUrl: string | null): Promise<string | null> {
-    if (!companyLogoUrl?.trim()) return null
+    // Only sign URLs hosted on our Supabase Storage bucket. DiceBear /
+    // Gravatar / external CDN URLs are returned as-is so we don't spam
+    // /storage/v1/object/sign/... with 400 warnings for keys that don't
+    // exist in the bucket.
+    if (!companyLogoUrl?.trim() || !isSupabaseStorageUrl(companyLogoUrl)) return companyLogoUrl
     try {
         const url = new URL(companyLogoUrl)
         // Extract key from Supabase storage URL

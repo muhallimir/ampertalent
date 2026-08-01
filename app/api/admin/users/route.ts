@@ -10,7 +10,6 @@ async function generatePresignedLogoUrl(companyLogoUrl: string | null): Promise<
   if (!companyLogoUrl || companyLogoUrl.trim() === '' || !isSupabaseStorageUrl(companyLogoUrl)) {
     return companyLogoUrl
   }
-  }
 
   try {
     // Extract S3 key from the full URL

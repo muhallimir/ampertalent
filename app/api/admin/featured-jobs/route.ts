@@ -11,7 +11,6 @@ async function generatePresignedLogoUrl(companyLogoUrl: string | null): Promise<
   if (!companyLogoUrl || companyLogoUrl.trim() === '' || !isSupabaseStorageUrl(companyLogoUrl)) {
     return companyLogoUrl
   }
-  }
 
   try {
     // Extract S3 key from the full URL
@@ -37,7 +36,6 @@ async function generatePresignedLogoUrl(companyLogoUrl: string | null): Promise<
 async function generatePresignedProfileUrl(profilePictureUrl: string | null): Promise<string | null> {
   if (!profilePictureUrl || profilePictureUrl.trim() === '' || !isSupabaseStorageUrl(profilePictureUrl)) {
     return profilePictureUrl
-  }
   }
 
   try {
