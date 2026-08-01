@@ -16,20 +16,24 @@ export class PerformanceMonitor {
       const result = await apiCall()
       const duration = performance.now() - startTime
       
-      await this.recordMetric(`api.${operation}.duration`, duration)
-      await this.recordMetric(`api.${operation}.success`, 1)
+      // FIRE-AND-FORGET: each recordMetric does 4 Redis ops; awaiting
+      // them adds ~600-1500ms of pure monitoring overhead per wrapped
+      // route. The talent page wraps 4 calls, so await would be 6s of
+      // nothing-doing Redis traffic. See ticket for full trace.
+      void this.recordMetric(`api.${operation}.duration`, duration)
+      void this.recordMetric(`api.${operation}.success`, 1)
       
       // Log slow queries (>1000ms)
       if (duration > 1000) {
         console.warn(`Slow API call detected: ${operation} took ${duration.toFixed(2)}ms`)
-        await this.recordMetric(`api.${operation}.slow`, 1)
+        void this.recordMetric(`api.${operation}.slow`, 1)
       }
       
       return result
     } catch (error) {
       const duration = performance.now() - startTime
-      await this.recordMetric(`api.${operation}.duration`, duration)
-      await this.recordMetric(`api.${operation}.error`, 1)
+      void this.recordMetric(`api.${operation}.duration`, duration)
+      void this.recordMetric(`api.${operation}.error`, 1)
       throw error
     }
   }
@@ -45,8 +49,9 @@ export class PerformanceMonitor {
       const result = await query()
       const duration = performance.now() - startTime
       
-      await this.recordMetric(`db.${queryName}.duration`, duration)
-      await this.recordMetric(`db.${queryName}.success`, 1)
+      // Fire-and-forget — see note in trackApiCall.
+      void this.recordMetric(`db.${queryName}.duration`, duration)
+      void this.recordMetric(`db.${queryName}.success`, 1)
       
       // Log slow queries (>500ms)
       if (duration > 500) {
@@ -57,8 +62,8 @@ export class PerformanceMonitor {
       return result
     } catch (error) {
       const duration = performance.now() - startTime
-      await this.recordMetric(`db.${queryName}.duration`, duration)
-      await this.recordMetric(`db.${queryName}.error`, 1)
+      void this.recordMetric(`db.${queryName}.duration`, duration)
+      void this.recordMetric(`db.${queryName}.error`, 1)
       throw error
     }
   }
@@ -69,16 +74,18 @@ export class PerformanceMonitor {
     cacheKey: string,
     duration?: number
   ): Promise<void> {
-    await this.recordMetric(`cache.${operation}`, 1)
+    // Fire-and-forget — see note in trackApiCall.
+    void this.recordMetric(`cache.${operation}`, 1)
     
     if (duration !== undefined) {
-      await this.recordMetric(`cache.${operation}.duration`, duration)
+      void this.recordMetric(`cache.${operation}.duration`, duration)
     }
 
-    // Track cache hit rate
+    // Track cache hit rate — also fire-and-forget so it doesn't block.
     if (operation === 'hit' || operation === 'miss') {
-      const hitRate = await this.calculateCacheHitRate()
-      await this.recordMetric('cache.hit_rate', hitRate)
+      void this.calculateCacheHitRate().then((hitRate) => {
+        void this.recordMetric('cache.hit_rate', hitRate)
+      }).catch(() => {})
     }
   }
 

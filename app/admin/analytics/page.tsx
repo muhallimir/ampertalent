@@ -108,11 +108,26 @@ export default function AnalyticsPage() {
     }
   }, [dateRangeData])
 
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (amount: number | undefined | null) => {
+    const safe = Number.isFinite(amount) ? (amount as number) : 0
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD'
-    }).format(amount)
+    }).format(safe)
+  }
+
+  // NaN-safe percentage formatter.
+  const formatPercentage = (value: number | undefined | null) => {
+    const safe = Number.isFinite(value) ? (value as number) : 0
+    return `${safe.toFixed(1)}%`
+  }
+
+  // NaN-safe number formatter for `.toFixed()` calls that bypass
+  // formatPercentage. Same justification — `value.toFixed(1)` on NaN
+  // renders the literal string "NaN".
+  const formatFixed = (value: number | undefined | null, digits: number = 1, suffix: string = '') => {
+    const safe = Number.isFinite(value) ? (value as number) : 0
+    return `${safe.toFixed(digits)}${suffix}`
   }
 
   // Dynamic CSV converter that handles nested objects and arrays
@@ -157,7 +172,7 @@ export default function AnalyticsPage() {
           if (key.includes('Rate') || key.includes('Percentage')) {
             subcategory = 'Percentage'
             formattedValue =
-              typeof value === 'number' ? `${value.toFixed(1)}%` : value
+              typeof value === 'number' ? formatFixed(value, 1, '%') : value
           } else if (
             key.includes('Revenue') ||
             key.includes('Value') ||
@@ -170,13 +185,13 @@ export default function AnalyticsPage() {
             subcategory = 'Time'
             if (key.includes('Duration')) {
               formattedValue =
-                typeof value === 'number' ? `${value.toFixed(1)} min` : value
+                typeof value === 'number' ? `${formatFixed(value, 1)} min` : value
             } else if (key.includes('Time') && typeof value === 'number') {
-              formattedValue = `${value.toFixed(1)} days`
+              formattedValue = `${formatFixed(value, 1)} days`
             }
           } else if (typeof value === 'number') {
             subcategory = Number.isInteger(value) ? 'Count' : 'Average'
-            formattedValue = value.toLocaleString()
+            formattedValue = Number.isFinite(value) ? value.toLocaleString() : '0'
           }
 
           rows.push([
@@ -302,16 +317,7 @@ export default function AnalyticsPage() {
     }
   }, [dateRange, useCustomRange, customStartDate, customEndDate, loadAnalytics])
 
-  const formatPercentage = (value: number) => {
-    return `${value.toFixed(1)}%`
-  }
-
   const getChangeIcon = (value: number) => {
-    return value >= 0 ? (
-      <TrendingUp className="h-4 w-4 text-green-600" />
-    ) : (
-      <TrendingDown className="h-4 w-4 text-red-600" />
-    )
   }
 
   const getChangeColor = (value: number) => {
@@ -568,14 +574,18 @@ export default function AnalyticsPage() {
                   <div className="flex items-center text-xs text-muted-foreground">
                     {(() => {
                       if (analyticsData.trends?.revenueGrowth && analyticsData.trends.revenueGrowth.length > 1) {
-                        const first = analyticsData.trends.revenueGrowth[0]?.value || 0
-                        const last = analyticsData.trends.revenueGrowth[analyticsData.trends.revenueGrowth.length - 1]?.value || 0
+                        const first = Number.isFinite(analyticsData.trends.revenueGrowth[0]?.value)
+                          ? analyticsData.trends.revenueGrowth[0]!.value
+                          : 0
+                        const last = Number.isFinite(analyticsData.trends.revenueGrowth[analyticsData.trends.revenueGrowth.length - 1]?.value)
+                          ? analyticsData.trends.revenueGrowth[analyticsData.trends.revenueGrowth.length - 1]!.value
+                          : 0
                         const growth = first > 0 ? ((last - first) / first) * 100 : 0
                         return (
                           <>
                             {getChangeIcon(growth)}
                             <span className={`ml-1 ${getChangeColor(growth)}`}>
-                              {growth > 0 ? '+' : ''}{growth.toFixed(1)}%
+                              {growth > 0 ? '+' : ''}{formatFixed(growth, 1, '%')}
                             </span>
                             <span className="text-muted-foreground ml-1">
                               {getTrendPeriodText()}
@@ -717,8 +727,10 @@ export default function AnalyticsPage() {
                       (analyticsData.revenue.serviceRevenue || 0) +
                       employerRecurringMRR;
 
-                    // Helper to format percentage - show more decimals for small values
+                    // Helper to format percentage - show more decimals for small values.
+                    // NaN-safe: any non-finite pct collapses to 0.
                     const formatPctDisplay = (pct: number) => {
+                      if (!Number.isFinite(pct)) return '0%'
                       if (pct > 0 && pct < 0.01) return `${pct.toFixed(3)}%`;
                       if (pct > 0 && pct < 0.1) return `${pct.toFixed(2)}%`;
                       if (pct > 0 && pct < 1) return `${pct.toFixed(2)}%`;
@@ -888,7 +900,7 @@ export default function AnalyticsPage() {
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-blue-600">
-                    {analyticsData.engagement.averageSessionDuration.toFixed(1)}
+                    {formatFixed(analyticsData.engagement.averageSessionDuration, 1)}
                     m
                   </div>
                   <p className="text-sm text-gray-600">Avg Session Duration</p>
@@ -943,11 +955,13 @@ export default function AnalyticsPage() {
                   {analyticsData.jobs.approvedJobs}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {formatPercentage(
-                    (analyticsData.jobs.approvedJobs /
-                      analyticsData.jobs.totalJobsPosted) *
-                    100
-                  )}{' '}
+                  {analyticsData.jobs.totalJobsPosted > 0
+                    ? formatPercentage(
+                        (analyticsData.jobs.approvedJobs /
+                          analyticsData.jobs.totalJobsPosted) *
+                        100
+                      )
+                    : '0.0%'}{' '}
                   approval rate
                 </p>
               </CardContent>
@@ -962,7 +976,7 @@ export default function AnalyticsPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {analyticsData.jobs.averageApplicationsPerJob.toFixed(1)}
+                  {formatFixed(analyticsData.jobs.averageApplicationsPerJob, 1)}
                 </div>
                 <p className="text-xs text-muted-foreground">Per job posting</p>
               </CardContent>
@@ -977,7 +991,7 @@ export default function AnalyticsPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {analyticsData.jobs.averageTimeToApproval.toFixed(1)}d
+                  {formatFixed(analyticsData.jobs.averageTimeToApproval, 1)}d
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Days to approval
@@ -1229,10 +1243,14 @@ export default function AnalyticsPage() {
                     <span className="font-bold text-green-600">
                       {analyticsData.trends?.revenueGrowth && analyticsData.trends.revenueGrowth.length > 1
                         ? (() => {
-                          const first = analyticsData.trends.revenueGrowth[0]?.value || 0
-                          const last = analyticsData.trends.revenueGrowth[analyticsData.trends.revenueGrowth.length - 1]?.value || 0
+                          const first = Number.isFinite(analyticsData.trends.revenueGrowth[0]?.value)
+                            ? analyticsData.trends.revenueGrowth[0]!.value
+                            : 0
+                          const last = Number.isFinite(analyticsData.trends.revenueGrowth[analyticsData.trends.revenueGrowth.length - 1]?.value)
+                            ? analyticsData.trends.revenueGrowth[analyticsData.trends.revenueGrowth.length - 1]!.value
+                            : 0
                           const growth = first > 0 ? ((last - first) / first) * 100 : 0
-                          return `${growth > 0 ? '+' : ''}${growth.toFixed(1)}%`
+                          return `${growth > 0 ? '+' : ''}${formatFixed(growth, 1, '%')}`
                         })()
                         : 'N/A'}
                     </span>
@@ -1254,7 +1272,8 @@ export default function AnalyticsPage() {
                   <div className="flex justify-between">
                     <span className="text-sm">Avg Session Duration</span>
                     <span className="font-medium">
-                      {analyticsData.engagement.averageSessionDuration.toFixed(
+                      {formatFixed(
+                        analyticsData.engagement.averageSessionDuration,
                         1
                       )}
                       m
@@ -1291,7 +1310,8 @@ export default function AnalyticsPage() {
                   <div className="flex justify-between">
                     <span className="text-sm">Avg per Seeker</span>
                     <span className="font-medium">
-                      {analyticsData.applications.averageApplicationsPerSeeker.toFixed(
+                      {formatFixed(
+                        analyticsData.applications.averageApplicationsPerSeeker,
                         1
                       )}
                     </span>
@@ -1299,7 +1319,8 @@ export default function AnalyticsPage() {
                   <div className="flex justify-between">
                     <span className="text-sm">Response Time</span>
                     <span className="font-medium">
-                      {analyticsData.applications.averageTimeToResponse.toFixed(
+                      {formatFixed(
+                        analyticsData.applications.averageTimeToResponse,
                         1
                       )}
                       d
