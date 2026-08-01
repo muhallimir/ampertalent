@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth'
 import { db } from '@/lib/db'
-import { S3Service } from '@/lib/s3'
+import { S3Service, isSupabaseStorageUrl } from '@/lib/s3'
 import { TalentCacheService } from '@/lib/redis'
 import { PerformanceMonitor } from '@/lib/monitoring'
 
@@ -436,21 +436,26 @@ export async function GET(request: NextRequest) {
       presignedUrls = cachedPictures
     } else {
       // Extract all profile picture URLs and their corresponding file keys
+      //
+      // CRITICAL: only Supabase Storage URLs are signed. DiceBear,
+      // Gravatar, or any other external avatar host is left as-is so we
+      // don't spam /storage/v1/object/sign with 400 warnings for keys
+      // that don't exist in the bucket. The original URL is preserved
+      // and returned to the client in that case.
       const profilePictureKeys: string[] = []
       const seekerToKeyMap: Record<string, string> = {}
 
       results.forEach((seeker: any) => {
-        if (seeker.user.profilePictureUrl) {
-          try {
-            const url = new URL(seeker.user.profilePictureUrl)
-            const pathParts = url.pathname.split('/').filter(Boolean)
-            const fileKey = pathParts.slice(-3).join('/') // Get avatars/userId/filename
-
-            profilePictureKeys.push(fileKey)
-            seekerToKeyMap[seeker.userId] = fileKey
-          } catch (error) {
-            console.error('Error parsing profile picture URL:', error)
-          }
+        const picUrl: string | null | undefined = seeker.user?.profilePictureUrl
+        if (!picUrl || !isSupabaseStorageUrl(picUrl)) return
+        try {
+          const url = new URL(picUrl)
+          const pathParts = url.pathname.split('/').filter(Boolean)
+          const fileKey = pathParts.slice(-3).join('/') // Get avatars/userId/filename
+          profilePictureKeys.push(fileKey)
+          seekerToKeyMap[seeker.userId] = fileKey
+        } catch (error) {
+          console.error('Error parsing profile picture URL:', error)
         }
       })
 

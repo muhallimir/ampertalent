@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { S3Service } from '@/lib/s3';
+import { S3Service, isSupabaseStorageUrl } from '@/lib/s3';
 
 const BUCKET_NAME = process.env.AWS_S3_BUCKET || 'ampertalent-files';
 
@@ -131,26 +131,28 @@ export async function GET(request: NextRequest) {
 
       let profilePictureUrl = null;
 
-      // Generate presigned URL if profile picture exists
-      if (seeker.profilePictureUrl) {
+      // Generate presigned URL only if the URL points at our Supabase
+      // Storage bucket. DiceBear / Gravatar / external URLs are
+      // returned as-is so we don't spam /storage/v1/object/sign/...
+      // with 400 warnings for keys that don't exist in the bucket.
+      if (seeker.profilePictureUrl && isSupabaseStorageUrl(seeker.profilePictureUrl)) {
         try {
-          if (seeker.profilePictureUrl.startsWith('http')) {
-            // Extract S3 key from the signed URL
-            const url = new URL(seeker.profilePictureUrl);
-            const s3Key = url.pathname.substring(1); // Remove leading slash
-            profilePictureUrl = await S3Service.generatePresignedDownloadUrl(
-              BUCKET_NAME,
-              s3Key,
-              24 * 60 * 60 // 24 hours
-            );
-          } else {
-            // Generate presigned URL for S3 key
-            profilePictureUrl = await S3Service.generatePresignedDownloadUrl(
-              BUCKET_NAME,
-              seeker.profilePictureUrl,
-              24 * 60 * 60 // 24 hours
-            );
-          }
+          const url = new URL(seeker.profilePictureUrl);
+          const s3Key = url.pathname.substring(1); // Remove leading slash
+          profilePictureUrl = await S3Service.generatePresignedDownloadUrl(
+            BUCKET_NAME,
+            s3Key,
+            24 * 60 * 60 // 24 hours
+          );
+        } catch (error) {
+          console.error('Error generating presigned URL for seeker profile picture:', error);
+          // Fall back to original URL if presigned URL generation fails
+          profilePictureUrl = seeker.profilePictureUrl;
+        }
+      } else if (seeker.profilePictureUrl) {
+        // External URL — return as-is, no signing.
+        profilePictureUrl = seeker.profilePictureUrl;
+      }
         } catch (error) {
           console.error('Error generating presigned URL for seeker profile picture:', error);
           // Continue without profile picture

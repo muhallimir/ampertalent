@@ -6,7 +6,7 @@ import {
   planResumeCredits,
   calcPeriodEnd,
 } from '@/lib/subscription-plans'
-import { S3Service } from '@/lib/s3'
+import { S3Service, isSupabaseStorageUrl } from '@/lib/s3'
 import { presignedUrlCache } from '@/lib/presigned-url-cache'
 
 const BUCKET_NAME = process.env.AWS_S3_BUCKET || 'ampertalent-files'
@@ -179,11 +179,17 @@ export async function GET(request: NextRequest) {
       pendingSignups.map(p => [p.clerkUserId, p])
     )
 
-    // Batch-resolve presigned URLs for S3 profile pictures to avoid N+1 fetches on the client
+    // Batch-resolve presigned URLs for S3 profile pictures to avoid N+1 fetches on the client.
+    //
+    // CRITICAL: only Supabase Storage URLs are signed. The previous
+    // version skipped gravatar.com but not DiceBear, which is what the
+    // demo seeder uses — every page load posted `9.x/initials/png` to
+    // `/storage/v1/object/sign/...` and Supabase returned 400 for a key
+    // that doesn't exist in the bucket (224 warnings in an hour).
     const s3Pictures: { userId: string; fileKey: string }[] = []
     for (const profile of userProfiles) {
       const picUrl = profile.profilePictureUrl
-      if (!picUrl || picUrl.includes('gravatar.com')) continue
+      if (!picUrl || !isSupabaseStorageUrl(picUrl)) continue
       try {
         const url = new URL(picUrl)
         const pathParts = url.pathname.split('/').filter(Boolean)

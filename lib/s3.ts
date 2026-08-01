@@ -3,6 +3,32 @@
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
+/**
+ * Returns true when the given URL is a Supabase Storage URL that we own
+ * and should sign. False for external hosts (DiceBear, Gravatar, etc.).
+ *
+ * Why this matters: the talent and admin seekers routes used to pass any
+ * `profilePictureUrl` value to `createSignedUrl`, which routed DiceBear
+ * paths like `9.x/initials/png` into `/storage/v1/object/sign/...` and
+ * spammed Supabase with 400 warnings for keys that don't exist in the
+ * bucket (224 in a single hour under demo load).
+ *
+ * Detection: hostname is a Supabase project ref (`.supabase.co`) AND the
+ * path starts with `/storage/v1/object/` — i.e. it's already a Supabase
+ * Storage URL we control. Anything else (DiceBear, Gravatar, plain CDN
+ * URLs, data URIs, etc.) is returned as-is by the page.
+ */
+export function isSupabaseStorageUrl(url: string | null | undefined): boolean {
+  if (!url) return false
+  try {
+    const parsed = new URL(url)
+    if (!parsed.hostname.endsWith('.supabase.co')) return false
+    return parsed.pathname.startsWith('/storage/v1/object/')
+  } catch {
+    return false
+  }
+}
+
 export interface UploadConfig {
   bucket: string
   key: string

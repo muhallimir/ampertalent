@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { S3Service } from '@/lib/s3';
+import { S3Service, isSupabaseStorageUrl } from '@/lib/s3';
 
 const BUCKET_NAME = process.env.AWS_S3_BUCKET || 'ampertalent-files';
 
@@ -99,6 +99,14 @@ export async function GET(
                 { error: 'Unauthorized access to profile picture' },
                 { status: 403 }
             );
+        }
+
+        // CRITICAL: only Supabase Storage URLs are signed. DiceBear /
+        // Gravatar / external URLs are returned as-is so we don't
+        // spam /storage/v1/object/sign/... with 400 warnings for
+        // keys that don't exist in the bucket.
+        if (!targetProfile.profilePictureUrl || !isSupabaseStorageUrl(targetProfile.profilePictureUrl)) {
+            return NextResponse.json({ profilePictureUrl: targetProfile.profilePictureUrl })
         }
 
         // Extract the S3 key from the profile picture URL

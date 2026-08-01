@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth'
-import { S3Service } from '@/lib/s3'
+import { S3Service, isSupabaseStorageUrl } from '@/lib/s3'
 import { db } from '@/lib/db'
 import { GetObjectCommand } from '@aws-sdk/client-s3'
 
@@ -40,11 +40,12 @@ export async function GET(
       )
     }
 
-    if (!employer.companyLogoUrl || employer.companyLogoUrl.trim() === '') {
-      return NextResponse.json(
-        { error: 'No company logo found' },
-        { status: 404 }
-      )
+    if (!employer.companyLogoUrl || employer.companyLogoUrl.trim() === '' || !isSupabaseStorageUrl(employer.companyLogoUrl)) {
+      // External URL (DiceBear, Gravatar, etc.) — return as-is, no signing.
+      return NextResponse.json({
+        companyLogoUrl: employer.companyLogoUrl,
+        companyName: employer.companyName
+      })
     }
 
     try {

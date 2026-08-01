@@ -1,14 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { getCurrentUser } from '@/lib/auth'
-import { S3Service } from '@/lib/s3'
+import { S3Service, isSupabaseStorageUrl } from '@/lib/s3'
 
 const BUCKET_NAME = process.env.AWS_S3_BUCKET || 'ampertalent-files'
 
-// Helper function to generate presigned URLs for company logos
+// Helper function to generate presigned URLs for company logos.
+//
+// Only signs URLs hosted on our Supabase Storage bucket — DiceBear /
+// Gravatar / external URLs are returned as-is so we don't spam
+// /storage/v1/object/sign/... with 400 warnings.
 async function generatePresignedLogoUrl(companyLogoUrl: string | null): Promise<string | null> {
-  if (!companyLogoUrl || companyLogoUrl.trim() === '') {
-    return null
+  if (!companyLogoUrl || companyLogoUrl.trim() === '' || !isSupabaseStorageUrl(companyLogoUrl)) {
+    return companyLogoUrl
   }
 
   try {
@@ -31,10 +35,12 @@ async function generatePresignedLogoUrl(companyLogoUrl: string | null): Promise<
   }
 }
 
-// Helper function to generate presigned URLs for profile pictures
+// Helper function to generate presigned URLs for profile pictures.
+// Only signs URLs hosted on our Supabase Storage bucket — external
+// URLs (DiceBear, Gravatar) are returned as-is.
 async function generatePresignedProfileUrl(profilePictureUrl: string | null): Promise<string | null> {
-  if (!profilePictureUrl || profilePictureUrl.trim() === '') {
-    return null
+  if (!profilePictureUrl || profilePictureUrl.trim() === '' || !isSupabaseStorageUrl(profilePictureUrl)) {
+    return profilePictureUrl
   }
 
   try {

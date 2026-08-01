@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth'
 import { db } from '@/lib/db'
-import { S3Service } from '@/lib/s3'
+import { S3Service, isSupabaseStorageUrl } from '@/lib/s3'
 
 export async function GET(
   request: NextRequest,
@@ -57,9 +57,14 @@ export async function GET(
       return NextResponse.json({ error: 'Talent profile not found' }, { status: 404 })
     }
 
-    // Generate presigned URL for profile picture if it exists
+    // Generate presigned URL for profile picture if it exists.
+    //
+    // CRITICAL: only Supabase Storage URLs are signed. DiceBear /
+    // Gravatar / external CDN URLs are returned as-is, otherwise we
+    // hit /storage/v1/object/sign/... with keys that don't exist in
+    // the bucket and Supabase logs 400 warnings (224 in an hour).
     let profilePictureUrl = talent.user.profilePictureUrl
-    if (profilePictureUrl) {
+    if (profilePictureUrl && isSupabaseStorageUrl(profilePictureUrl)) {
       try {
         const url = new URL(profilePictureUrl)
         const pathParts = url.pathname.split('/').filter(Boolean)

@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth'
 import { db } from '@/lib/db'
-import { S3Service } from '@/lib/s3'
+import { S3Service, isSupabaseStorageUrl } from '@/lib/s3'
 
 const BUCKET_NAME = process.env.AWS_S3_BUCKET || 'ampertalent-files'
 
 // Helper function to generate presigned URLs for profile pictures
 async function generatePresignedProfileUrl(profilePictureUrl: string | null): Promise<string | null> {
-  if (!profilePictureUrl || profilePictureUrl.trim() === '') {
-    return null
+  if (!profilePictureUrl || profilePictureUrl.trim() === '' || !isSupabaseStorageUrl(profilePictureUrl)) {
+    return profilePictureUrl
+  }
   }
 
   try {
@@ -33,8 +34,9 @@ async function generatePresignedProfileUrl(profilePictureUrl: string | null): Pr
 
 // Helper function to generate presigned URLs for company logos
 async function generatePresignedLogoUrl(companyLogoUrl: string | null): Promise<string | null> {
-  if (!companyLogoUrl || companyLogoUrl.trim() === '') {
-    return null
+  if (!companyLogoUrl || companyLogoUrl.trim() === '' || !isSupabaseStorageUrl(companyLogoUrl)) {
+    return companyLogoUrl
+  }
   }
 
   try {

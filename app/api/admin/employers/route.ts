@@ -1,15 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth'
 import { db } from '@/lib/db'
-import { S3Service } from '@/lib/s3'
+import { S3Service, isSupabaseStorageUrl } from '@/lib/s3'
 import { activeJobWhereClause, validPackageWhereClause } from '@/lib/employerStatus'
 
 const BUCKET_NAME = process.env.AWS_S3_BUCKET || 'ampertalent-files'
 
-// Helper function to generate presigned URL for company logo
+// Helper function to generate presigned URL for company logo.
+//
+// Only signs URLs that are actually hosted on our Supabase Storage
+// bucket. DiceBear / Gravatar / external CDN URLs are returned as-is
+// so we don't spam /storage/v1/object/sign/... with 400 warnings for
+// keys that don't exist in the bucket (see lib/s3.ts for context).
 async function generatePresignedLogoUrl(companyLogoUrl: string | null): Promise<string | null> {
-  if (!companyLogoUrl || companyLogoUrl.trim() === '') {
-    return null
+  if (!companyLogoUrl || companyLogoUrl.trim() === '' || !isSupabaseStorageUrl(companyLogoUrl)) {
+    return companyLogoUrl
   }
 
   try {
