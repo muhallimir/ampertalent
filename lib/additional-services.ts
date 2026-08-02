@@ -308,10 +308,18 @@ export function getActiveServicesByUserType(userType: UserType): AdditionalServi
 }
 
 /**
- * Format price for display
+ * Format price for display.
+ *
+ * Accepts either a JS number, a numeric string, or a Prisma Decimal
+ * (which JSON-serializes as a string). Any non-numeric input falls back
+ * to "—" so a stray Decimal/string can't blank the whole page with
+ * `e.toFixed is not a function`.
  */
-export function formatServicePrice(price: number): string {
-  return `$${price.toFixed(2)}`;
+export function formatServicePrice(price: number | string | { toString(): string } | null | undefined): string {
+  if (price === null || price === undefined) return '—'
+  const n = typeof price === 'number' ? price : Number(price)
+  if (!Number.isFinite(n)) return '—'
+  return `$${n.toFixed(2)}`
 }
 
 /**

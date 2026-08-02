@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
         serviceId: purchase.serviceId,
         serviceName,
         status: purchase.status,
-        amountPaid: purchase.amountPaid,
+        amountPaid: Number(purchase.amountPaid),
         createdAt: purchase.createdAt,
         completedAt: purchase.completedAt,
       }
