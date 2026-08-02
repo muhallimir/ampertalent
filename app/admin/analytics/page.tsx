@@ -21,6 +21,15 @@ import { Badge } from '@/components/ui/badge'
 import { LoadingSpinner } from '@/components/common/LoadingSpinner'
 import { ClientAnalyticsService, AnalyticsData } from '@/lib/client-analytics'
 import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts'
+import {
   TrendingUp,
   TrendingDown,
   Users,
@@ -31,7 +40,6 @@ import {
   Target,
   Download,
   RefreshCw,
-  BarChart3,
   Activity
 } from '@/components/icons'
 import { DateRangePickerPopup } from '@/components/ui/date-range-picker-popup'
@@ -697,17 +705,87 @@ export default function AnalyticsPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="h-64 flex items-center justify-center bg-gray-50 rounded-lg">
-                  <div className="text-center">
-                    <BarChart3 className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-                    <p className="text-gray-600">
-                      Chart visualization would go here
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      Integration with Chart.js or Recharts
-                    </p>
-                  </div>
-                </div>
+                {(() => {
+                  const rawData = analyticsData.trends?.userGrowth || []
+                  // Aggregate by month so the chart stays readable when the
+                  // selected range is long (e.g. "all" returns hundreds of
+                  // daily points and the bars become invisible).
+                  const data = (() => {
+                    if (rawData.length === 0) return []
+                    const monthMap = new Map<string, number>()
+                    rawData.forEach((d) => {
+                      const month = d.date.substring(0, 7) // YYYY-MM
+                      monthMap.set(month, (monthMap.get(month) || 0) + d.value)
+                    })
+                    return Array.from(monthMap.entries())
+                      .sort(([a], [b]) => a.localeCompare(b))
+                      .map(([month, value]) => ({
+                        label: new Date(month + '-01').toLocaleDateString('en-US', {
+                          month: 'short',
+                          year: 'numeric',
+                        }),
+                        registrations: value,
+                      }))
+                  })()
+
+                  if (data.length === 0) {
+                    return (
+                      <div className="h-64 flex items-center justify-center bg-gray-50 rounded-lg">
+                        <div className="text-center">
+                          <Users className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+                          <p className="text-gray-600">No registrations in this period</p>
+                          <p className="text-sm text-gray-500">
+                            Try a wider date range
+                          </p>
+                        </div>
+                      </div>
+                    )
+                  }
+
+                  const total = data.reduce((sum, d) => sum + d.registrations, 0)
+
+                  return (
+                    <div>
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="text-sm text-gray-600">
+                          {total.toLocaleString()} total
+                          {data.length > 1 ? ` over ${data.length} months` : ''}
+                        </p>
+                      </div>
+                      <div className="h-56">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={data} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                            <XAxis
+                              dataKey="label"
+                              tick={{ fontSize: 12, fill: '#6b7280' }}
+                              stroke="#9ca3af"
+                            />
+                            <YAxis
+                              allowDecimals={false}
+                              tick={{ fontSize: 12, fill: '#6b7280' }}
+                              stroke="#9ca3af"
+                            />
+                            <Tooltip
+                              formatter={(value: number) => [value.toLocaleString(), 'New users']}
+                              labelStyle={{ color: '#374151' }}
+                              contentStyle={{
+                                borderRadius: '8px',
+                                border: '1px solid #e5e7eb',
+                                boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                              }}
+                            />
+                            <Bar
+                              dataKey="registrations"
+                              fill="#3b82f6"
+                              radius={[4, 4, 0, 0]}
+                            />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                  )
+                })()}
               </CardContent>
             </Card>
 
