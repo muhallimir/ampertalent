@@ -3,7 +3,7 @@ import { getCurrentUser } from '@/lib/auth'
 import { getPayPalClient, formatPayPalStorageId } from '@/lib/paypal'
 import { db } from '@/lib/db'
 import { MembershipPlan, PackageType } from '@prisma/client'
-import { getServiceById } from '@/lib/additional-services'
+import { getServiceById, ensureAdditionalServiceRow } from '@/lib/additional-services'
 import { getEmployerPackageById } from '@/lib/employer-packages'
 import { completeSeekerOnboardingFromPendingSignup } from '@/lib/checkout-session-management'
 import { NotificationService } from '@/lib/notification-service'
@@ -281,6 +281,12 @@ export async function POST(request: NextRequest) {
         let employerPackageId: string | undefined
 
         if (isServicePurchase && service && isSeeker) {
+            // Ensure the `additional_services` catalog row exists before inserting
+            // the purchase — otherwise the FK on additional_service_purchases
+            // fails and the buyer is charged via PayPal but never sees the
+            // purchase in "My Purchases".
+            await ensureAdditionalServiceRow(service.id)
+
             const purchaseId = `asp_paypal_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
             await db.$executeRaw`
                 INSERT INTO additional_service_purchases (id, service_id, user_id, seeker_id, amount_paid, status, created_at, updated_at)

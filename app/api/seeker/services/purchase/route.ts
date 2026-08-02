@@ -2,7 +2,7 @@ import { auth } from '@clerk/nextjs/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import stripe from '@/lib/stripe'
-import { getServiceById } from '@/lib/additional-services'
+import { getServiceById, ensureAdditionalServiceRow } from '@/lib/additional-services'
 import { NotificationService } from '@/lib/notification-service'
 import { inAppNotificationService } from '@/lib/in-app-notification-service'
 
@@ -219,6 +219,12 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
+
+    // Ensure the `additional_services` catalog row exists before creating
+    // the purchase (FK constraint on additional_service_purchases.service_id).
+    // Without this, every premium-service purchase fails with
+    // "Foreign key constraint violated: fk_service".
+    await ensureAdditionalServiceRow(service.id)
 
     // Create the service purchase record (linked to the externalPayment via paymentId)
     const purchase = await db.additionalServicePurchase.create({

@@ -3,16 +3,51 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Check, CreditCard, Shield, Clock, Star } from 'lucide-react';
+import {
+  Check,
+  CreditCard,
+  Shield,
+  Clock,
+  Star,
+  Briefcase,
+  FileText,
+  Mail,
+  Phone,
+  Users,
+  Target,
+  Rocket,
+  Award,
+  Sparkles,
+  PenLine,
+} from 'lucide-react';
 import { AdditionalServiceConfig, formatServicePrice } from '@/lib/additional-services';
-import Image from 'next/image';
 
 interface ServiceCardProps {
   service: AdditionalServiceConfig;
   onPurchase: (serviceId: string) => void;
 }
 
+// Pick a clean lucide icon based on the service id / category so the card
+// never has to load an external PNG (the legacy icon files at
+// /public/images/services/* aren't shipped, which made the broken-image alt
+// text bleed through into the circular badge).
+function getServiceIcon(service: AdditionalServiceConfig) {
+  const id = service.id.toLowerCase()
+  if (id.includes('resume')) return PenLine
+  if (id.includes('cover')) return Mail
+  if (id.includes('interview')) return Phone
+  if (id.includes('career') || id.includes('strategist')) return Target
+  if (id.includes('linkedin')) return Users
+  if (service.category === 'resume_writing') return FileText
+  if (service.category === 'interview_prep') return Phone
+  if (service.category === 'career_coaching') return Rocket
+  if (service.category === 'bundle') return Award
+  if (service.userType === 'employer') return Briefcase
+  return Sparkles
+}
+
 export function ServiceCard({ service, onPurchase }: ServiceCardProps) {
+  const Icon = getServiceIcon(service)
   return (
     <div className="relative h-full">
       {service.popular && (
@@ -30,14 +65,8 @@ export function ServiceCard({ service, onPurchase }: ServiceCardProps) {
       }`}>
 
       <CardHeader className="bg-blue-50 rounded-t-lg text-center pb-4">
-        <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-blue-200 overflow-hidden">
-          <Image
-            src={`/images/services/${service.icon}`}
-            alt={service.name}
-            width={48}
-            height={48}
-            className="object-cover"
-          />
+        <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-blue-200">
+          <Icon className="h-8 w-8 text-blue-600" aria-hidden="true" />
         </div>
         <CardTitle className="text-xl font-bold text-gray-900">
           {service.name}

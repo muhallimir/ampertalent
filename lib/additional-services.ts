@@ -332,6 +332,55 @@ export function serviceConfigToPrismaData(service: AdditionalServiceConfig) {
 }
 
 /**
+ * Ensure an `additional_services` row exists for the given static-config service.
+ *
+ * The static SEEKER_SERVICES / EMPLOYER_SERVICES arrays are the source of truth
+ * at the code level, but `additional_service_purchases.service_id` has a FK to
+ * `additional_services.service_id`. Without a seeded row, every purchase fails
+ * with `Foreign key constraint violated: fk_service`. This helper does an
+ * idempotent upsert so purchase flows can self-heal the catalog.
+ *
+ * Returns the DB row (existing or freshly created) or null if the serviceId is
+ * not in any of the static catalogs.
+ */
+export async function ensureAdditionalServiceRow(
+  serviceId: string
+): Promise<{ id: string; serviceId: string; name: string } | null> {
+  const config = getServiceById(serviceId)
+  if (!config) return null
+
+  // Lazy import to keep the static catalog importable in edge/client bundles
+  // without dragging in the Prisma client.
+  const { db } = await import('@/lib/db')
+
+  try {
+    const row = await db.additionalService.upsert({
+      where: { serviceId: config.id },
+      update: {
+        // Don't overwrite admin-edited name/description/price with the static
+        // config values; just keep the row in sync with isActive.
+        isActive: config.isActive,
+      },
+      create: {
+        serviceId: config.id,
+        name: config.name,
+        description: config.description,
+        price: config.price,
+        category: config.category,
+        userType: config.userType,
+        isActive: config.isActive,
+        features: config.features,
+      },
+      select: { id: true, serviceId: true, name: true },
+    })
+    return row
+  } catch (err) {
+    console.error(`[ensureAdditionalServiceRow] Failed to upsert service ${serviceId}:`, err)
+    return null
+  }
+}
+
+/**
  * Validate service ID exists in catalog
  */
 export function isValidServiceId(serviceId: string): boolean {

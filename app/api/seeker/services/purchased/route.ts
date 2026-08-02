@@ -55,15 +55,28 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    const formatted = purchases.map((purchase) => ({
-      id: purchase.id,
-      serviceId: purchase.serviceId,
-      serviceName: purchase.service.name,
-      status: purchase.status,
-      amountPaid: purchase.amountPaid,
-      createdAt: purchase.createdAt,
-      completedAt: purchase.completedAt,
-    }))
+    // Defensive: a purchase row's joined `service` may be null if the catalog
+    // row is missing (e.g. legacy data or a race between FK upsert and join).
+    // Fall back to the static catalog via getServiceById() so the UI always
+    // has a name to render.
+    const { getServiceById } = await import('@/lib/additional-services')
+
+    const formatted = purchases.map((purchase) => {
+      const staticConfig = getServiceById(purchase.serviceId)
+      const serviceName =
+        purchase.service?.name ||
+        staticConfig?.name ||
+        purchase.serviceId
+      return {
+        id: purchase.id,
+        serviceId: purchase.serviceId,
+        serviceName,
+        status: purchase.status,
+        amountPaid: purchase.amountPaid,
+        createdAt: purchase.createdAt,
+        completedAt: purchase.completedAt,
+      }
+    })
 
     return NextResponse.json(
       {
