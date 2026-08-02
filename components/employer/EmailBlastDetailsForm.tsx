@@ -41,7 +41,7 @@ export function EmailBlastDetailsForm({ jobId, onComplete }: EmailBlastDetailsFo
   const [companyProfile, setCompanyProfile] = useState<CompanyProfile | null>(null)
   const [emailBlastRequest, setEmailBlastRequest] = useState<EmailBlastRequest | null>(null)
   const [isUploading, setIsUploading] = useState(false)
-  
+
   const [formData, setFormData] = useState({
     logoUrl: '',
     content: '',
@@ -57,10 +57,10 @@ export function EmailBlastDetailsForm({ jobId, onComplete }: EmailBlastDetailsFo
   const loadData = async () => {
     try {
       setIsLoading(true)
-      
+
       // Check for impersonation context only on client side
       const headers: HeadersInit = {}
-      
+
       if (typeof window !== 'undefined') {
         const impersonationSession = getImpersonationSession()
         if (impersonationSession) {
@@ -72,7 +72,7 @@ export function EmailBlastDetailsForm({ jobId, onComplete }: EmailBlastDetailsFo
           headers['x-admin-user-id'] = impersonationSession.adminId
         }
       }
-      
+
       // Load company profile
       const profileResponse = await fetch('/api/employer/profile', { headers })
       let profileData = null
@@ -97,7 +97,7 @@ export function EmailBlastDetailsForm({ jobId, onComplete }: EmailBlastDetailsFo
       if (emailBlastResponse.ok) {
         const emailBlastData = await emailBlastResponse.json()
         setEmailBlastRequest(emailBlastData.emailBlastRequest)
-        
+
         if (emailBlastData.emailBlastRequest) {
           const request = emailBlastData.emailBlastRequest
           setFormData({
@@ -147,10 +147,10 @@ export function EmailBlastDetailsForm({ jobId, onComplete }: EmailBlastDetailsFo
 
     try {
       setIsUploading(true)
-      
+
       // Check for impersonation context only on client side
       const headers: HeadersInit = {}
-      
+
       if (typeof window !== 'undefined') {
         const impersonationSession = getImpersonationSession()
         if (impersonationSession) {
@@ -158,16 +158,16 @@ export function EmailBlastDetailsForm({ jobId, onComplete }: EmailBlastDetailsFo
           headers['x-admin-user-id'] = impersonationSession.adminId
         }
       }
-      
+
       const formData = new FormData()
       formData.append('logo', file)
-      
+
       const response = await fetch('/api/employer/company-logo', {
         method: 'POST',
         headers,
         body: formData
       })
-      
+
       if (response.ok) {
         const data = await response.json()
         setFormData(prev => ({
@@ -175,7 +175,7 @@ export function EmailBlastDetailsForm({ jobId, onComplete }: EmailBlastDetailsFo
           logoUrl: data.logoUrl,
           useExistingLogo: false
         }))
-        
+
         addToast({
           title: 'Success',
           description: 'Logo uploaded successfully',
@@ -203,7 +203,7 @@ export function EmailBlastDetailsForm({ jobId, onComplete }: EmailBlastDetailsFo
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     // Validation
     if (!formData.content.trim()) {
       addToast({
@@ -234,19 +234,19 @@ export function EmailBlastDetailsForm({ jobId, onComplete }: EmailBlastDetailsFo
 
     try {
       setIsSaving(true)
-      
+
       const submitData = {
         logoUrl: formData.useExistingLogo ? companyProfile?.companyLogoUrl : formData.logoUrl,
         content: formData.content.trim(),
         customLink: formData.useJobLink ? null : formData.customLink.trim(),
         useJobLink: formData.useJobLink
       }
-      
+
       // Check for impersonation context only on client side
       const headers: HeadersInit = {
         'Content-Type': 'application/json'
       }
-      
+
       if (typeof window !== 'undefined') {
         const impersonationSession = getImpersonationSession()
         if (impersonationSession) {
@@ -254,20 +254,20 @@ export function EmailBlastDetailsForm({ jobId, onComplete }: EmailBlastDetailsFo
           headers['x-admin-user-id'] = impersonationSession.adminId
         }
       }
-      
+
       const response = await fetch(`/api/employer/jobs/${jobId}/email-blast`, {
         method: 'POST',
         headers,
         body: JSON.stringify(submitData)
       })
-      
+
       if (response.ok) {
         addToast({
           title: 'Success',
           description: 'Email blast details saved successfully',
           variant: 'default'
         })
-        
+
         if (onComplete) {
           onComplete()
         } else {
@@ -328,15 +328,14 @@ export function EmailBlastDetailsForm({ jobId, onComplete }: EmailBlastDetailsFo
             {/* Logo Section */}
             <div className="space-y-4">
               <Label className="text-base font-medium">Company Logo</Label>
-              
+
               {companyProfile?.companyLogoUrl ? (
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-4">
                   <div className="text-sm text-blue-800 font-medium">Choose your logo option:</div>
-                  
+
                   {/* Existing Logo Option */}
-                  <div className={`border rounded-lg p-4 cursor-pointer transition-colors ${
-                    formData.useExistingLogo ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-white hover:border-gray-300'
-                  }`} onClick={() => !isReadOnly && setFormData(prev => ({ ...prev, useExistingLogo: true }))}>
+                  <div className={`border rounded-lg p-4 cursor-pointer transition-colors ${formData.useExistingLogo ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-white hover:border-gray-300'
+                    }`} onClick={() => !isReadOnly && setFormData(prev => ({ ...prev, useExistingLogo: true }))}>
                     <div className="flex items-center space-x-3">
                       <input
                         type="radio"
@@ -366,9 +365,8 @@ export function EmailBlastDetailsForm({ jobId, onComplete }: EmailBlastDetailsFo
                   </div>
 
                   {/* Upload New Logo Option */}
-                  <div className={`border rounded-lg p-4 cursor-pointer transition-colors ${
-                    !formData.useExistingLogo ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-white hover:border-gray-300'
-                  }`} onClick={() => !isReadOnly && setFormData(prev => ({ ...prev, useExistingLogo: false }))}>
+                  <div className={`border rounded-lg p-4 cursor-pointer transition-colors ${!formData.useExistingLogo ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-white hover:border-gray-300'
+                    }`} onClick={() => !isReadOnly && setFormData(prev => ({ ...prev, useExistingLogo: false }))}>
                     <div className="flex items-center space-x-3">
                       <input
                         type="radio"
@@ -464,7 +462,7 @@ export function EmailBlastDetailsForm({ jobId, onComplete }: EmailBlastDetailsFo
                   />
                   <Label htmlFor="job-link" className="flex items-center space-x-2">
                     <Link className="h-4 w-4" />
-                    <span>Use HMM job post link</span>
+                    <span>Use AmperTalent job post link</span>
                   </Label>
                 </div>
                 <div className="flex items-center space-x-3">
