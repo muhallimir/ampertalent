@@ -137,7 +137,7 @@ export default function AdminSoloEmailBlastsPage() {
 
   const copyJobPostToClipboard = async (jobId: string, jobTitle: string) => {
     try {
-      const jobUrl = `${window.location.origin}/jobs/${jobId}`
+      const jobUrl = `${window.location.origin}/admin/job-posts/${jobId}/edit`
       await navigator.clipboard.writeText(jobUrl)
       addToast({
         title: 'Copied!',
@@ -489,6 +489,36 @@ export default function AdminSoloEmailBlastsPage() {
           Manage solo email blast requests and track their status
         </p>
 
+        {/* Coming Soon Banner */}
+        <div className="mt-4 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-r-lg">
+          <div className="flex items-start space-x-3">
+            <AlertTriangle className="h-6 w-6 text-yellow-600 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <h3 className="font-semibold text-yellow-900">
+                Coming Soon — Tracking-Only View
+              </h3>
+              <p className="text-sm text-yellow-800 mt-1">
+                The "Mark as Sent" action updates the request status and the
+                linked job's <code className="bg-yellow-100 px-1 rounded">emailBlastStatus</code>,
+                but it does <strong>not</strong> actually send any email to candidates.
+                The end-to-end send pipeline (candidate audience selection,
+                template rendering, and delivery via Resend or GoHighLevel) is
+                not wired up yet.
+              </p>
+              <p className="text-sm text-yellow-800 mt-2">
+                For now, use this page to triage requests, then compose and
+                send the blast manually through GoHighLevel using the
+                employer-supplied content, logo, and link shown in the
+                request dialog.
+              </p>
+              <p className="text-xs text-yellow-700 mt-2">
+                See <code className="bg-yellow-100 px-1 rounded">docs/15-SOLO-EMAIL-BLASTS-COMING-SOON.md</code> for the
+                implementation backlog.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Status Guide */}
         <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
           <h3 className="font-semibold text-blue-900 mb-3">📋 Status Guide for Admins</h3>
@@ -806,7 +836,7 @@ export default function AdminSoloEmailBlastsPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => window.open(`/jobs/${selectedRequest?.jobId}`, '_blank')}
+                  onClick={() => window.open(`/admin/job-posts/${selectedRequest?.jobId}/edit`, '_blank')}
                 >
                   <ExternalLink className="h-4 w-4 mr-2" />
                   View Job
