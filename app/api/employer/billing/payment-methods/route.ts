@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth'
 import { db } from '@/lib/db'
 import stripe from '@/lib/stripe'
+import { ensureDemoRoleRows } from '@/lib/demo-role-backfill'
 
 export async function GET(request: NextRequest) {
     try {
@@ -19,13 +20,40 @@ export async function GET(request: NextRequest) {
             include: { employer: true },
         })
 
-        if (!userProfile || !userProfile.employer) {
+        // Auto-provision the Employer row when missing so a freshly-onboarded
+        // employer can still manage payment methods without 403-ing first.
+        if (userProfile && !userProfile.employer) {
+            try {
+                await ensureDemoRoleRows(userProfile.id)
+            } catch (e) {
+                // ignore — fall through to manual create below
+            }
+            const refetched = await db.userProfile.findUnique({
+                where: { clerkUserId: currentUser.clerkUser.id as string },
+                include: { employer: true },
+            })
+            if (refetched && !refetched.employer) {
+                await db.employer.create({
+                    data: {
+                        userId: userProfile.id,
+                        companyName: userProfile.name || 'Company',
+                    },
+                })
+            }
+        }
+
+        const userProfileFinal = await db.userProfile.findUnique({
+            where: { clerkUserId: currentUser.clerkUser.id as string },
+            include: { employer: true },
+        })
+
+        if (!userProfileFinal || !userProfileFinal.employer) {
             return NextResponse.json({ error: 'Access denied' }, { status: 403 })
         }
 
         // Get Stripe customer ID from the most recent employer package (stored in arbSubscriptionId)
         const latestPackage = await db.employerPackage.findFirst({
-            where: { employerId: userProfile.employer.userId },
+            where: { employerId: userProfileFinal.employer.userId },
             orderBy: { purchasedAt: 'desc' },
             select: { arbSubscriptionId: true },
         })
@@ -34,7 +62,7 @@ export async function GET(request: NextRequest) {
 
         // First, check DB payment_methods table (saved after first purchase)
         const dbMethods = await db.paymentMethod.findMany({
-            where: { employerId: userProfile.employer.userId },
+            where: { employerId: userProfileFinal.employer.userId },
             orderBy: { createdAt: 'desc' },
         })
 
@@ -98,7 +126,33 @@ export async function POST(request: NextRequest) {
             include: { employer: true },
         })
 
-        if (!userProfile?.employer) {
+        // payment_methods.employer_id FK references employers.user_id. Make sure
+        // the Employer row exists before the insert — a non-onboarded employer
+        // (or a freshly-created profile) won't have one yet.
+        let employerRecord = userProfile?.employer
+        if (userProfile && !employerRecord) {
+            try {
+                await ensureDemoRoleRows(userProfile.id)
+            } catch (e) {
+                // ignore — fall through to manual create below
+            }
+            const refetched = await db.userProfile.findUnique({
+                where: { id: currentUser.profile.id },
+                include: { employer: true },
+            })
+            if (refetched?.employer) {
+                employerRecord = refetched.employer
+            } else {
+                employerRecord = await db.employer.create({
+                    data: {
+                        userId: userProfile.id,
+                        companyName: userProfile.name || 'Company',
+                    },
+                })
+            }
+        }
+
+        if (!employerRecord) {
             return NextResponse.json({ error: 'Employer profile not found' }, { status: 404 })
         }
 
@@ -107,11 +161,7 @@ export async function POST(request: NextRequest) {
         let customerId: string | undefined
 
         // 1. Canonical source: stripeCustomerId on the Employer row
-        const employerRecord = await db.employer.findUnique({
-            where: { userId: userProfile.employer.userId },
-            select: { stripeCustomerId: true },
-        })
-        if (employerRecord?.stripeCustomerId) customerId = employerRecord.stripeCustomerId
+        if (employerRecord.stripeCustomerId) customerId = employerRecord.stripeCustomerId
 
         // 2. Check if the freshly-tokenised PM is already attached to a customer
         if (!customerId) {
@@ -133,7 +183,7 @@ export async function POST(request: NextRequest) {
 
         // Persist customer ID on Employer so future calls don't create duplicates
         await db.employer.update({
-            where: { userId: userProfile.employer.userId },
+            where: { userId: employerRecord.userId },
             data: { stripeCustomerId: customerId },
         })
 
@@ -141,14 +191,14 @@ export async function POST(request: NextRequest) {
 
         // Determine if this should be default (true if it's the first method)
         const existingMethodCount = await db.paymentMethod.count({
-            where: { employerId: userProfile.employer.userId },
+            where: { employerId: employerRecord.userId },
         })
         const shouldBeDefault = isDefault || existingMethodCount === 0
 
         // If setting as default, unset existing defaults
         if (shouldBeDefault) {
             await db.paymentMethod.updateMany({
-                where: { employerId: userProfile.employer.userId, isDefault: true },
+                where: { employerId: employerRecord.userId, isDefault: true },
                 data: { isDefault: false },
             })
         }
@@ -156,7 +206,7 @@ export async function POST(request: NextRequest) {
         // Save to payment_methods table
         const savedMethod = await db.paymentMethod.create({
             data: {
-                employerId: userProfile.employer.userId,
+                employerId: employerRecord.userId,
                 type: 'credit_card',
                 last4: stripeMethod.card?.last4 || '',
                 brand: stripeMethod.card?.brand || '',
@@ -223,14 +273,38 @@ export async function PUT(request: NextRequest) {
             where: { id: currentUser.profile.id },
             include: { employer: true },
         })
-        if (!userProfile?.employer) {
+
+        // Auto-provision the Employer row when missing (mirrors POST).
+        let employerRecord = userProfile?.employer
+        if (userProfile && !employerRecord) {
+            try {
+                await ensureDemoRoleRows(userProfile.id)
+            } catch (e) {
+                // ignore
+            }
+            const refetched = await db.userProfile.findUnique({
+                where: { id: currentUser.profile.id },
+                include: { employer: true },
+            })
+            if (refetched?.employer) {
+                employerRecord = refetched.employer
+            } else {
+                employerRecord = await db.employer.create({
+                    data: {
+                        userId: userProfile.id,
+                        companyName: userProfile.name || 'Company',
+                    },
+                })
+            }
+        }
+        if (!employerRecord) {
             return NextResponse.json({ error: 'Employer profile not found' }, { status: 404 })
         }
 
         // ── setDefault: mark a saved card as the default ─────────────────────
         if (action === 'setDefault') {
             const existing = await db.paymentMethod.findFirst({
-                where: { id: paymentMethodId, employerId: userProfile.employer.userId },
+                where: { id: paymentMethodId, employerId: employerRecord.userId },
             })
             if (!existing) {
                 return NextResponse.json({ error: 'Payment method not found' }, { status: 404 })
@@ -238,7 +312,7 @@ export async function PUT(request: NextRequest) {
 
             // Unset all existing defaults first
             await db.paymentMethod.updateMany({
-                where: { employerId: userProfile.employer.userId, isDefault: true },
+                where: { employerId: employerRecord.userId, isDefault: true },
                 data: { isDefault: false },
             })
 
@@ -260,21 +334,21 @@ export async function PUT(request: NextRequest) {
             }
 
             const existing = await db.paymentMethod.findFirst({
-                where: { id: paymentMethodId, employerId: userProfile.employer.userId },
+                where: { id: paymentMethodId, employerId: employerRecord.userId },
             })
             if (!existing) {
                 return NextResponse.json({ error: 'Payment method not found' }, { status: 404 })
             }
 
             // Resolve the customer to attach the new PM to (reuse existing or create)
-            let customerId: string | undefined = userProfile.employer.stripeCustomerId
+            let customerId: string | undefined = employerRecord.stripeCustomerId
             try {
                 const freshPM = await stripe.paymentMethods.retrieve(stripePaymentMethodId)
                 if (freshPM.customer) customerId = freshPM.customer as string
             } catch (_) { /* ignore */ }
             if (!customerId) {
                 const latestPkg = await db.employerPackage.findFirst({
-                    where: { employerId: userProfile.employer.userId, arbSubscriptionId: { startsWith: 'cus_' } },
+                    where: { employerId: employerRecord.userId, arbSubscriptionId: { startsWith: 'cus_' } },
                     orderBy: { purchasedAt: 'desc' },
                     select: { arbSubscriptionId: true },
                 })
@@ -282,8 +356,8 @@ export async function PUT(request: NextRequest) {
             }
             if (!customerId) {
                 const customer = await stripe.customers.create({
-                    email: userProfile.email || '',
-                    name: userProfile.name || userProfile.employer.companyName || '',
+                    email: userProfile?.email || '',
+                    name: userProfile?.name || employerRecord.companyName || '',
                     metadata: { userId: currentUser.profile.id, role: 'employer' },
                 })
                 customerId = customer.id
@@ -291,7 +365,7 @@ export async function PUT(request: NextRequest) {
 
             // Persist on Employer row
             await db.employer.update({
-                where: { userId: userProfile.employer.userId },
+                where: { userId: employerRecord.userId },
                 data: { stripeCustomerId: customerId },
             })
 

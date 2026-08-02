@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth'
 import { db } from '@/lib/db'
 import stripe from '@/lib/stripe'
+import { ensureDemoRoleRows } from '@/lib/demo-role-backfill'
 
 export async function GET(request: NextRequest) {
     try {
@@ -19,7 +20,31 @@ export async function GET(request: NextRequest) {
             include: { jobSeeker: true },
         })
 
-        if (!userProfile?.jobSeeker) {
+        // A non-onboarded seeker may not have a JobSeeker row yet. Create the
+        // minimum row so GET / POST don't 404 (and so the POST below can
+        // satisfy payment_methods.seeker_id FK).
+        if (userProfile && !userProfile.jobSeeker) {
+            try {
+                await ensureDemoRoleRows(userProfile.id)
+            } catch (e) {
+                // ignore — fall through to manual create below
+            }
+            const refetched = await db.userProfile.findUnique({
+                where: { id: currentUser.profile.id },
+                include: { jobSeeker: true },
+            })
+            if (refetched && !refetched.jobSeeker) {
+                await db.jobSeeker.create({
+                    data: { userId: userProfile.id, membershipPlan: 'none' },
+                })
+            }
+        }
+
+        const userProfileFinal = await db.userProfile.findUnique({
+            where: { id: currentUser.profile.id },
+            include: { jobSeeker: true },
+        })
+        if (!userProfileFinal?.jobSeeker) {
             return NextResponse.json({ error: 'Job seeker profile not found' }, { status: 404 })
         }
 
@@ -34,7 +59,7 @@ export async function GET(request: NextRequest) {
 
         // First, check DB payment_methods table (saved after first purchase)
         const dbMethods = await db.paymentMethod.findMany({
-            where: { seekerId: userProfile.id },
+            where: { seekerId: userProfileFinal.id },
             orderBy: { createdAt: 'desc' },
         })
 
@@ -96,6 +121,34 @@ export async function POST(request: NextRequest) {
         const userProfile = await db.userProfile.findUnique({
             where: { id: currentUser.profile.id },
         })
+
+        // The payment_methods.seeker_id FK references job_seekers.user_id.
+        // Make sure that row exists before we try to insert — a non-onboarded
+        // seeker (or a freshly-created user profile) won't have a JobSeeker
+        // row yet, and the FK constraint will reject the payment_method
+        // insert otherwise. Demo accounts get a richer backfill; everyone
+        // else gets the minimum row needed to satisfy the FK.
+        let jobSeeker = await db.jobSeeker.findUnique({
+            where: { userId: currentUser.profile.id },
+            select: { userId: true },
+        })
+        if (!jobSeeker) {
+            try {
+                await ensureDemoRoleRows(currentUser.profile.id)
+            } catch (e) {
+                // ignore — fall through to manual create below
+            }
+            jobSeeker = await db.jobSeeker.findUnique({
+                where: { userId: currentUser.profile.id },
+                select: { userId: true },
+            })
+            if (!jobSeeker) {
+                jobSeeker = await db.jobSeeker.create({
+                    data: { userId: currentUser.profile.id, membershipPlan: 'none' },
+                    select: { userId: true },
+                })
+            }
+        }
 
         // Reuse existing Stripe customer rather than creating new ones on every "Add card".
         // Priority:
