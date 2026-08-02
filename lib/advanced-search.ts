@@ -259,9 +259,9 @@ export class AdvancedSearchService {
         }
       }
 
-      // Flexible hours filter
-      if (isFlexibleHours !== undefined) {
-        whereClause.isFlexibleHours = isFlexibleHours;
+      // Flexible hours filter — only apply when explicitly true
+      if (isFlexibleHours === true) {
+        whereClause.isFlexibleHours = true;
       }
 
       // Hours per week filter
