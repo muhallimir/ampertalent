@@ -213,7 +213,7 @@ export default function AdvancedJobSearch({ onJobSelect }: AdvancedJobSearchProp
         limit: '20',
         sortBy: searchFilters.sortBy,
         sortOrder: searchFilters.sortOrder,
-        availableOnly: 'true' // Only show available jobs by default
+        availableOnly: 'false' // Show all approved jobs by default (including those with prior applications)
       })
 
       // Add filters to params
