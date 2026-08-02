@@ -200,3 +200,120 @@ export async function DELETE(request: NextRequest) {
         return NextResponse.json({ error: 'Failed to remove payment method' }, { status: 500 })
     }
 }
+
+export async function PUT(request: NextRequest) {
+    try {
+        const currentUser = await getCurrentUser(request)
+        if (!currentUser?.clerkUser || !currentUser.profile) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+        }
+
+        if (currentUser.profile.role !== 'employer') {
+            return NextResponse.json({ error: 'Access denied' }, { status: 403 })
+        }
+
+        const body = await request.json()
+        const { paymentMethodId, action, stripePaymentMethodId } = body
+
+        if (!paymentMethodId) {
+            return NextResponse.json({ error: 'paymentMethodId is required' }, { status: 400 })
+        }
+
+        const userProfile = await db.userProfile.findUnique({
+            where: { id: currentUser.profile.id },
+            include: { employer: true },
+        })
+        if (!userProfile?.employer) {
+            return NextResponse.json({ error: 'Employer profile not found' }, { status: 404 })
+        }
+
+        // ── setDefault: mark a saved card as the default ─────────────────────
+        if (action === 'setDefault') {
+            const existing = await db.paymentMethod.findFirst({
+                where: { id: paymentMethodId, employerId: userProfile.employer.userId },
+            })
+            if (!existing) {
+                return NextResponse.json({ error: 'Payment method not found' }, { status: 404 })
+            }
+
+            // Unset all existing defaults first
+            await db.paymentMethod.updateMany({
+                where: { employerId: userProfile.employer.userId, isDefault: true },
+                data: { isDefault: false },
+            })
+
+            await db.paymentMethod.update({
+                where: { id: paymentMethodId },
+                data: { isDefault: true },
+            })
+
+            return NextResponse.json({ success: true, message: 'Default payment method updated' })
+        }
+
+        // ── update: replace the card with a new one (Stripe PM id) ───────────
+        if (action === 'update') {
+            if (!stripePaymentMethodId || !stripePaymentMethodId.startsWith('pm_')) {
+                return NextResponse.json(
+                    { error: 'A valid Stripe paymentMethodId is required for update' },
+                    { status: 400 }
+                )
+            }
+
+            const existing = await db.paymentMethod.findFirst({
+                where: { id: paymentMethodId, employerId: userProfile.employer.userId },
+            })
+            if (!existing) {
+                return NextResponse.json({ error: 'Payment method not found' }, { status: 404 })
+            }
+
+            // Resolve the customer to attach the new PM to (reuse existing or create)
+            let customerId: string | undefined = userProfile.employer.stripeCustomerId
+            try {
+                const freshPM = await stripe.paymentMethods.retrieve(stripePaymentMethodId)
+                if (freshPM.customer) customerId = freshPM.customer as string
+            } catch (_) { /* ignore */ }
+            if (!customerId) {
+                const latestPkg = await db.employerPackage.findFirst({
+                    where: { employerId: userProfile.employer.userId, arbSubscriptionId: { startsWith: 'cus_' } },
+                    orderBy: { purchasedAt: 'desc' },
+                    select: { arbSubscriptionId: true },
+                })
+                customerId = latestPkg?.arbSubscriptionId
+            }
+            if (!customerId) {
+                const customer = await stripe.customers.create({
+                    email: userProfile.email || '',
+                    name: userProfile.name || userProfile.employer.companyName || '',
+                    metadata: { userId: currentUser.profile.id, role: 'employer' },
+                })
+                customerId = customer.id
+            }
+
+            // Persist on Employer row
+            await db.employer.update({
+                where: { userId: userProfile.employer.userId },
+                data: { stripeCustomerId: customerId },
+            })
+
+            const stripeMethod = await stripe.paymentMethods.attach(stripePaymentMethodId, { customer: customerId })
+
+            await db.paymentMethod.update({
+                where: { id: paymentMethodId },
+                data: {
+                    last4: stripeMethod.card?.last4 || existing.last4,
+                    brand: stripeMethod.card?.brand || existing.brand,
+                    expiryMonth: stripeMethod.card?.exp_month || existing.expiryMonth,
+                    expiryYear: stripeMethod.card?.exp_year || existing.expiryYear,
+                    authnetPaymentProfileId: stripePaymentMethodId,
+                },
+            })
+
+            return NextResponse.json({ success: true, message: 'Payment method updated' })
+        }
+
+        return NextResponse.json({ error: 'Unknown action' }, { status: 400 })
+    } catch (error) {
+        console.error('Error updating employer payment method:', error)
+        return NextResponse.json({ error: 'Failed to update payment method' }, { status: 500 })
+    }
+}

@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Only job seekers can manage payment methods' }, { status: 403 })
         }
 
-        const { paymentMethodId } = await request.json()
+        const { paymentMethodId, isDefault } = await request.json()
 
         if (!paymentMethodId) {
             return NextResponse.json({ error: 'paymentMethodId is required' }, { status: 400 })
@@ -95,13 +95,6 @@ export async function POST(request: NextRequest) {
 
         const userProfile = await db.userProfile.findUnique({
             where: { id: currentUser.profile.id },
-        })
-
-        // Get Stripe customer ID from the most recent subscription (stored in authnetCustomerId)
-        const latestSubscription = await db.subscription.findFirst({
-            where: { seekerId: currentUser.profile.id },
-            orderBy: { createdAt: 'desc' },
-            select: { authnetCustomerId: true },
         })
 
         // Reuse existing Stripe customer rather than creating new ones on every "Add card".
@@ -131,19 +124,169 @@ export async function POST(request: NextRequest) {
         // 3. Create a new customer
         if (!customerId) {
             const customer = await stripe.customers.create({
-                email: currentUser.clerkUser.emailAddresses?.[0]?.emailAddress || '',
+                email: currentUser.clerkUser.emailAddresses?.[0]?.emailAddress || userProfile?.email || '',
                 name: userProfile?.name || '',
-                metadata: { userId: currentUser.profile.id },
+                metadata: { userId: currentUser.clerkUser.id, seekerId: currentUser.profile.id },
             })
             customerId = customer.id
         }
 
-        await stripe.paymentMethods.attach(paymentMethodId, { customer: customerId })
+        // Attach the PM to the customer (idempotent on Stripe side)
+        const stripeMethod = await stripe.paymentMethods.attach(paymentMethodId, { customer: customerId })
 
-        return NextResponse.json({ success: true, message: 'Payment method added successfully' })
+        // Determine if this should be the default (true if it's the first method, or caller asked)
+        const existingMethodCount = await db.paymentMethod.count({
+            where: { seekerId: currentUser.profile.id },
+        })
+        const shouldBeDefault = !!isDefault || existingMethodCount === 0
+
+        // If setting as default, unset any existing default card
+        if (shouldBeDefault) {
+            await db.paymentMethod.updateMany({
+                where: { seekerId: currentUser.profile.id, isDefault: true },
+                data: { isDefault: false },
+            })
+        }
+
+        // Save to local payment_methods table so it shows up in the UI
+        const savedMethod = await db.paymentMethod.create({
+            data: {
+                seekerId: currentUser.profile.id,
+                type: 'credit_card',
+                last4: stripeMethod.card?.last4 || '',
+                brand: stripeMethod.card?.brand || '',
+                expiryMonth: stripeMethod.card?.exp_month || 0,
+                expiryYear: stripeMethod.card?.exp_year || 0,
+                isDefault: shouldBeDefault,
+                authnetPaymentProfileId: paymentMethodId, // store Stripe PM id here
+            },
+        })
+
+        // Persist the Stripe customer id on the latest subscription (if any) for future charges
+        const latestSubForCustomer = await db.subscription.findFirst({
+            where: { seekerId: currentUser.profile.id },
+            orderBy: { createdAt: 'desc' },
+            select: { id: true, authnetCustomerId: true },
+        })
+        if (latestSubForCustomer && !latestSubForCustomer.authnetCustomerId) {
+            await db.subscription.update({
+                where: { id: latestSubForCustomer.id },
+                data: { authnetCustomerId: customerId },
+            })
+        }
+
+        return NextResponse.json({
+            success: true,
+            message: 'Payment method added successfully',
+            customerId,
+            paymentMethod: savedMethod,
+        })
     } catch (error) {
         console.error('Error adding payment method:', error)
         return NextResponse.json({ error: 'Failed to add payment method' }, { status: 500 })
+    }
+}
+
+export async function PUT(request: NextRequest) {
+    try {
+        const currentUser = await getCurrentUser(request)
+        if (!currentUser?.clerkUser || !currentUser.profile) {
+            return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+        }
+
+        if (currentUser.profile.role !== 'seeker') {
+            return NextResponse.json({ error: 'Only job seekers can manage payment methods' }, { status: 403 })
+        }
+
+        const body = await request.json()
+        const { paymentMethodId, action, stripePaymentMethodId } = body
+
+        if (!paymentMethodId) {
+            return NextResponse.json({ error: 'paymentMethodId is required' }, { status: 400 })
+        }
+
+        // ── setDefault: mark a saved card as the default ─────────────────────
+        if (action === 'setDefault') {
+            const existing = await db.paymentMethod.findFirst({
+                where: { id: paymentMethodId, seekerId: currentUser.profile.id },
+            })
+            if (!existing) {
+                return NextResponse.json({ error: 'Payment method not found' }, { status: 404 })
+            }
+
+            // Unset all existing defaults first
+            await db.paymentMethod.updateMany({
+                where: { seekerId: currentUser.profile.id, isDefault: true },
+                data: { isDefault: false },
+            })
+
+            await db.paymentMethod.update({
+                where: { id: paymentMethodId },
+                data: { isDefault: true },
+            })
+
+            return NextResponse.json({ success: true, message: 'Default payment method updated' })
+        }
+
+        // ── update: replace the card with a new one (Stripe PM id) ───────────
+        if (action === 'update') {
+            if (!stripePaymentMethodId || !stripePaymentMethodId.startsWith('pm_')) {
+                return NextResponse.json(
+                    { error: 'A valid Stripe paymentMethodId is required for update' },
+                    { status: 400 }
+                )
+            }
+
+            const existing = await db.paymentMethod.findFirst({
+                where: { id: paymentMethodId, seekerId: currentUser.profile.id },
+            })
+            if (!existing) {
+                return NextResponse.json({ error: 'Payment method not found' }, { status: 404 })
+            }
+
+            // Resolve the customer to attach the new PM to (reuse existing or create)
+            let customerId: string | undefined
+            try {
+                const freshPM = await stripe.paymentMethods.retrieve(stripePaymentMethodId)
+                if (freshPM.customer) customerId = freshPM.customer as string
+            } catch (_) { /* ignore */ }
+            if (!customerId) {
+                const latestSub = await db.subscription.findFirst({
+                    where: { seekerId: currentUser.profile.id, authnetCustomerId: { startsWith: 'cus_' } },
+                    orderBy: { createdAt: 'desc' },
+                    select: { authnetCustomerId: true },
+                })
+                customerId = latestSub?.authnetCustomerId
+            }
+            if (!customerId) {
+                const customer = await stripe.customers.create({
+                    email: currentUser.clerkUser.emailAddresses?.[0]?.emailAddress || '',
+                    name: existing.brand || 'Stripe Customer',
+                    metadata: { userId: currentUser.clerkUser.id, seekerId: currentUser.profile.id },
+                })
+                customerId = customer.id
+            }
+
+            const stripeMethod = await stripe.paymentMethods.attach(stripePaymentMethodId, { customer: customerId })
+
+            await db.paymentMethod.update({
+                where: { id: paymentMethodId },
+                data: {
+                    last4: stripeMethod.card?.last4 || existing.last4,
+                    brand: stripeMethod.card?.brand || existing.brand,
+                    expiryMonth: stripeMethod.card?.exp_month || existing.expiryMonth,
+                    expiryYear: stripeMethod.card?.exp_year || existing.expiryYear,
+                    authnetPaymentProfileId: stripePaymentMethodId,
+                },
+            })
+
+            return NextResponse.json({ success: true, message: 'Payment method updated' })
+        }
+
+        return NextResponse.json({ error: 'Unknown action' }, { status: 400 })
+    } catch (error) {
+        console.error('Error updating payment method:', error)
+        return NextResponse.json({ error: 'Failed to update payment method' }, { status: 500 })
     }
 }
 

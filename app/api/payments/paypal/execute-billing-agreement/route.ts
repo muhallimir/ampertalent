@@ -12,7 +12,7 @@ import { ensureDemoRoleRows } from '@/lib/demo-role-backfill'
 /**
  * POST /api/payments/paypal/execute-billing-agreement
  * Execute a PayPal Billing Agreement after user approval.
- * Mirrors HireMyMom implementation exactly — adapted for ampertalent schema.
+ * Mirrors ampetalent implementation exactly — adapted for ampertalent schema.
  */
 export async function POST(request: NextRequest) {
     const requestId = Math.random().toString(36).substring(2, 8)

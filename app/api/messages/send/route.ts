@@ -1,7 +1,7 @@
 /**
  * POST /api/messages/send
  *
- * Rules (mirroring HireMyMom):
+ * Rules (mirroring ampetalent):
  * - Employers can initiate new conversations with seekers
  * - Seekers can ONLY reply in existing threads (cannot start new ones)
  * - Find-or-create thread by sorted participant IDs

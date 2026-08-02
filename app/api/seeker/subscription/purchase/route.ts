@@ -117,6 +117,7 @@ export async function POST(request: NextRequest) {
     console.log(`[Seeker Purchase] Creating ${planConfig.membershipPlan} for seeker ${jobSeeker.userId}`)
 
     let stripeSubscriptionId: string | null = null
+    let paymentIntentId: string | null = null
 
     if (!isTrial && stripePaymentMethodId) {
       // Look up the Stripe price ID for this plan from environment
@@ -144,17 +145,46 @@ export async function POST(request: NextRequest) {
           payment_method: stripePaymentMethodId,
           confirm: true,
           off_session: true,
-          metadata: { planId: planConfig.id, seekerId: jobSeeker.userId },
+          metadata: { planId: planConfig.id, seekerId: jobSeeker.userId, type: 'seeker_subscription' },
         })
         if (paymentIntent.status !== 'succeeded') {
-          return NextResponse.json({ error: 'Payment failed' }, { status: 400 })
+          return NextResponse.json({
+            error: `Payment failed: ${paymentIntent.status}. ${paymentIntent.last_payment_error?.message || ''}`.trim(),
+          }, { status: 400 })
         }
         stripeSubscriptionId = paymentIntent.id
+        paymentIntentId = paymentIntent.id
+      }
+    }
+
+    // ── Record external payment (referenced by Subscription.externalPaymentId) ─
+    let externalPaymentId: string | null = null
+    if (!isTrial && (stripeSubscriptionId || paymentIntentId)) {
+      try {
+        const externalPayment = await db.externalPayment.create({
+          data: {
+            userId: userProfile.id,
+            authnetTransactionId: paymentIntentId || stripeSubscriptionId,
+            amount: planConfig.price,
+            planId: planConfig.id,
+            status: 'completed',
+            webhookProcessedAt: new Date(),
+          },
+        })
+        externalPaymentId = externalPayment.id
+      } catch (extErr) {
+        console.error('[Seeker Purchase] Failed to record external payment (non-blocking):', extErr)
       }
     }
 
     const now = new Date()
     const expiresAt = new Date(now.getTime() + planConfig.duration * 24 * 60 * 60 * 1000)
+
+    // Deactivate any other active subscriptions for this seeker so the latest one wins
+    await db.subscription.updateMany({
+      where: { seekerId: jobSeeker.userId, status: 'active' },
+      data: { status: 'canceled' },
+    }).catch((e) => console.error('[Seeker Purchase] Failed to deactivate old subscriptions (non-blocking):', e))
 
     const subscription = await db.subscription.create({
       data: {
@@ -163,6 +193,7 @@ export async function POST(request: NextRequest) {
         authnetCustomerId: stripeCustomerId,
         plan: planConfig.membershipPlan as MembershipPlan,
         status: 'active',
+        externalPaymentId: externalPaymentId || undefined,
         currentPeriodStart: now,
         currentPeriodEnd: expiresAt,
         expires_at: expiresAt,
