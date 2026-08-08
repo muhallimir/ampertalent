@@ -1,7 +1,9 @@
 'use client'
 
+import Link from 'next/link';
 import { SignIn, useUser } from '@clerk/nextjs';
 import { useEffect, useState, Suspense } from 'react';
+import { ArrowLeft } from 'lucide-react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { processMarketingSkuFromUrl, getSignedInRedirectUrl } from '@/lib/marketing-preselect';
 
@@ -98,6 +100,13 @@ function SignInContent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
       <div className="w-full max-w-md">
+        <Link
+          href="/"
+          className="mb-4 inline-flex items-center gap-1.5 text-sm text-gray-500 underline underline-offset-4 hover:text-gray-900"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to home
+        </Link>
         {demoEmailFromUrl && (
           <div
             data-testid="demo-manual-signin-banner"
