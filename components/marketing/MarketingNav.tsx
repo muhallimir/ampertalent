@@ -20,8 +20,8 @@ export default function MarketingNav({ onDemoModeOpen }: MarketingNavProps) {
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }}
             className="fixed top-0 left-0 right-0 z-50 bg-white backdrop-blur-sm border-b border-gray-100 shadow-sm"
         >
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex items-center justify-between h-[84px]">
+            <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+                <div className="flex items-center justify-between h-[60px] sm:h-[72px] lg:h-[84px]">
                     {/* Logo */}
                     <Link href="/" className="flex items-center flex-shrink-0">
                         <Image
@@ -29,10 +29,13 @@ export default function MarketingNav({ onDemoModeOpen }: MarketingNavProps) {
                             alt="Ampertalent"
                             width={200}
                             height={52}
-                            className="h-20 w-auto"
+                            className="h-8 sm:h-10 lg:h-20 w-auto"
                             priority
                         />
                     </Link>
+
+                    {/* Logo area spacer (hidden on desktop) */}
+                    <div className="hidden md:block" />
 
                     {/* Desktop Nav */}
                     <nav className="hidden md:flex items-center gap-8">
@@ -50,7 +53,7 @@ export default function MarketingNav({ onDemoModeOpen }: MarketingNavProps) {
                     </nav>
 
                     {/* Desktop CTAs */}
-                    <div className="hidden md:flex items-center gap-3">
+                    <div className="hidden md:flex items-center gap-2 lg:gap-3">
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.45, duration: 0.4 }}>
                             <button
                                 type="button"
@@ -94,8 +97,9 @@ export default function MarketingNav({ onDemoModeOpen }: MarketingNavProps) {
 
                     {/* Mobile hamburger */}
                     <button
+                        type="button"
                         onClick={() => setMobileOpen(!mobileOpen)}
-                        className="md:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100"
+                        className="md:hidden p-1.5 -mr-1 rounded-lg text-gray-600 hover:bg-gray-100"
                     >
                         <AnimatePresence mode="wait" initial={false}>
                             <motion.div
@@ -122,8 +126,9 @@ export default function MarketingNav({ onDemoModeOpen }: MarketingNavProps) {
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }}
                         className="md:hidden overflow-hidden bg-white border-t border-gray-100"
+                        style={{ maxHeight: 'calc(100dvh - 60px)' }}
                     >
-                        <div className="px-4 py-4 space-y-3">
+                        <div className="px-3 py-3 space-y-2.5">
                             <Link href="#how-it-works" onClick={() => setMobileOpen(false)} className="block py-2 text-sm font-medium text-gray-700">How It Works</Link>
                             <Link href="#for-employers" onClick={() => setMobileOpen(false)} className="block py-2 text-sm font-medium text-gray-700">For Employers</Link>
                             <Link href="#for-seekers" onClick={() => setMobileOpen(false)} className="block py-2 text-sm font-medium text-gray-700">For Job Seekers</Link>

@@ -41,3 +41,4 @@ scripts/run.sh
 .plans/
 .vercel
 .env*
+data
