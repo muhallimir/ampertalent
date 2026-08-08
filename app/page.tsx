@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { currentUser } from '@clerk/nextjs/server'
 import { db } from '@/lib/db'
+import { DemoModeModal } from '@/components/demo/DemoModeModal'
 import MarketingNav from '@/components/marketing/MarketingNav'
 import HeroSection from '@/components/marketing/HeroSection'
 import StatsSection from '@/components/marketing/StatsSection'
@@ -11,6 +12,30 @@ import TestimonialsSection from '@/components/marketing/TestimonialsSection'
 import PricingSection from '@/components/marketing/PricingSection'
 import CTABanner from '@/components/marketing/CTABanner'
 import MarketingFooter from '@/components/marketing/MarketingFooter'
+import { useState } from 'react'
+
+// Client wrapper that manages the demo modal state
+function LandingPageContent() {
+  const [demoOpen, setDemoOpen] = useState(false)
+
+  return (
+    <div className="min-h-screen bg-white">
+      <MarketingNav onDemoModeOpen={() => setDemoOpen(true)} />
+      <main>
+        <HeroSection />
+        <StatsSection />
+        <ForEmployersSection />
+        <ForSeekersSection />
+        <ServicesSection />
+        <TestimonialsSection />
+        <PricingSection />
+        <CTABanner />
+      </main>
+      <MarketingFooter />
+      <DemoModeModal open={demoOpen} onOpenChange={setDemoOpen} />
+    </div>
+  )
+}
 
 export default async function RootPage() {
   const user = await currentUser()
@@ -50,21 +75,6 @@ export default async function RootPage() {
   }
 
   // Unauthenticated → marketing landing page
-  return (
-    <div className="min-h-screen bg-white">
-      <MarketingNav />
-      <main>
-        <HeroSection />
-        <StatsSection />
-        <ForEmployersSection />
-        <ForSeekersSection />
-        <ServicesSection />
-        <TestimonialsSection />
-        <PricingSection />
-        <CTABanner />
-      </main>
-      <MarketingFooter />
-    </div>
-  )
+  return <LandingPageContent />
 }
 

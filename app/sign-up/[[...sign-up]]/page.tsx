@@ -5,7 +5,6 @@ import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import UserInviteSignupForm from '@/components/UserInviteSignUpForm';
 import { processMarketingSkuFromUrl, getSignedInRedirectUrl } from '@/lib/marketing-preselect';
-import { DemoModeEntry } from '@/components/demo/DemoModeEntry';
 
 function SignUpContent() {
   const searchParams = useSearchParams()
@@ -114,7 +113,6 @@ function SignUpContent() {
           signInUrl="/sign-in"
           afterSignUpUrl="/onboarding"
         />
-        <DemoModeEntry />
       </div>
     </div>
   ) : <UserInviteSignupForm invitationToken={invitationToken} />

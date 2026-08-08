@@ -6,7 +6,11 @@ import Image from 'next/image'
 import { Menu, X, Sparkles } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
-export default function MarketingNav() {
+interface MarketingNavProps {
+    onDemoModeOpen?: () => void
+}
+
+export default function MarketingNav({ onDemoModeOpen }: MarketingNavProps) {
     const [mobileOpen, setMobileOpen] = useState(false)
 
     return (
@@ -48,14 +52,15 @@ export default function MarketingNav() {
                     {/* Desktop CTAs */}
                     <div className="hidden md:flex items-center gap-3">
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.45, duration: 0.4 }}>
-                            <Link
-                                href="/sign-in?demo=1"
+                            <button
+                                type="button"
                                 data-testid="marketing-try-demo"
+                                onClick={() => onDemoModeOpen?.()}
                                 className="text-sm font-semibold text-amber-700 bg-amber-50 border border-amber-200 hover:bg-amber-100 transition-colors px-4 py-2 rounded-lg flex items-center gap-1.5"
                             >
                                 <Sparkles className="h-3.5 w-3.5" />
                                 Try Demo
-                            </Link>
+                            </button>
                         </motion.div>
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.45, duration: 0.4 }}>
                             <Link
@@ -124,9 +129,13 @@ export default function MarketingNav() {
                             <Link href="#for-seekers" onClick={() => setMobileOpen(false)} className="block py-2 text-sm font-medium text-gray-700">For Job Seekers</Link>
                             <Link href="#pricing" onClick={() => setMobileOpen(false)} className="block py-2 text-sm font-medium text-gray-700">Pricing</Link>
                             <div className="pt-2 flex flex-col gap-2">
-                                <Link href="/sign-in?demo=1" className="w-full text-center py-2.5 text-sm font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-lg flex items-center justify-center gap-1.5">
+                                <button
+                                    type="button"
+                                    onClick={() => { onDemoModeOpen?.(); setMobileOpen(false) }}
+                                    className="w-full text-center py-2.5 text-sm font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-lg flex items-center justify-center gap-1.5"
+                                >
                                     <Sparkles className="h-3.5 w-3.5" /> Try Demo
-                                </Link>
+                                </button>
                                 <Link href="/sign-in" className="w-full text-center py-2.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-lg">
                                     Log In
                                 </Link>

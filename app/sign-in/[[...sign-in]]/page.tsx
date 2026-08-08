@@ -4,7 +4,6 @@ import { SignIn, useUser } from '@clerk/nextjs';
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { processMarketingSkuFromUrl, getSignedInRedirectUrl } from '@/lib/marketing-preselect';
-import { DemoModeEntry } from '@/components/demo/DemoModeEntry';
 
 function SignInContent() {
   const searchParams = useSearchParams()
@@ -126,7 +125,6 @@ function SignInContent() {
           signUpUrl="/sign-up"
           afterSignInUrl="/onboarding"
         />
-        <DemoModeEntry />
       </div>
     </div>
   );
