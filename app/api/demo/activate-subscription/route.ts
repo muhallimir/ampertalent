@@ -16,6 +16,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
+import { Decimal } from '@prisma/client/runtime/library'
 import { db } from '@/lib/db'
 import { DEMO_NAME_REGEX } from '@/lib/demo-credentials'
 import { getPlanById } from '@/lib/subscription-plans'
@@ -96,6 +97,33 @@ export async function POST(request: NextRequest) {
           },
         })
 
+    // CRITICAL: Record the demo purchase as an ExternalPayment so it shows up
+    // in the Sales Analytics dashboard (Total Revenue, Transactions tab, etc.).
+    // Without this, demo purchases create a Subscription but are invisible to
+    // the analytics layer, leaving super admins unable to validate the demo
+    // flow end-to-end.
+    //
+    // Trial ($0) vs paid plans: a real trial is free for 3 days then $34.99/mo
+    // — we record the $0 trial activation so the analytics shows the
+    // conversion event in the Transactions tab without charging fictitious
+    // revenue. For paid plans (gold/vip/annual), we record the full plan price.
+    let externalPaymentId: string | undefined
+    try {
+      const externalPayment = await db.externalPayment.create({
+        data: {
+          userId: profile.id,
+          amount: new Decimal(isTrial ? 0 : plan.price),
+          planId: plan.id,
+          status: 'completed',
+          authnetTransactionId: `demo_sub_${plan.id}_${profile.id}_${now.getTime()}`,
+          webhookProcessedAt: now,
+        },
+      })
+      externalPaymentId = externalPayment.id
+    } catch (epError) {
+      console.error('⚠️ DEMO SUBSCRIPTION: Failed to record externalPayment (non-blocking):', epError)
+    }
+
     // Create a Subscription row so the dashboard has historical data
     await db.subscription.create({
       data: {
@@ -105,6 +133,7 @@ export async function POST(request: NextRequest) {
         currentPeriodStart: now,
         currentPeriodEnd: expiresAt,
         expires_at: expiresAt,
+        externalPaymentId,
         authnetSubscriptionId: `demo_sub_${profile.id}_${now.getTime()}`,
       },
     })

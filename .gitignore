@@ -42,3 +42,6 @@ scripts/run.sh
 .vercel
 .env*
 data
+
+# Playwright MCP browser artifacts (logs, snapshots, screenshots)
+.playwright-mcp/
