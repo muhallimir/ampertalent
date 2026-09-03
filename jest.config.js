@@ -1,20 +1,36 @@
-const nextJest = require('next/jest')
+// Standalone Jest config (not next/jest) so ts-jest can transform JSX/TSX
+// directly. Tests live under __tests__/**.
 
-const createJestConfig = nextJest({
-    // Provide the path to your Next.js app to load next.config.js and .env files in your test environment
-    dir: './',
-})
-
-// Add any custom config to be passed to Jest
-const customJestConfig = {
-    setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+module.exports = {
     testEnvironment: 'jest-environment-jsdom',
+    setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
     moduleNameMapper: {
         '^@/(.*)$': '<rootDir>/$1',
     },
     testMatch: [
         '**/__tests__/**/*.test.ts',
         '**/__tests__/**/*.test.tsx',
+    ],
+    transform: {
+        '^.+\\.(ts|tsx|js|jsx)$': [
+            'ts-jest',
+            {
+                tsconfig: {
+                    jsx: 'react-jsx',
+                    esModuleInterop: true,
+                    isolatedModules: true,
+                    allowJs: true,
+                    target: 'es2019',
+                    module: 'commonjs',
+                    baseUrl: '.',
+                    paths: { '@/*': ['*'] },
+                },
+                diagnostics: false,
+            },
+        ],
+    },
+    transformIgnorePatterns: [
+        'node_modules/(?!(uncrypto|@upstash|axios)/)',
     ],
     collectCoverageFrom: [
         'app/**/*.{js,jsx,ts,tsx}',
@@ -24,17 +40,7 @@ const customJestConfig = {
         '!**/node_modules/**',
         '!**/.next/**',
     ],
-    // Run tests sequentially to avoid database connection pool exhaustion
     maxWorkers: 1,
-    // Configure global teardown for comprehensive test data cleanup
     globalTeardown: '<rootDir>/__tests__/globalTeardown.ts',
-    // Handle ES modules and other transformation issues
-    transformIgnorePatterns: [
-        'node_modules/(?!(uncrypto|@upstash|axios)/)',
-    ],
-    // Increase timeout for database tests
     testTimeout: 30000,
 }
-
-// createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async
-module.exports = createJestConfig(customJestConfig)

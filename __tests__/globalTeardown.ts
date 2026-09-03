@@ -12,6 +12,11 @@
 import { db, forceDisconnect } from '../lib/db';
 
 export default async function globalTeardown() {
+    if (!process.env.DATABASE_URL) {
+        // No DB configured (e.g. running pure logic unit tests in a sandboxed
+        // environment). Skip cleanup; tests are responsible for their own data.
+        return
+    }
     console.log('\n🧹 Global Teardown: Cleaning up test data...');
 
     try {
