@@ -4,7 +4,7 @@ import { CouponResult } from '@/components/features/coupon-result'
 describe('CouponResult', () => {
   it('renders an accepted coupon', () => {
     render(<CouponResult ok={true} discountCents={500} newTotalCents={4500} />)
-    expect(screen.getByTestId('coupon-ok').textContent).toMatch(/500/)
+    expect(screen.getByTestId('coupon-ok').textContent).toMatch(/5\.00/)
   })
 
   it('renders a rejection reason', () => {
