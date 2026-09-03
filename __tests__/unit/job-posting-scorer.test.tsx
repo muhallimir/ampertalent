@@ -12,7 +12,7 @@ describe('PostingScoreCard', () => {
       />,
     )
     expect(screen.getByTestId('posting-overall').textContent).toMatch(/84/)
-    expect(screen.getByText(/salary disclosed/i)).toBeInTheDocument()
-    expect(screen.getByText(/add apply url/i)).toBeInTheDocument()
+    expect(screen.getByTestId('posting-score').textContent).toMatch(/salary disclosed/i)
+    expect(screen.getByTestId('posting-score').textContent).toMatch(/add apply url/i)
   })
 })
