@@ -16,8 +16,8 @@ describe('ResumeDiffCard', () => {
       />,
     )
     expect(screen.getByTestId('diff-summary').textContent).toMatch(/2 skills added/i)
-    expect(screen.getByText('rust')).toBeInTheDocument()
-    expect(screen.getByText('perl')).toBeInTheDocument()
+    expect(screen.getByTestId('diff-card').textContent).toMatch(/rust/)
+    expect(screen.getByTestId('diff-card').textContent).toMatch(/perl/)
   })
 
   it('renders an empty state when nothing changed', () => {
