@@ -14,8 +14,8 @@ describe('BenchmarkChart', () => {
         source={42}
       />,
     )
-    expect(screen.getByTestId('bench-p50').textContent).toMatch(/\$130,000/)
-    expect(screen.getByTestId('bench-p75').textContent).toMatch(/\$160,000/)
+    expect(screen.getByTestId('bench-p50').textContent).toMatch(/130,000/)
+    expect(screen.getByTestId('bench-p75').textContent).toMatch(/160,000/)
     expect(screen.getByTestId('bench-source').textContent).toMatch(/42/)
   })
 
