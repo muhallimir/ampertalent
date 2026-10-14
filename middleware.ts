@@ -389,8 +389,9 @@ export default clerkMiddleware(async (auth, request: NextRequest) => {
       return NextResponse.next();
     }
 
-    // Special handling for team members in protected routes
-    if (userRole === 'team_member' && pathname.startsWith('/employer')) {
+    // Special handling for team members in protected routes (pages and
+    // APIs; route handlers scope members to their employer's workspace)
+    if (userRole === 'team_member' && (pathname.startsWith('/employer') || pathname.startsWith('/api/employer'))) {
       // Allow team members to access employer/team routes
       if (process.env.DEBUG_MODE === 'true') {
         const totalDuration = Date.now() - middlewareStartTime;
