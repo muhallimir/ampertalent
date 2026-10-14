@@ -187,7 +187,7 @@ export default clerkMiddleware(async (auth, request: NextRequest) => {
 
       // If there's a user role redirect to dashboard.
       // EXCEPT for demo users (name starts with "demo-") with the
-      // `onboarding_pending` flag — they're routed to /onboarding
+      // `onboarding_pending` flag, so they're routed to /onboarding
       // (no skip) so the visitor can experience the full onboarding flow.
       // The `onboarding_pending` flag is set by the demo API when the
       // user is created, and cleared when the onboarding form is
@@ -274,7 +274,7 @@ export default clerkMiddleware(async (auth, request: NextRequest) => {
           // they already have a role on their UserProfile (set at demo
           // create time). The demo flow sets `onboardingCompleted` in
           // localStorage to mark the demo flow as "ready for the real
-          // onboarding form" — but the user still needs to submit the
+          // onboarding form", but the user still needs to submit the
           // form before being redirected.
           // (We don't have a server-side marker yet, so demo users
           // with a role set get the normal "onboarding completed"
