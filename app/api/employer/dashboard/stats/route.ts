@@ -30,8 +30,16 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    // Verify user is an employer or admin impersonating an employer
-    if (!currentUser.profile || (currentUser.profile.role !== 'employer' && !(currentUser.isImpersonating && currentUser.profile.role === 'employer'))) {
+    // Verify user is an employer, an admin impersonating an employer, or an
+    // accepted team member of an employer workspace
+    const isEmployerPath = !!currentUser.profile?.employer &&
+      (currentUser.profile.role === 'employer' || (currentUser.isImpersonating && currentUser.profile.role === 'employer'))
+    let teamEmployerId: string | null = null
+    if (!isEmployerPath && currentUser.profile?.role === 'team_member') {
+      const { getTeamEmployerId } = await import('@/lib/auth')
+      teamEmployerId = await getTeamEmployerId(currentUser.profile.id)
+    }
+    if (!currentUser.profile || (!isEmployerPath && !teamEmployerId)) {
       console.log('🚫 EMPLOYER DASHBOARD STATS: Access denied', {
         hasProfile: !!currentUser.profile,
         role: currentUser.profile?.role,
@@ -42,11 +50,11 @@ export async function GET(request: NextRequest) {
     }
 
     // Ensure employer profile exists
-    if (!currentUser.profile.employer) {
+    if (!teamEmployerId && !currentUser.profile.employer) {
       return NextResponse.json({ error: 'Employer profile not found' }, { status: 403 })
     }
 
-    const employerId = currentUser.profile.employer.userId
+    const employerId = teamEmployerId ?? currentUser.profile.employer.userId
 
 
     // Get active jobs count - using same logic as frontend
@@ -92,7 +100,10 @@ export async function GET(request: NextRequest) {
     const jobCredits = activePackages.reduce((total, pkg) => total + pkg.listingsRemaining, 0)
 
     // Calculate profile completion percentage
-    const employer = currentUser.profile.employer
+    const employer = currentUser.profile.employer ?? await db.employer.findUnique({ where: { userId: employerId } })
+    if (!employer) {
+      return NextResponse.json({ error: 'Employer profile not found' }, { status: 403 })
+    }
     const profileFields = [
       employer.companyName,
       employer.companyWebsite,

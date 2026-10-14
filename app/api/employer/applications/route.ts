@@ -18,9 +18,16 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    // Verify user is an employer or admin impersonating an employer
-    if (!currentUser.profile || !currentUser.profile.employer ||
-      (currentUser.profile.role !== 'employer' && !(currentUser.isImpersonating && currentUser.profile.role === 'employer'))) {
+    // Verify user is an employer, an admin impersonating an employer,
+    // or an accepted team member of an employer workspace
+    const isEmployerPath = !!currentUser.profile?.employer &&
+      (currentUser.profile.role === 'employer' || (currentUser.isImpersonating && currentUser.profile.role === 'employer'))
+    let teamEmployerId: string | null = null
+    if (!isEmployerPath && currentUser.profile?.role === 'team_member') {
+      const { getTeamEmployerId } = await import('@/lib/auth')
+      teamEmployerId = await getTeamEmployerId(currentUser.profile.id)
+    }
+    if (!currentUser.profile || (!isEmployerPath && !teamEmployerId)) {
       console.log('🚫 EMPLOYER APPLICATIONS: Access denied', {
         hasProfile: !!currentUser.profile,
         role: currentUser.profile?.role,
@@ -31,7 +38,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const employerId = currentUser.profile.employer.userId
+    const employerId = teamEmployerId ?? currentUser.profile.employer.userId
 
     // Get search and filter parameters
     const { searchParams } = new URL(request.url)

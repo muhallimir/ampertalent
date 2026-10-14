@@ -459,3 +459,23 @@ export async function logAdminAction(
     console.error('Error logging admin action:', error)
   }
 }
+
+/**
+ * Resolve the employer workspace a team member belongs to.
+ * Returns the employer's UserProfile id (jobs and team rows key off it),
+ * or null when the profile has no accepted team membership. Team members
+ * share their employer's pipeline in read plus status-move capacity.
+ */
+export async function getTeamEmployerId(userProfileId: string): Promise<string | null> {
+  try {
+    const membership = await db.teamMember.findFirst({
+      where: { userId: userProfileId, status: 'accepted' },
+      select: { employerId: true },
+      orderBy: { joinedAt: 'desc' },
+    })
+    return membership?.employerId ?? null
+  } catch (error) {
+    console.error('Error resolving team employer:', error)
+    return null
+  }
+}

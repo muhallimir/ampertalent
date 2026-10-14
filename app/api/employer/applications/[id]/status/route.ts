@@ -25,8 +25,15 @@ export async function PUT(
       })
     }
 
-    // Verify employer role
-    if (!currentUser.profile || currentUser.profile.role !== 'employer' || !currentUser.profile.employer) {
+    // Verify employer role, or an accepted team member of an employer
+    // workspace (members share the hiring pipeline)
+    const isEmployerPath = !!currentUser.profile?.employer && currentUser.profile.role === 'employer'
+    let teamEmployerId: string | null = null
+    if (!isEmployerPath && currentUser.profile?.role === 'team_member') {
+      const { getTeamEmployerId } = await import('@/lib/auth')
+      teamEmployerId = await getTeamEmployerId(currentUser.profile.id)
+    }
+    if (!currentUser.profile || (!isEmployerPath && !teamEmployerId)) {
       console.error('❌ EMPLOYER ACCESS DENIED (Status Change):', {
         hasProfile: !!currentUser.profile,
         role: currentUser.profile?.role,
@@ -36,7 +43,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const employerId = currentUser.profile.employer.userId
+    const employerId = teamEmployerId ?? currentUser.profile.employer.userId
     const { id: applicationId } = await params
     const { status, interviewStage, isReconsideration } = await request.json()
 

@@ -13,10 +13,16 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Verify employer role with impersonation support
-    if (!currentUser.profile ||
-      (currentUser.profile.role !== 'employer' && !(currentUser.isImpersonating && currentUser.profile.role === 'employer')) ||
-      !currentUser.profile.employer) {
+    // Verify employer role with impersonation support, or an accepted
+    // team member of an employer workspace
+    const isEmployerPath = !!currentUser.profile?.employer &&
+      (currentUser.profile.role === 'employer' || (currentUser.isImpersonating && currentUser.profile.role === 'employer'))
+    let teamEmployerId: string | null = null
+    if (!isEmployerPath && currentUser.profile?.role === 'team_member') {
+      const { getTeamEmployerId } = await import('@/lib/auth')
+      teamEmployerId = await getTeamEmployerId(currentUser.profile.id)
+    }
+    if (!currentUser.profile || (!isEmployerPath && !teamEmployerId)) {
       console.log('🚫 JOB APPLICATIONS: Access denied', {
         hasProfile: !!currentUser.profile,
         role: currentUser.profile?.role,
@@ -27,7 +33,7 @@ export async function GET(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const employerId = currentUser.profile.employer.userId
+    const employerId = teamEmployerId ?? currentUser.profile.employer.userId
     const { id: jobId } = await params
 
     // Log impersonation activity for security audit

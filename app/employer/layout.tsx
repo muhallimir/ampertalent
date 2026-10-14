@@ -17,7 +17,7 @@ export default function EmployerLayout({
   children: React.ReactNode
 }) {
   return (
-    <RoleGuard allowedRoles={['employer', 'admin']}>
+    <RoleGuard allowedRoles={['employer', 'admin', 'team_member']}>
       <ImpersonationProvider>
         <ToastProvider>
           <div className="min-h-screen bg-gray-50 flex flex-col">
