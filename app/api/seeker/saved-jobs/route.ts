@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const seekerId = currentUser.profile.jobSeeker.id
+    const seekerId = currentUser.profile.id // JobSeeker PK is userId (== profile id); there is no jobSeeker.id column
 
     // Get saved jobs with job details and application status (including archived jobs)
     const savedJobs = await db.savedJob.findMany({
@@ -134,7 +134,7 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const seekerId = currentUser.profile.jobSeeker.id
+    const seekerId = currentUser.profile.id // JobSeeker PK is userId (== profile id); there is no jobSeeker.id column
     const { jobId } = await request.json()
 
     if (!jobId) {
@@ -198,7 +198,7 @@ export async function DELETE(request: NextRequest) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const seekerId = currentUser.profile.jobSeeker.id
+    const seekerId = currentUser.profile.id // JobSeeker PK is userId (== profile id); there is no jobSeeker.id column
     const searchParams = request.nextUrl.searchParams
     const jobId = searchParams.get('jobId')
 
