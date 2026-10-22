@@ -4,7 +4,7 @@ import { db } from '@/lib/db'
 import { createTeamInvitation } from '@/lib/team-invitations'
 
 // Feature flag - set to true when team member feature is ready
-const TEAM_MEMBER_FEATURE_ENABLED = false
+const TEAM_MEMBER_FEATURE_ENABLED = true
 
 interface InviteTeamMemberRequest {
   email: string

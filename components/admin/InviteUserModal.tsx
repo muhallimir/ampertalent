@@ -24,7 +24,7 @@ import { LoadingSpinner } from '@/components/common/LoadingSpinner'
 import { UserPlus, Mail, User, Shield, Building2, Users, Search, ChevronDown, Package, Construction } from 'lucide-react'
 
 // Feature flag - reads from environment variable
-const TEAM_MEMBER_FEATURE_ENABLED = process.env.NEXT_PUBLIC_TEAM_MEMBER_INVITE_ENABLED === 'true'
+const TEAM_MEMBER_FEATURE_ENABLED = true
 
 // Available employer packages for invitation
 const EMPLOYER_PACKAGES = [

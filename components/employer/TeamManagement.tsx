@@ -36,7 +36,7 @@ interface TeamManagementProps {
 }
 
 // Feature flag - reads from environment variable
-const TEAM_MEMBER_FEATURE_ENABLED = process.env.NEXT_PUBLIC_TEAM_MEMBER_INVITE_ENABLED === 'true'
+const TEAM_MEMBER_FEATURE_ENABLED = true
 
 export function TeamManagement({ onInviteMember, onRemoveMember, onUpdateMemberRole }: TeamManagementProps) {
   const [inviteEmail, setInviteEmail] = useState('')
@@ -192,26 +192,8 @@ export function TeamManagement({ onInviteMember, onRemoveMember, onUpdateMemberR
 
   return (
     <div className="space-y-6">
-      {/* Coming Soon Banner */}
-      {!TEAM_MEMBER_FEATURE_ENABLED && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-          <div className="flex items-center gap-3">
-            <div className="flex-shrink-0">
-              <Construction className="h-6 w-6 text-amber-600" />
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-amber-800">Coming Soon</h3>
-              <p className="text-sm text-amber-700">
-                Team member management is currently under development. This feature will allow you to invite team members,
-                manage roles, and collaborate with your team. Stay tuned for updates!
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Team Overview */}
-      <Card className={!TEAM_MEMBER_FEATURE_ENABLED ? 'opacity-50 pointer-events-none' : ''}>
+      <Card className=''>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <Users className="h-5 w-5" />
@@ -261,7 +243,7 @@ export function TeamManagement({ onInviteMember, onRemoveMember, onUpdateMemberR
       </Card>
 
       {/* Invite New Member */}
-      <Card className={!TEAM_MEMBER_FEATURE_ENABLED ? 'opacity-50 pointer-events-none' : ''}>
+      <Card className=''>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <Plus className="h-5 w-5" />
@@ -319,7 +301,7 @@ export function TeamManagement({ onInviteMember, onRemoveMember, onUpdateMemberR
       </Card>
 
       {/* Team Members List */}
-      <Card className={!TEAM_MEMBER_FEATURE_ENABLED ? 'opacity-50 pointer-events-none' : ''}>
+      <Card className=''>
         <CardHeader>
           <CardTitle>Team Members</CardTitle>
           <CardDescription>
