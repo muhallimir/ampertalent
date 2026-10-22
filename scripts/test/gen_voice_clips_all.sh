@@ -69,6 +69,8 @@ text_for_step() {
     concierge-search-wait) echo "Searching the talent pool now. This sweep takes about eighteen seconds, so stay with the results as they stream in.";;
     # ---- super-admin-platform ----
     superadmin-intro)  echo "Super admin exclusives on AmperTalent, the controls platform buyers ask about most.";;
+    superadmin-sales)  echo "Sales data lives here: revenue, subscriptions, and trial metrics across the whole platform, not just one employer.";;
+    superadmin-admins) echo "Regular admins are managed from this page: invite, promote, suspend, or remove them, with role and status controls.";;
     superadmin-plans)  echo "Exclusive plans live here, with custom pricing per employer. This plan shows its scope and price.";;
     superadmin-billing) echo "Recurring billing shows every cycle, retry, and renewal across seekers and employers, driven by the billing cron.";;
     superadmin-crmmap) echo "CRM sync maps platform fields to the pipeline, so every contact lands in the right stage.";;
@@ -116,7 +118,7 @@ STEPS_employer="employer-intro employer-dashboard employer-postjob employer-tale
 STEPS_admin="admin-intro admin-dashboard admin-moderation admin-users admin-billing admin-concierge admin-growth admin-platform admin-queue-wait filler-a filler-b filler-c"
 STEPS_tools="tools-intro tools-match tools-fit tools-pay tools-pipeline tools-talent tools-money tools-quality tools-run-wait filler-a filler-b filler-c"
 STEPS_concierge="concierge-intro concierge-open concierge-request concierge-queue concierge-detail concierge-sourcing concierge-bio concierge-chatseek concierge-chateemp concierge-seeker concierge-request-wait concierge-search-wait filler-a filler-b filler-c"
-STEPS_superadmin="superadmin-intro superadmin-plans superadmin-billing superadmin-crmmap superadmin-crmlog superadmin-logs superadmin-notify superadmin-subs superadmin-fallback superadmin-load-wait filler-a filler-b filler-c"
+STEPS_superadmin="superadmin-intro superadmin-sales superadmin-admins superadmin-plans superadmin-billing superadmin-crmmap superadmin-crmlog superadmin-logs superadmin-notify superadmin-subs superadmin-fallback superadmin-load-wait filler-a filler-b filler-c"
 STEPS_team="team-intro team-team team-invite team-accept team-member team-review team-move team-remove team-invite-wait filler-a filler-b filler-c"
 STEPS_start="start-intro start-landing start-guest start-signup start-role start-basic start-goals start-package start-dashboard start-find start-save start-signup-wait start-onboard-wait start-search-wait filler-a filler-b filler-c"
 

@@ -12,7 +12,7 @@ import {
 
 const JOURNEY = "superadmin";
 const OUT_MP4 = "/Users/macbook/Documents/projects/ampertalent/demos/super-admin-platform/ampertalent-super-admin-platform.mp4";
-const FALLBACK = { "superadmin-intro": 5600, "superadmin-plans": 6300, "superadmin-billing": 7200, "superadmin-crmmap": 6100, "superadmin-crmlog": 5000, "superadmin-logs": 4700, "superadmin-notify": 7700, "superadmin-subs": 5700, "superadmin-fallback": 8300 };
+const FALLBACK = { "superadmin-intro": 5600, "superadmin-sales": 6500, "superadmin-admins": 6500, "superadmin-plans": 6300, "superadmin-billing": 7200, "superadmin-crmmap": 6100, "superadmin-crmlog": 5000, "superadmin-logs": 4700, "superadmin-notify": 7700, "superadmin-subs": 5700, "superadmin-fallback": 8300 };
 const VOICE_DURS = loadVoiceDurs(JOURNEY, FALLBACK);
 
 async function visit(page, tracker, voiceDurs, step, path, extraMs = 3500) {
@@ -75,6 +75,8 @@ async function main() {
 
   const { acc, page: setup } = await setupDemo(ctx, "super_admin", [
     "/admin/dashboard",
+    "/admin/sales",
+    "/admin/admins",
     "/admin/super-admin/exclusive-plans",
     "/admin/super-admin/recurring-billing",
     "/admin/crm-sync",
@@ -173,7 +175,23 @@ async function main() {
   await settle(tracker, VOICE_DURS, "superadmin-intro", 1500);
   await hideTitle(page);
 
-  // Shot 2: exclusive plans, open one plan.
+  // Shot 2: sales data (super admin only).
+  console.log("STEP sales");
+  tracker.mark("superadmin-sales");
+  await visit(page, tracker, VOICE_DURS, "superadmin-sales", "/admin/sales", 2000);
+  await openFirstRow(page);
+  await scrollTour(page, 3);
+  await dwell(tracker, "superadmin-sales");
+
+  // Shot 3: managing regular admins (super admin only).
+  console.log("STEP admins");
+  tracker.mark("superadmin-admins");
+  await visit(page, tracker, VOICE_DURS, "superadmin-admins", "/admin/admins", 2000);
+  await openFirstRow(page);
+  await scrollTour(page, 3);
+  await dwell(tracker, "superadmin-admins");
+
+  // Shot 4: exclusive plans, open one plan.
   console.log("STEP plans");
   tracker.mark("superadmin-plans");
   await humanGoto(page, `${BASE}/admin/super-admin/exclusive-plans`);
