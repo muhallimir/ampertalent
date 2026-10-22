@@ -76,8 +76,10 @@ export async function GET(request: NextRequest) {
         totalJobs,
         totalApplications,
         activeJobs,
-        yearsInBusiness: 18, // Static value as mentioned on marketing site
-        successfulPlacements: Math.floor(totalApplications * 0.15) // Estimated conversion rate
+        // The platform launched in 2026, so the honest figure is the
+        // number of years since then, not a marketing placeholder.
+        yearsInBusiness: new Date().getFullYear() - 2026,
+        successfulPlacements: 0 // No placement data is tracked yet
       },
       activity: {
         recentJobs: recentJobsCount,
@@ -89,15 +91,11 @@ export async function GET(request: NextRequest) {
         count: cat._count.category,
         percentage: totalJobs > 0 ? Math.round((cat._count.category / totalJobs) * 100) : 0
       })),
-      trustIndicators: {
-        // These match the marketing site claims
-        jobSeekers: "50,000+", // Rounded up for marketing
-        yearsInBusiness: "18 Years",
-        smallBusinesses: "30,000+", // Rounded up for marketing
-        successRate: "82%", // Based on concierge service claims
-        averageTimeToHire: "14 days",
-        satisfactionRate: "95%"
-      },
+      // No trustIndicators block. The old one returned 50,000+ job seekers,
+      // 30,000+ businesses, 18 years in business, an 82% success rate and
+      // a 95% satisfaction rate, none of which this build had any data
+      // for. Nothing consumed the block, it was only a public endpoint
+      // handing out numbers that were not true.
       lastUpdated: new Date().toISOString()
     };
 

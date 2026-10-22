@@ -78,7 +78,7 @@ export default function ForEmployersSection() {
                                 </Link>
                             </motion.div>
                             <p className="mt-3 text-xs text-gray-400">
-                                ✓ Est. 2007 &nbsp;·&nbsp; ✓ 50,000+ candidates &nbsp;·&nbsp; ✓ 30,000+ jobs posted
+                                ✓ Job packages, no commission &nbsp;·&nbsp; ✓ Five user roles &nbsp;·&nbsp; ✓ Stripe and PayPal
                             </p>
                         </div>
                     </motion.div>

@@ -41,7 +41,7 @@ export default function HeroSection() {
                         className="inline-flex items-center gap-2 bg-[#0066FF]/15 border border-[#0066FF]/30 text-[#60A5FA] px-4 py-1.5 rounded-full text-sm font-medium mb-6"
                     >
                         <span className="w-1.5 h-1.5 rounded-full bg-[#00C5A5] animate-pulse" />
-                        Trusted by 50,000+ professionals
+                        From sign up to invoice, in one workspace
                     </motion.div>
 
                     {/* Headline */}
@@ -73,7 +73,7 @@ export default function HeroSection() {
                     >
                         <span className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-[#00C5A5]" /> No commission ever</span>
                         <span className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-[#00C5A5]" /> US-based talent</span>
-                        <span className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-[#00C5A5]" /> Scam-free listings</span>
+                        <span className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-[#00C5A5]" /> Profiles you can verify</span>
                         <span className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-[#00C5A5]" /> Cancel anytime</span>
                     </motion.div>
 

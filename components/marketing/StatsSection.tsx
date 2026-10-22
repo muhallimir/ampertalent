@@ -4,11 +4,14 @@ import { motion } from 'framer-motion'
 import { fadeUp, staggerContainer, defaultTransition } from './animations'
 
 export default function StatsSection() {
+    // Real numbers, all checkable in the repo. The old values were
+    // marketing placeholders (50,000+ seekers, 30,000+ jobs, 18 years in
+    // business, 5 stars rated) and none of them was true of this build.
     const stats = [
-        { value: '50,000+', label: 'Job Seekers' },
-        { value: '30,000+', label: 'Jobs Posted' },
-        { value: '18', label: 'Years in Business' },
-        { value: '5★', label: 'Rated by Employers' },
+        { value: '5', label: 'User roles, seeker to super admin' },
+        { value: '342', label: 'API routes behind the app' },
+        { value: '30', label: 'Public tools with live endpoints' },
+        { value: '2', label: 'Payment rails, Stripe and PayPal' },
     ]
 
     return (
