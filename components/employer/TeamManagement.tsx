@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { getWithImpersonation } from '@/lib/api-client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -56,21 +57,20 @@ export function TeamManagement({ onInviteMember, onRemoveMember, onUpdateMemberR
   // Fetch team members from API (only when feature is enabled)
   const fetchTeamMembers = async () => {
     if (!TEAM_MEMBER_FEATURE_ENABLED) return
-    // TODO: Re-enable when team member feature is ready
-    // try {
-    //   const response = await getWithImpersonation('/api/employer/team')
-    //   if (!response.ok) {
-    //     throw new Error('Failed to fetch team members')
-    //   }
-    //   const data = await response.json()
-    //   setTeamMembers(data.teamMembers || [])
-    // } catch (error) {
-    //   console.error('Error fetching team members:', error)
-    //   setMessage({ type: 'error', text: 'Failed to load team members' })
-    // } finally {
-    //   setIsLoading(false)
-    //   setIsRefreshing(false)
-    // }
+    try {
+      const response = await getWithImpersonation('/api/employer/team')
+      if (!response.ok) {
+        throw new Error('Failed to fetch team members')
+      }
+      const data = await response.json()
+      setTeamMembers(data.teamMembers || [])
+    } catch (error) {
+      console.error('Error fetching team members:', error)
+      setMessage({ type: 'error', text: 'Failed to load team members' })
+    } finally {
+      setIsLoading(false)
+      setIsRefreshing(false)
+    }
   }
 
   // Only fetch team members if feature is enabled
