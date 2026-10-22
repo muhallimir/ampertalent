@@ -2,7 +2,7 @@
 # Generate per-journey voice clips + durations.json for audio pacing.
 # Engine: edge-tts neural voice (en-US-GuyNeural male, free, no API key).
 # Voice texts are the exact lines from demos/*/DEMO_SCRIPT.md.
-# Usage: ./scripts/test/gen_voice_clips_all.sh [OUTBASE]
+# Usage: ./scripts/test/gen_voice_clips_all.sh [OUTBASE] [journey ...]
 # Output: $OUTBASE/<journey>/{*.m4a,durations.json}
 set -euo pipefail
 
@@ -134,7 +134,19 @@ if [ "$VOICE_ENGINE" = "edge" ]; then
   fi
 fi
 
-for journey in seeker employer admin tools concierge superadmin team start; do
+# Journeys to generate. Pass one or more names to only do those:
+#   ./gen_voice_clips_all.sh /tmp/at-voice start
+#   ./gen_voice_clips_all.sh /tmp/at-voice start superadmin
+ALL_JOURNEYS="seeker employer admin tools concierge superadmin team start"
+if [ $# -gt 1 ]; then
+  # The first argument is the output base, the rest are journey names.
+  shift
+  JOURNEYS="$*"
+else
+  JOURNEYS="$ALL_JOURNEYS"
+fi
+
+for journey in $JOURNEYS; do
   OUTDIR="$OUTBASE/$journey"
   mkdir -p "$OUTDIR"
   var="STEPS_$journey"

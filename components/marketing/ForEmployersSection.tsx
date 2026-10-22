@@ -39,7 +39,7 @@ export default function ForEmployersSection() {
                         Find Your Next Rockstar Hire
                     </motion.h2>
                     <motion.p variants={fadeUp} transition={defaultTransition} className="text-lg text-gray-500 max-w-2xl mx-auto">
-                        Get quality applicants without sorting through hundreds of resumes. We've spent 18+ years helping small businesses find the right person — faster, easier, and more affordably.
+                        Get quality applicants without sorting through hundreds of resumes. Post a job, review the pipeline, and hire from one workspace instead of a spreadsheet.
                     </motion.p>
                 </motion.div>
 

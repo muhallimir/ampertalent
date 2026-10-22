@@ -165,10 +165,10 @@ export function AppFooter() {
               © {currentYear} AmperTalent. All rights reserved.
             </p>
             <div className="flex items-center space-x-4 text-sm text-gray-600">
-              <span>Empowering remote work since 2007</span>
+              <span>A remote hiring platform, built end to end</span>
               <span>•</span>
               <span className="text-brand-teal font-medium">
-                1269+ families supported
+                One workspace, five roles
               </span>
             </div>
           </div>
