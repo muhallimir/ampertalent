@@ -82,13 +82,13 @@ text_for_step() {
     superadmin-load-wait) echo "Loading the platform data.";;
     # ---- team-hiring ----
     team-intro)        echo "Hiring as a team on AmperTalent, from invite to first review in one shared workspace.";;
-    team-team)         echo "The team page shows current members and the invite form for new collaborators.";;
-    team-invite)       echo "The employer invites a teammate by email, and the pending invitation record appears inline.";;
-    team-accept)       echo "The member opens the token link and accepts, joining the company workspace.";;
-    team-member)       echo "Members land on a focused dashboard with shared roles and pipeline stats.";;
-    team-review)       echo "Applicant review is shared, so the team reads every candidate together on the role page.";;
-    team-move)         echo "The member moves this applicant from pending to interview, and the status sticks.";;
-    team-remove)       echo "The employer removes the member, closing the loop on team access.";;
+    team-team)         echo "The team page shows the current roster and the invite form for new collaborators.";;
+    team-invite)       echo "The employer types the teammate email, sends the invite through the live endpoint, and the pending invitation appears in the roster.";;
+    team-accept)       echo "The member opens the token link, accepts, and the accepted invitation joins the company workspace.";;
+    team-member)       echo "The invited member lands on a focused dashboard with the shared pipeline.";;
+    team-review)       echo "The shared applicant pipeline shows the live role with one candidate for team review.";;
+    team-move)         echo "The team member moves the applicant from pending to interview, and the status updates live.";;
+    team-remove)       echo "The employer removes the member through the real delete endpoint, and the roster updates.";;
     team-invite-wait)  echo "Sending the team invite.";;
     # ---- getting-started ----
     start-intro)       echo "Your first two minutes on AmperTalent, from landing page to first saved job.";;

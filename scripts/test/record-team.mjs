@@ -227,7 +227,7 @@ async function main() {
   });
   console.log("LIVE JOB:", JSON.stringify(liveJob));
   await restoreDemoName(acc.profileId, acc.email);
-  if (liveJob?.id) await seedApplication(acc.profileId, liveJob.id);
+  // Real demo application is handled by the demo seed; no direct DB insert needed.
   await setup.close();
   console.log(`DEMO_EMAIL=${acc.email}`);
   const inviteEmail = `demo-member-${Date.now()}@ampertalent-demo.com`;
@@ -273,14 +273,19 @@ async function main() {
       await sleep(800);
     }
   }
-  const inviteToken = await createInviteDirect(acc.profileId, inviteEmail);
-  console.log("INVITE_TOKEN created:", inviteToken ? "yes" : "no");
+  // Real invite: submit form through the real endpoint (now enabled).
+  const inviteBtn = page.locator('button:visible:has-text("Invite"), button[type="submit"]:visible');
+  if (await inviteBtn.count()) {
+    await inviteBtn.click({ force: true }).catch(() => {});
+    await sleep(3000);
+  }
   await humanGoto(page, `${BASE}/employer/team`);
+  // Wait for the invitation to appear in the roster (now fetched by the real endpoint).
   await patiently(
-    [{ afterMs: 8000, step: "team-invite-wait" }],
+    [{ afterMs: 12000, step: "team-invite-wait" }],
     () => page.waitForFunction(
       (em) => document.body.innerText.includes(em),
-      inviteEmail, { timeout: 8000 }
+      inviteEmail, { timeout: 15000 }
     ).catch(() => {})
   );
   await sleep(1000);
@@ -292,14 +297,27 @@ async function main() {
   // The token link shows the invitation record (invited email plus
   // company). The roster list render is feature-gated off, so the record
   // lives on this token page, in the DB rows, and in the member session.
+  // Retrieve the invitation token created by the real invite endpoint.
+  const env = loadEnv();
+  const cs = env.DATABASE_URL.replace("sslmode=require", "sslmode=no-verify");
+  const invitePool = new pg.Pool({ connectionString: cs });
+  let inviteToken = null;
+  try {
+    const invRes = await invitePool.query(
+      "SELECT invitation_token FROM team_invitations WHERE email = $1 ORDER BY created_at DESC LIMIT 1",
+      [inviteEmail]
+    );
+    inviteToken = invRes.rows[0]?.invitation_token || null;
+    console.log("TOKEN_LOOKUP:", inviteToken ? "found" : "not found");
+  } finally {
+    await invitePool.end();
+  }
   if (inviteToken) {
-    // The token page is a pre-auth route: sign out first, or the active
-    // employer session bounces straight to the dashboard.
     await page.evaluate(async () => { try { await window.Clerk.signOut(); } catch { /* already out */ } });
     await sleep(1500);
     await humanGoto(page, `${BASE}/sign-up?token=${encodeURIComponent(inviteToken)}`);
     await patiently(
-      [{ afterMs: 10000, step: "filler-c" }],
+      [{ afterMs: 12000, step: "filler-c" }],
       () => page.waitForFunction(
         (em) => document.body.innerText.includes(em),
         inviteEmail, { timeout: 25000 }
@@ -307,13 +325,34 @@ async function main() {
     );
     await sleep(3000);
   }
-  const { memberProfileId } = await provisionMember(acc.profileId, inviteEmail, memberProfileName);
-  console.log(`MEMBER_PROFILE=${memberProfileId} MEMBER_EMAIL=${inviteEmail}`);
+  // After the token visit, try to find the created member profile.
+  // The real accept endpoint creates the DB row; retry briefly.
+  let memberProfileId = null;
+  for (let retry = 0; retry < 3; retry++) {
+    const env2 = loadEnv();
+    const cs2 = env2.DATABASE_URL.replace("sslmode=require", "sslmode=no-verify");
+    const retryPool = new pg.Pool({ connectionString: cs2 });
+    try {
+      const res = await retryPool.query(
+        "SELECT id FROM user_profiles WHERE email = $1 AND role = 'team_member' ORDER BY created_at DESC LIMIT 1",
+        [inviteEmail]
+      );
+      memberProfileId = res.rows[0]?.id || null;
+    } finally { await retryPool.end(); }
+    if (memberProfileId) break;
+    await sleep(2000);
+  }
+  console.log(`MEMBER_PROFILE=${memberProfileId || 'not-found'}`);
+  console.log(`MEMBER_EMAIL=${inviteEmail}`);
   await settle(tracker, VOICE_DURS, "team-accept");
 
   // Shot 5: member dashboard view.
   console.log("STEP member");
-  await switchUser(page, memberProfileId);
+  if (memberProfileId) {
+    await switchUser(page, memberProfileId);
+  } else {
+    console.log("SKIP: member profile not found, skipping member session");
+  }
   tracker.mark("team-member");
   await humanGoto(page, `${BASE}/employer/dashboard`);
   await patiently(
